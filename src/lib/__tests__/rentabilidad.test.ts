@@ -83,4 +83,39 @@ describe('rentabilidad', () => {
     expect(p.intereses).toBeLessThan(21_000);
     expect(p.total).toBe(1_200_000 + p.intereses!);
   });
+
+  it('sin amortizaciones el coste con amortizaciones es el mismo y el ahorro 0', () => {
+    const r = rentabilidad(base());
+    expect(r.hayAmortizaciones).toBe(false);
+    expect(r.costeTotalConAmort).toBe(r.costeTotal);
+    expect(r.ahorro).toBe(0);
+  });
+
+  it('una amortización anticipada reduce los intereses totales y el plazo', () => {
+    const d = base();
+    d.cuotas.hipoteca = [
+      { id: '1', fecha: '2026-01-01', cuota: null, interes: null, anticipada: 0 },
+      { id: '2', fecha: '2026-02-01', cuota: null, interes: null, anticipada: 1_000_000 }, // 10.000 €
+    ];
+    const r = rentabilidad(d);
+    const h = r.prestamos[0];
+    expect(r.hayAmortizaciones).toBe(true);
+    expect(h.anticipado).toBe(1_000_000);
+    expect(h.interesesConAmort!).toBeLessThan(h.intereses!);
+    expect(h.mesesAhorro!).toBeGreaterThan(0);
+    expect(r.ahorro).toBe(h.intereses! - h.interesesConAmort!);
+    expect(r.costeTotalConAmort).toBe(r.costeTotal - r.ahorro);
+    // 10.000 € amortizados en el mes 2 de 300 al 2,57 %: el ahorro debe ser de varios miles de euros
+    expect(r.ahorro).toBeGreaterThan(500_000);
+    expect(r.ahorro).toBeLessThan(1_000_000);
+  });
+
+  it('amortizar más ahorra más', () => {
+    const mk = (a: number) => {
+      const d = base();
+      d.cuotas.hipoteca = [{ id: '1', fecha: '2026-01-01', cuota: null, interes: null, anticipada: a }];
+      return rentabilidad(d).ahorro;
+    };
+    expect(mk(2_000_000)).toBeGreaterThan(mk(1_000_000));
+  });
 });

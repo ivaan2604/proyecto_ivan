@@ -29,7 +29,7 @@ export function PanelRentabilidad({ d }: { d: AppData }) {
       <div className="rent">
         <div className="rent-block">
           <h3>Coste total estimado</h3>
-          <div className="rent-big">{fmtEur(r.costeTotal, { compact: true })}</div>
+          <div className="rent-big">{fmtEur(r.costeTotalConAmort, { compact: true })}</div>
           <Fila k="Total gastos de compra" v={fmtEur(r.gastosCompra)} />
           {r.prestamos.map((p) => (
             <Fila
@@ -38,11 +38,47 @@ export function PanelRentabilidad({ d }: { d: AppData }) {
               v={p.intereses === null ? 'no se liquida' : fmtEur(p.intereses)}
             />
           ))}
-          <Fila k="Coste total con intereses" v={fmtEur(r.costeTotal)} strong />
+          <Fila k="Coste total sin amortizar" v={fmtEur(r.costeTotal)} strong />
+
+          <div className="rent-sub">
+            <h4>Con tus amortizaciones</h4>
+            {r.hayAmortizaciones ? (
+              <>
+                {r.prestamos
+                  .filter((p) => p.anticipado > 0)
+                  .map((p) => (
+                    <div key={p.nombre}>
+                      <Fila k={`${p.nombre}: amortizado antes`} v={fmtEur(p.anticipado)} />
+                      <Fila
+                        k={`Intereses ${p.nombre.toLowerCase()}${p.mesesConAmort ? ` (${fmtInt(p.mesesConAmort)} cuotas)` : ''}`}
+                        v={p.interesesConAmort === null ? 'no se liquida' : fmtEur(p.interesesConAmort)}
+                      />
+                    </div>
+                  ))}
+                <Fila k="Coste total con amortizaciones" v={fmtEur(r.costeTotalConAmort)} strong />
+                <div className="rent-save">
+                  <span>Te ahorras</span>
+                  <b className="num">{fmtEur(r.ahorro)}</b>
+                  <small>
+                    {r.prestamos
+                      .filter((p) => p.anticipado > 0 && p.mesesAhorro)
+                      .map((p) => `${p.nombre}: ${fmtInt(p.mesesAhorro!)} ${p.mesesAhorro === 1 ? 'mes' : 'meses'} antes`)
+                      .join(' · ')}
+                  </small>
+                </div>
+              </>
+            ) : (
+              <p className="rent-note" style={{ marginTop: 0 }}>
+                Cuando apuntes una amortización anticipada en «Hipoteca» o «Préstamo familiar» verás aquí el
+                coste total recalculado y cuánto te ahorras en intereses.
+              </p>
+            )}
+          </div>
           <p className="rent-note">
-            Estimación en el peor caso: pagando todos los préstamos enteros (cuota × nº de cuotas) sin
-            amortizar nada antes. Bajará si amortizas anticipadamente.
-            {r.interesesIncompletos && ' La cuota del préstamo familiar no llega a cubrir sus intereses: no se incluyen.'}
+            «Sin amortizar» es el peor caso: todos los préstamos pagados enteros (cuota × nº de cuotas).
+            «Con amortizaciones» suma los intereses ya pagados y los que quedan sobre lo que debes hoy,
+            con la misma cuota (se acorta el plazo).
+            {r.interesesIncompletos && ' La cuota de algún préstamo no llega a cubrir sus intereses: no se incluyen.'}
           </p>
         </div>
 

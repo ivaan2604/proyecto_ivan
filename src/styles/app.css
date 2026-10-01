@@ -1846,3 +1846,38 @@ table.ledger {
     grid-template-columns: 1fr;
   }
 }
+.rent-sub {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.rent-sub h4 {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: inherit;
+  font-weight: 600;
+}
+.rent-save {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--pos-soft);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 2px 12px;
+}
+.rent-save b {
+  font-family: var(--f-display);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--pos-ink);
+}
+.rent-save small {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: var(--ink-2);
+}

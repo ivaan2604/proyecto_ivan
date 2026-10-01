@@ -318,39 +318,74 @@ export interface CostePrestamo {
   nombre: string;
   importe: number;
   cuota: number;
+  /* Sin amortizar nada antes (peor caso). null = la cuota no llega a liquidarlo */
   meses: number | null;
-  /** Total pagado en toda la vida del préstamo sin amortizar antes (null si la cuota no lo liquida) */
   total: number | null;
   intereses: number | null;
+  /* Con las amortizaciones anticipadas registradas */
+  anticipado: number;
+  interesesPagados: number;
+  /** Intereses ya pagados + los que faltan sobre el capital pendiente actual */
+  interesesConAmort: number | null;
+  mesesConAmort: number | null;
+  ahorro: number | null;
+  mesesAhorro: number | null;
 }
 
-/** Coste de un préstamo pagado entero sin amortizaciones anticipadas: cuota × nº de cuotas. */
-function costePrestamo(nombre: string, importe: number, cuota: number, meses: number | null): CostePrestamo {
-  if (importe <= 0) return { nombre, importe, cuota, meses: 0, total: 0, intereses: 0 };
-  if (meses === null || cuota <= 0) return { nombre, importe, cuota, meses: null, total: null, intereses: null };
-  const total = cuota * meses;
-  return { nombre, importe, cuota, meses, total, intereses: Math.max(0, total - importe) };
-}
-
-export function costesPrestamos(d: AppData): CostePrestamo[] {
-  const hip = costePrestamo('Hipoteca', d.hipoteca.importe, cuotaHipotecaPrevista(d), Math.round(d.hipoteca.plazoAnios * 12));
-  // El préstamo familiar no tiene plazo: sin interés no genera coste; con interés, el plazo
-  // es el que tarda la cuota pactada en liquidarlo.
-  const f = d.familiar;
-  const nombre = 'Préstamo familiar';
-  if (f.tinPct <= 0 || f.importe <= 0) return [hip, { nombre, importe: f.importe, cuota: f.cuota, meses: null, total: f.importe, intereses: 0 }];
-  const meses = mesesRestantes(f.importe, f.tinPct, f.cuota);
-  if (meses === null) return [hip, costePrestamo(nombre, f.importe, f.cuota, null)];
-  // La última cuota es menor: se suman los intereses mes a mes en lugar de cuota × meses
-  const r = f.tinPct / 100 / 12;
-  let pend = f.importe;
+/** Intereses y nº de cuotas que faltan para liquidar `pend` pagando `cuota` fija. */
+function simular(pend: number, tinPct: number, cuota: number): { intereses: number; meses: number } | null {
+  const meses = mesesRestantes(pend, tinPct, cuota);
+  if (meses === null) return null;
+  const r = tinPct / 100 / 12;
   let intereses = 0;
   for (let i = 0; i < meses && pend > 0; i++) {
     const int = Math.round(pend * r);
     intereses += int;
-    pend -= Math.min(pend, f.cuota - int);
+    pend -= Math.min(pend, cuota - int);
   }
-  return [hip, { nombre, importe: f.importe, cuota: f.cuota, meses, total: f.importe + intereses, intereses }];
+  return { intereses, meses };
+}
+
+function costePrestamo(d: AppData, kind: LoanKind): CostePrestamo {
+  const p = kind === 'hipoteca' ? d.hipoteca : d.familiar;
+  const nombre = kind === 'hipoteca' ? 'Hipoteca' : 'Préstamo familiar';
+  const cuota = cuotaPactada(d, kind);
+  const cal = calendarioDe(d, kind);
+  const base = { nombre, importe: p.importe, cuota, anticipado: cal.totalAnticipado, interesesPagados: cal.totalIntereses };
+
+  // Peor caso. Hipoteca: cuota × plazo − importe. Familiar (sin plazo): lo que tarda la cuota en liquidarlo.
+  let meses: number | null;
+  let intereses: number | null;
+  if (p.importe <= 0) {
+    meses = 0;
+    intereses = 0;
+  } else if (kind === 'hipoteca') {
+    meses = cuota > 0 ? Math.round(d.hipoteca.plazoAnios * 12) : null;
+    intereses = meses === null ? null : Math.max(0, cuota * meses - p.importe);
+  } else {
+    const sim = simular(p.importe, p.tinPct, cuota);
+    meses = sim?.meses ?? null;
+    intereses = p.tinPct <= 0 ? 0 : sim?.intereses ?? null;
+  }
+  const total = intereses === null ? null : p.importe + intereses;
+
+  if (cal.totalAnticipado <= 0) {
+    return { ...base, meses, total, intereses, interesesConAmort: intereses, mesesConAmort: meses, ahorro: intereses === null ? null : 0, mesesAhorro: meses === null ? null : 0 };
+  }
+  // Con amortizaciones: lo ya pagado + lo que queda desde el capital pendiente actual, misma cuota (se acorta el plazo)
+  const fut = simular(cal.pendiente, p.tinPct, cuota);
+  const pagadas = cal.filas.filter((f) => !f.liquidado).length;
+  const interesesConAmort = fut === null ? null : cal.totalIntereses + fut.intereses;
+  const mesesConAmort = fut === null ? null : pagadas + fut.meses;
+  return {
+    ...base, meses, total, intereses, interesesConAmort, mesesConAmort,
+    ahorro: intereses === null || interesesConAmort === null ? null : intereses - interesesConAmort,
+    mesesAhorro: meses === null || mesesConAmort === null ? null : meses - mesesConAmort,
+  };
+}
+
+export function costesPrestamos(d: AppData): CostePrestamo[] {
+  return [costePrestamo(d, 'hipoteca'), costePrestamo(d, 'familiar')];
 }
 
 export interface Rentabilidad {
@@ -361,6 +396,10 @@ export interface Rentabilidad {
   /** Algún préstamo con interés cuya cuota nunca lo liquida: la cifra de intereses no es completa */
   interesesIncompletos: boolean;
   costeTotal: number;
+  hayAmortizaciones: boolean;
+  interesesConAmort: number;
+  costeTotalConAmort: number;
+  ahorro: number;
   /* B) Rentabilidad del activo (teórica) */
   inversionActivo: number;
   alquilerAnual: number;
@@ -385,7 +424,8 @@ export function rentabilidad(d: AppData): Rentabilidad {
   const g = totalesGastos(d);
   const prestamos = costesPrestamos(d);
   const intereses = prestamos.reduce((s, p) => s + (p.intereses ?? 0), 0);
-  const interesesIncompletos = prestamos.some((p) => p.intereses === null);
+  const interesesIncompletos = prestamos.some((p) => p.intereses === null || p.interesesConAmort === null);
+  const interesesConAmort = prestamos.reduce((s, p) => s + (p.interesesConAmort ?? 0), 0);
 
   const r = d.recurrentes;
   const alquilerAnual = r.alquiler * 12;
@@ -407,6 +447,10 @@ export function rentabilidad(d: AppData): Rentabilidad {
     intereses,
     interesesIncompletos,
     costeTotal: g.total + intereses,
+    hayAmortizaciones: prestamos.some((p) => p.anticipado > 0),
+    interesesConAmort,
+    costeTotalConAmort: g.total + interesesConAmort,
+    ahorro: intereses - interesesConAmort,
     inversionActivo,
     alquilerAnual,
     gastosRecurrentesAnuales,
