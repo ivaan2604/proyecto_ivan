@@ -45,7 +45,12 @@ Los importes se guardan en céntimos (enteros). Los gráficos son SVG propios.
 ### 1. Supabase
 
 1. Crea una cuenta y un proyecto gratuito en <https://supabase.com> (región *Europe*).
-2. **SQL Editor → New query**: pega el contenido de [`supabase/schema.sql`](supabase/schema.sql) y pulsa *Run*.
+2. Crea las tablas. Dos opciones:
+   - **Automática:** en Supabase, *Project Settings → Integrations → GitHub*, conecta este
+     repositorio con *Supabase directory* = `supabase` y activa *Deploy to production*.
+     Al fusionar en `main` se aplican las migraciones de `supabase/migrations/`.
+   - **Manual:** *SQL Editor → New query*, pega el contenido de
+     [`supabase/migrations/20261001000000_init.sql`](supabase/migrations/20261001000000_init.sql) y pulsa *Run*.
 3. **Authentication → Users → Add user → Create new user**: tu email y una contraseña,
    marcando *Auto Confirm User*.
 4. **Authentication → Sign In / Providers**: desactiva *Allow new users to sign up*
@@ -94,4 +99,5 @@ Estructura:
 - `src/sections/` — una vista por sección.
 - `src/ui/`, `src/charts/` — componentes, diálogos propios (no se usan `alert`/`confirm`
   nativos) y gráficos.
-- `supabase/schema.sql` — tablas, políticas RLS y la función `save_document`.
+- `supabase/migrations/` — tablas, políticas RLS y la función `save_document` (las aplica la integración de GitHub de Supabase).
+- `supabase/config.toml` — configuración del proyecto Supabase (registro de usuarios desactivado).

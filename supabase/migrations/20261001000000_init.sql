@@ -1,6 +1,7 @@
 -- ════════════════════════════════════════════════════════════════════════════
 --  Piso Castellón · esquema de Supabase
---  Pegar entero en Supabase → SQL Editor → Run. Se puede ejecutar más de una vez.
+--  Lo aplica automáticamente la integración de GitHub de Supabase al fusionar en
+--  main. También se puede pegar entero en Supabase → SQL Editor → Run (es idempotente).
 -- ════════════════════════════════════════════════════════════════════════════
 
 -- Documento actual (uno por usuario). La app guarda todos sus datos como un único JSON.
