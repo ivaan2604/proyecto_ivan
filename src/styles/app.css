@@ -1762,3 +1762,87 @@ table.ledger {
     align-items: stretch;
   }
 }
+
+/* ───────────── Coste total y rentabilidad ───────────── */
+.rent {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.rent-block {
+  background: var(--surface);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.rent-block h3 {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: inherit;
+  font-weight: 600;
+}
+.rent-big {
+  font-family: var(--f-display);
+  font-size: 30px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-variation-settings: 'opsz' 48;
+  margin-bottom: 6px;
+}
+.rent-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.rent-pair .k {
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.rent-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13.5px;
+  padding: 4px 0;
+  border-top: 1px dashed var(--line);
+}
+.rent-row span {
+  color: var(--ink-2);
+}
+.rent-row b {
+  font-family: var(--f-mono);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.rent-row.strong {
+  border-top-style: solid;
+}
+.rent-row.strong span {
+  color: inherit;
+  font-weight: 600;
+}
+.rent-note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.rent-warn {
+  margin: 0 0 4px;
+  font-size: 12.5px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--ochre-soft);
+}
+@media (max-width: 1080px) {
+  .rent {
+    grid-template-columns: 1fr;
+  }
+}
