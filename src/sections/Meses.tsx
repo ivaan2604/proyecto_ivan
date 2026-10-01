@@ -8,6 +8,7 @@ import { useDialogs } from '../ui/dialogs';
 import { EstadoToggle, MoneyInput, TextInput } from '../ui/fields';
 import { IconChevron, IconCopy, IconPlus, IconTrash } from '../ui/icons';
 import { PageHead } from '../ui/layout';
+import { Counter } from '../ui/motion';
 
 type Lado = 'ingresos' | 'gastos';
 
@@ -142,7 +143,7 @@ export function Meses() {
             {delAnio.map((k) => {
               const t = totalesMes(d.meses[k]);
               return (
-                <button key={k} className="month-chip" aria-pressed={sel === k} onClick={() => setSel(k)}>
+                <button key={k} className={`month-chip ${t.beneficio >= 0 ? 'up' : 'down'}`} aria-pressed={sel === k} onClick={() => setSel(k)}>
                   <div className="m">{monthName(Number(k.slice(5)))}</div>
                   <div className={`b ${t.beneficio >= 0 ? 'pos' : 'neg'}`}>{fmtEur(t.beneficio, { compact: true, sign: true })}</div>
                 </button>
@@ -152,7 +153,7 @@ export function Meses() {
         )}
       </section>
 
-      {sel && d.meses[sel] && <MesDetalle k={sel} onDelete={() => borrarMes(sel)} />}
+      {sel && d.meses[sel] && <MesDetalle key={sel} k={sel} onDelete={() => borrarMes(sel)} />}
 
       <section className="card flush" style={{ marginTop: 18 }}>
         <div className="card-head">
@@ -204,7 +205,7 @@ function MesDetalle({ k, onDelete }: { k: string; onDelete: () => void }) {
   const m = d.meses[k];
   const t = totalesMes(m);
   return (
-    <section className="card" aria-label={fmtMonthKey(k)}>
+    <section className="card month-detail" aria-label={fmtMonthKey(k)}>
       <div className="card-head">
         <h2 style={{ textTransform: 'capitalize', fontSize: 26 }}>{fmtMonthKey(k)}</h2>
         <button className="btn ghost sm no-print" onClick={onDelete} style={{ color: 'var(--neg-ink)' }}>
@@ -217,7 +218,9 @@ function MesDetalle({ k, onDelete }: { k: string; onDelete: () => void }) {
       </div>
       <div className="month-result">
         <span>Resultado del mes</span>
-        <b className={t.beneficio >= 0 ? 'pos' : 'neg'}>{fmtEur(t.beneficio, { sign: true })}</b>
+        <b className={t.beneficio >= 0 ? 'pos' : 'neg'}>
+          <Counter id={`mes-${k}`} duration={600} value={t.beneficio} format={(v) => fmtEur(v, { sign: true })} />
+        </b>
       </div>
     </section>
   );

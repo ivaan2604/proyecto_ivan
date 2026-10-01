@@ -173,7 +173,10 @@ function Welcome() {
   return (
     <div className="welcome">
       <div className="welcome-card">
-        <div className="welcome-tiles" />
+        <div className="welcome-tiles">
+          <AzaharMark className="welcome-blossom" size={220} />
+          <AzaharMark className="welcome-mark" size={44} />
+        </div>
         <div className="welcome-body">
           <div className="eyebrow">Castellón de la Plana</div>
           <h1>Las cuentas del piso, en orden.</h1>

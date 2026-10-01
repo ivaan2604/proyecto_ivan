@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type CSSProperties } from 'react';
 import { eurRow, LineChart } from '../charts/charts';
 import { calendarioDe, cuotaPactada } from '../lib/derive';
 import { addMonths, mesesRestantes } from '../lib/finance';
@@ -9,6 +9,7 @@ import { useDialogs } from '../ui/dialogs';
 import { DateInput, MoneyInput, OptionalMoneyInput } from '../ui/fields';
 import { IconPlus, IconTrash } from '../ui/icons';
 import { PageHead } from '../ui/layout';
+import { Counter, InView } from '../ui/motion';
 import { go } from '../router';
 
 export function Prestamo({ kind }: { kind: LoanKind }) {
@@ -24,6 +25,7 @@ export function Prestamo({ kind }: { kind: LoanKind }) {
   const ahorroMeses = restantes !== null && plazoOriginal ? plazoOriginal - cuotasPagadas - restantes : 0;
   const titulo = kind === 'hipoteca' ? 'Hipoteca' : 'Préstamo familiar';
   const sinInteres = p.tinPct === 0;
+  const amortPct = p.importe ? Math.min(1, (p.importe - cal.pendiente) / p.importe) : 0;
 
   const mod = (id: string, patch: Partial<Cuota>) =>
     update((x) => {
@@ -76,7 +78,9 @@ export function Prestamo({ kind }: { kind: LoanKind }) {
       <div className="stats stagger" style={{ marginBottom: 18 }}>
         <div className="stat">
           <div className="k">Capital pendiente</div>
-          <div className="v">{fmtEur(cal.pendiente)}</div>
+          <div className="v">
+            <Counter id={`pend-${kind}`} value={cal.pendiente} format={(v) => fmtEur(v)} />
+          </div>
           <div className="d">de {fmtEur(p.importe)}</div>
         </div>
         <div className="stat">
@@ -102,6 +106,17 @@ export function Prestamo({ kind }: { kind: LoanKind }) {
           </div>
         </div>
       </div>
+
+      {p.importe > 0 && (
+        <div className="loan-progress">
+          <div className="meter loan-meter" role="progressbar" aria-label="Préstamo amortizado" aria-valuenow={Math.round(amortPct * 100)} aria-valuemin={0} aria-valuemax={100}>
+            <span style={{ '--p': amortPct } as CSSProperties} />
+          </div>
+          <span>
+            Devuelto el <b className="num">{Math.round(amortPct * 100)} %</b> {kind === 'hipoteca' ? 'de la hipoteca' : 'del préstamo familiar'}
+          </span>
+        </div>
+      )}
 
       {!p.importe ? (
         <div className="empty">
@@ -188,13 +203,14 @@ export function Prestamo({ kind }: { kind: LoanKind }) {
             </div>
           </section>
 
-          <section className="card" style={{ marginTop: 18 }}>
+          <InView className="reveal">
+          <section className="card">
             <div className="card-head">
               <h2>Evolución del capital pendiente</h2>
             </div>
             <LineChart
               ariaLabel={`Capital pendiente del ${titulo.toLowerCase()}`}
-              color="var(--terracotta)"
+              color="var(--data)"
               data={[
                 { label: 'Inicio', title: 'Capital inicial', value: p.importe, rows: [eurRow('Pendiente', p.importe)] },
                 ...cal.filas.map((f) => ({
@@ -212,6 +228,7 @@ export function Prestamo({ kind }: { kind: LoanKind }) {
               ]}
             />
           </section>
+          </InView>
         </>
       )}
     </div>

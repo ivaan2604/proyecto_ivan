@@ -1119,3 +1119,599 @@ a {
 .settled > .card {
   margin-top: 0 !important;
 }
+
+/* ════════════════════ Resto de la app ════════════════════ */
+
+/* Entrada escalonada de grupos (sustituye a la antigua) */
+.stagger > * {
+  animation: rise-in 480ms var(--ease-out) both;
+}
+.stagger > *:nth-child(2) {
+  animation-delay: 50ms;
+}
+.stagger > *:nth-child(3) {
+  animation-delay: 100ms;
+}
+.stagger > *:nth-child(4) {
+  animation-delay: 150ms;
+}
+.stagger > *:nth-child(n + 5) {
+  animation-delay: 200ms;
+}
+
+/* Tarjetas sin relleno */
+.card.flush .card-head {
+  padding: 20px 24px 0;
+}
+
+/* Cifras secundarias */
+.stats {
+  border-radius: 16px;
+  background: var(--line);
+}
+.stat {
+  padding: 16px 18px;
+}
+.stat .d {
+  font-size: 12.5px;
+}
+
+/* Vacío */
+.empty {
+  border-radius: 14px;
+  border-color: var(--line-strong);
+  background: color-mix(in srgb, var(--surface-2) 60%, transparent);
+  font-weight: 600;
+}
+
+/* ───────────── Formularios ───────────── */
+.field > span {
+  font-weight: 700;
+  font-size: 12.5px;
+  letter-spacing: 0.01em;
+}
+.input,
+.select,
+textarea.input {
+  border-radius: 12px;
+  border-color: var(--line-strong);
+  background: var(--surface);
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+.input:focus,
+.select:focus,
+textarea.input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .input:hover:not(:focus),
+  .select:hover:not(:focus) {
+    border-color: color-mix(in srgb, var(--ink) 30%, var(--line-strong));
+  }
+}
+.input.money,
+.input.numeric {
+  font-family: var(--f-body);
+  font-weight: 600;
+}
+.input.invalid {
+  animation: shake 320ms var(--ease-out);
+}
+@keyframes shake {
+  25% {
+    transform: translateX(-3px);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+}
+.affix::after {
+  font-weight: 600;
+}
+/* Valores calculados: se leen como resultado, no como campo editable */
+.computed {
+  background: color-mix(in srgb, var(--pos-soft) 60%, var(--surface));
+  color: var(--pos-ink);
+  border: 1px dashed color-mix(in srgb, var(--pos) 35%, transparent);
+  border-radius: 12px;
+}
+.computed b {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-stretch: 84%;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.computed a {
+  color: inherit;
+  font-weight: 700;
+}
+.subhead {
+  font-family: var(--f-body);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+/* ───────────── Pagado / Pendiente ───────────── */
+.toggle {
+  border-radius: 999px;
+  font-weight: 700;
+  background: var(--pend-soft);
+  border: 1px dashed color-mix(in srgb, var(--pend) 55%, transparent);
+  color: var(--pend-ink);
+  transition: transform 140ms var(--ease-out), background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+.toggle .knob {
+  border-color: var(--pend);
+  transition: transform 260ms var(--ease-out), background-color 200ms ease, border-color 200ms ease;
+}
+.toggle.on {
+  background: var(--pos-soft);
+  border: 1px solid transparent;
+  color: var(--pos-ink);
+}
+.toggle.on .knob {
+  background: var(--pos);
+  border-color: var(--pos);
+  color: #fff;
+  transform: rotate(360deg);
+}
+.toggle.on .knob svg {
+  animation: check-in 260ms var(--ease-out) both;
+}
+@keyframes check-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+/* Segmentado */
+.segmented {
+  border-radius: 13px;
+  background: var(--surface-2);
+}
+.segmented button {
+  border-radius: 10px;
+  font-weight: 700;
+  transition: background-color 180ms ease, color 180ms ease, box-shadow 180ms ease, transform 140ms var(--ease-out);
+}
+.segmented button[aria-pressed='true'] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px var(--line-strong), 0 2px 6px -3px rgba(0, 0, 0, 0.2);
+}
+
+/* Botones */
+.btn {
+  background: var(--surface);
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    background: var(--surface-2);
+  }
+  .btn.ghost:hover {
+    background: color-mix(in srgb, var(--surface-2) 80%, transparent);
+  }
+}
+.btn.danger {
+  background: var(--neg-ink);
+  border-color: var(--neg-ink);
+}
+.btn:disabled {
+  transform: none;
+}
+.icon-btn {
+  border-radius: 10px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .icon-btn:hover {
+    background: var(--neg-soft);
+    color: var(--neg-ink);
+  }
+}
+
+/* ───────────── Tablas ───────────── */
+.ledger th {
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  border-bottom-color: var(--line);
+}
+.ledger td {
+  transition: background-color 140ms ease;
+}
+.ledger .amount {
+  font-family: var(--f-body);
+  font-weight: 600;
+}
+.ledger tfoot td {
+  border-top: 2px solid var(--ink);
+  font-weight: 800;
+}
+.ledger .input:focus {
+  border-color: var(--brand);
+}
+.ledger tr.derived td {
+  background: color-mix(in srgb, var(--surface-2) 50%, transparent);
+}
+.totals {
+  position: relative;
+  background: var(--surface-2);
+  padding: 18px 24px 22px;
+}
+.totals .t span {
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  font-size: 11px;
+}
+.totals .t b {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-stretch: 82%;
+  font-size: 26px;
+  letter-spacing: -0.025em;
+}
+.totals-meter {
+  flex: 1 1 100%;
+  height: 8px;
+  margin-top: 4px;
+  background: var(--surface-3);
+}
+.totals-meter > span,
+.loan-meter > span,
+.partida-meter > span {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--pos) 65%, var(--surface)), var(--pos));
+  border-radius: 6px;
+  animation: meter-in 1000ms var(--ease-out) 150ms both;
+}
+
+/* ───────────── Préstamos ───────────── */
+.loan-progress {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: -4px 0 18px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.loan-meter {
+  flex: 1;
+  height: 10px;
+  margin: 0;
+  background: var(--surface-3);
+}
+.loan-progress b {
+  color: var(--pos-ink);
+}
+
+/* ───────────── Reforma ───────────── */
+.partida-head {
+  border-bottom-color: var(--line);
+}
+.partida-head input[aria-label='Partida'] {
+  font-family: var(--f-display);
+  font-weight: 680;
+  font-stretch: 86%;
+  font-size: 18px;
+}
+.partida-meter {
+  height: 8px;
+  margin: 0;
+  background: var(--surface-3);
+}
+.partida-meter.over > span {
+  background: linear-gradient(90deg, var(--pos), var(--neg));
+}
+.partida-foot {
+  background: var(--surface-2);
+}
+
+/* ───────────── Meses ───────────── */
+.month-chip {
+  position: relative;
+  border-radius: 12px;
+  border-color: var(--line);
+  background: var(--surface);
+  padding: 8px 12px 9px;
+  transition: transform 140ms var(--ease-out), background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+  overflow: hidden;
+}
+.month-chip::after {
+  /* rail inferior: verde si el mes da beneficio, coral si da pérdida */
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--pos);
+  opacity: 0.85;
+}
+.month-chip.down::after {
+  background: var(--neg);
+}
+.month-chip .m {
+  font-weight: 700;
+}
+.month-chip .b {
+  font-family: var(--f-body);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.month-chip:active {
+  transform: scale(0.96);
+}
+@media (hover: hover) and (pointer: fine) {
+  .month-chip:hover {
+    border-color: var(--line-strong);
+  }
+}
+.month-chip[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.year-nav .y {
+  font-family: var(--f-display);
+  font-weight: 720;
+  font-stretch: 80%;
+  font-size: 28px;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.month-detail {
+  animation: month-in 320ms var(--ease-out) both;
+}
+@keyframes month-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: blur(2px);
+  }
+}
+.month-detail .card-head h2 {
+  font-size: 30px !important;
+  font-weight: 720;
+  font-stretch: 80%;
+  letter-spacing: -0.03em;
+}
+.month-detail .card-head h2::before {
+  width: 10px;
+  height: 10px;
+}
+.line-col h3 {
+  font-size: 18px;
+  font-stretch: 86%;
+}
+.line-col h3 .num {
+  font-weight: 800;
+}
+.month-result {
+  border-radius: 16px;
+  padding: 16px 20px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.month-result > span {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: var(--muted);
+}
+.month-result b {
+  font-family: var(--f-display);
+  font-weight: 720;
+  font-stretch: 80%;
+  font-size: 34px;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ───────────── Notas ───────────── */
+.note {
+  border-radius: 16px;
+  transition: border-color 180ms ease;
+}
+.note::before {
+  background: var(--brand);
+}
+.note .when {
+  font-family: var(--f-body);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--brand-ink);
+}
+@media (hover: hover) and (pointer: fine) {
+  .note:hover {
+    border-color: var(--line-strong);
+  }
+}
+
+/* ───────────── Diálogos y avisos emergentes ───────────── */
+.scrim {
+  background: color-mix(in srgb, var(--hero-c) 55%, transparent);
+  animation: fade-in 180ms ease both;
+}
+.modal {
+  border-radius: 22px;
+  box-shadow: 0 40px 90px -30px rgba(8, 23, 15, 0.6);
+  animation: modal-in 240ms var(--ease-out) both;
+}
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+}
+.modal h2 {
+  font-size: 26px;
+  font-weight: 720;
+  font-stretch: 82%;
+}
+.toast {
+  border-radius: 14px;
+  font-weight: 600;
+  animation: toast-in 300ms var(--ease-out) both;
+}
+.toast.error {
+  background: var(--neg-ink);
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+}
+.sheet {
+  background: var(--surface) !important;
+  border-radius: 24px 24px 0 0 !important;
+  animation: sheet-in 320ms cubic-bezier(0.32, 0.72, 0, 1) both !important;
+}
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+/* Indicador de sincronización */
+.sync-pill {
+  background: var(--surface);
+  transition: border-color 180ms ease;
+}
+.sync-pill .led {
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 0%, transparent);
+}
+.sync-pill.synced .led {
+  background: var(--pos);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pos) 22%, transparent);
+}
+.sync-pill.pending .led,
+.sync-pill.syncing .led {
+  background: var(--pend);
+}
+
+/* ───────────── Bienvenida ───────────── */
+.welcome-tiles {
+  height: 150px;
+  border-radius: 24px 24px 0 0;
+  background:
+    radial-gradient(70% 90% at 100% 0%, var(--hero-glow), transparent 70%),
+    radial-gradient(140% 120% at 0% 100%, var(--hero-a), var(--hero-b) 55%, var(--hero-c));
+}
+.welcome-tiles::before {
+  display: none;
+}
+.welcome-blossom {
+  position: absolute;
+  right: -40px;
+  top: -50px;
+  animation: blossom-in 1400ms var(--ease-out) both;
+}
+.welcome-blossom .petals path {
+  fill: none;
+  stroke: rgba(246, 241, 226, 0.16);
+  stroke-width: 0.5;
+}
+.welcome-blossom .core {
+  fill: none;
+  stroke: rgba(242, 140, 59, 0.5);
+  stroke-width: 0.6;
+}
+.welcome-mark {
+  position: absolute;
+  left: 26px;
+  bottom: 22px;
+}
+.welcome-mark .petals path {
+  fill: #f6f1e2;
+}
+.welcome-mark .core {
+  fill: var(--brand);
+}
+.welcome-body {
+  border-radius: 0 0 24px 24px;
+  box-shadow: none;
+}
+.welcome-body h1 {
+  font-size: clamp(34px, 7vw, 44px);
+  font-weight: 720;
+  font-stretch: 80%;
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+}
+.eyebrow {
+  margin-bottom: 8px;
+}
+
+@media (max-width: 860px) {
+  .card.flush .card-head {
+    padding: 16px 16px 0;
+  }
+  .month-detail .card-head h2 {
+    font-size: 26px !important;
+  }
+  .month-result b {
+    font-size: 28px;
+  }
+  .totals {
+    padding: 14px 16px 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stagger > *,
+  .month-detail,
+  .modal,
+  .toast,
+  .sheet,
+  .scrim,
+  .welcome-blossom,
+  .input.invalid,
+  .toggle.on .knob svg {
+    animation: none !important;
+  }
+  .totals-meter > span,
+  .loan-meter > span,
+  .partida-meter > span {
+    animation: none;
+  }
+  .toggle.on .knob {
+    transform: none;
+  }
+}
+/* Las cifras animadas van dentro de <span>: que no hereden el estilo de las etiquetas */
+.totals .t b span {
+  display: inline;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: none;
+  color: inherit;
+}
+.computed {
+  min-width: 0;
+}
+.computed b {
+  font-size: 18px;
+  white-space: nowrap;
+}
+@media (max-width: 860px) {
+  /* Tablas que no se apilan (resúmenes): más compactas para que quepan sin desplazar */
+  table.ledger:not(.stack) th,
+  table.ledger:not(.stack) td {
+    padding-left: 6px;
+    padding-right: 6px;
+    font-size: 13px;
+  }
+  table.ledger:not(.stack) th {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+  }
+}
