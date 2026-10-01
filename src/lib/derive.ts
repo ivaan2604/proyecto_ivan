@@ -1,4 +1,4 @@
-import { addMonths, calendario, pmt, type Calendario } from './finance';
+import { addMonths, calendario, mesesRestantes, pmt, type Calendario } from './finance';
 import { currentMonthKey, daysBetween, fmtEur, fmtMonthKey, todayISO } from './format';
 import { BASE_KEYS, uid, type AppData, type BaseKey, type Estado, type Linea, type LoanKind, type Mes } from './model';
 
@@ -310,4 +310,112 @@ export function avisos(d: AppData): Aviso[] {
 
   const peso: Record<Nivel, number> = { alerta: 0, aviso: 1, info: 2 };
   return out.sort((a, b) => peso[a.nivel] - peso[b.nivel]);
+}
+
+/* ───────────── Coste total y rentabilidad ───────────── */
+
+export interface CostePrestamo {
+  nombre: string;
+  importe: number;
+  cuota: number;
+  meses: number | null;
+  /** Total pagado en toda la vida del préstamo sin amortizar antes (null si la cuota no lo liquida) */
+  total: number | null;
+  intereses: number | null;
+}
+
+/** Coste de un préstamo pagado entero sin amortizaciones anticipadas: cuota × nº de cuotas. */
+function costePrestamo(nombre: string, importe: number, cuota: number, meses: number | null): CostePrestamo {
+  if (importe <= 0) return { nombre, importe, cuota, meses: 0, total: 0, intereses: 0 };
+  if (meses === null || cuota <= 0) return { nombre, importe, cuota, meses: null, total: null, intereses: null };
+  const total = cuota * meses;
+  return { nombre, importe, cuota, meses, total, intereses: Math.max(0, total - importe) };
+}
+
+export function costesPrestamos(d: AppData): CostePrestamo[] {
+  const hip = costePrestamo('Hipoteca', d.hipoteca.importe, cuotaHipotecaPrevista(d), Math.round(d.hipoteca.plazoAnios * 12));
+  // El préstamo familiar no tiene plazo: sin interés no genera coste; con interés, el plazo
+  // es el que tarda la cuota pactada en liquidarlo.
+  const f = d.familiar;
+  const nombre = 'Préstamo familiar';
+  if (f.tinPct <= 0 || f.importe <= 0) return [hip, { nombre, importe: f.importe, cuota: f.cuota, meses: null, total: f.importe, intereses: 0 }];
+  const meses = mesesRestantes(f.importe, f.tinPct, f.cuota);
+  if (meses === null) return [hip, costePrestamo(nombre, f.importe, f.cuota, null)];
+  // La última cuota es menor: se suman los intereses mes a mes en lugar de cuota × meses
+  const r = f.tinPct / 100 / 12;
+  let pend = f.importe;
+  let intereses = 0;
+  for (let i = 0; i < meses && pend > 0; i++) {
+    const int = Math.round(pend * r);
+    intereses += int;
+    pend -= Math.min(pend, f.cuota - int);
+  }
+  return [hip, { nombre, importe: f.importe, cuota: f.cuota, meses, total: f.importe + intereses, intereses }];
+}
+
+export interface Rentabilidad {
+  /* A) Coste total a largo plazo */
+  gastosCompra: number;
+  prestamos: CostePrestamo[];
+  intereses: number;
+  /** Algún préstamo con interés cuya cuota nunca lo liquida: la cifra de intereses no es completa */
+  interesesIncompletos: boolean;
+  costeTotal: number;
+  /* B) Rentabilidad del activo (teórica) */
+  inversionActivo: number;
+  alquilerAnual: number;
+  gastosRecurrentesAnuales: number;
+  brutaPct: number | null;
+  netaPct: number | null;
+  /* C) Rentabilidad sobre el dinero propio (real) */
+  capitalPropio: number;
+  mesesConDatos: number;
+  /** Beneficio de los últimos 12 meses, o promedio mensual × 12 si hay menos de 12 */
+  beneficioAnual: number | null;
+  proyectado: boolean;
+  cashOnCashPct: number | null;
+}
+
+/**
+ * Coste total estimado y rentabilidad. Ojo: en esta app el «total de gastos de compra»
+ * YA incluye el precio del piso (señal + arras + resto del precio), así que la inversión
+ * del activo es ese total, sin volver a sumar el precio.
+ */
+export function rentabilidad(d: AppData): Rentabilidad {
+  const g = totalesGastos(d);
+  const prestamos = costesPrestamos(d);
+  const intereses = prestamos.reduce((s, p) => s + (p.intereses ?? 0), 0);
+  const interesesIncompletos = prestamos.some((p) => p.intereses === null);
+
+  const r = d.recurrentes;
+  const alquilerAnual = r.alquiler * 12;
+  const gastosRecurrentesAnuales = r.ibiAnual + r.seguroHogarAnual + r.seguroVidaAnual + r.edificioAnual + r.mantenimientoMensual * 12;
+  const inversionActivo = g.total;
+  const pct = (num: number, den: number) => (den > 0 ? (num / den) * 100 : null);
+
+  // Meses reales: hasta el mes en curso y con algún concepto (los meses futuros creados por adelantado no cuentan)
+  const actual = currentMonthKey();
+  const reales = mesesOrdenados(d).filter((k) => k <= actual && (d.meses[k].ingresos.length || d.meses[k].gastos.length));
+  const ultimos = reales.slice(-12);
+  const suma = ultimos.reduce((s, k) => s + totalesMes(d.meses[k]).beneficio, 0);
+  const proyectado = reales.length > 0 && reales.length < 12;
+  const beneficioAnual = reales.length === 0 ? null : proyectado ? Math.round((suma / reales.length) * 12) : suma;
+
+  return {
+    gastosCompra: g.total,
+    prestamos,
+    intereses,
+    interesesIncompletos,
+    costeTotal: g.total + intereses,
+    inversionActivo,
+    alquilerAnual,
+    gastosRecurrentesAnuales,
+    brutaPct: pct(alquilerAnual, inversionActivo),
+    netaPct: pct(alquilerAnual - gastosRecurrentesAnuales, inversionActivo),
+    capitalPropio: g.pagado,
+    mesesConDatos: reales.length,
+    beneficioAnual,
+    proyectado,
+    cashOnCashPct: beneficioAnual === null ? null : pct(beneficioAnual, g.pagado),
+  };
 }

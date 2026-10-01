@@ -6,6 +6,7 @@ import { useData } from '../store';
 import { IconArrow } from '../ui/icons';
 import { PageHead } from '../ui/layout';
 import { go } from '../router';
+import { PanelRentabilidad } from './Rentabilidad';
 
 export function Resumen() {
   const d = useData();
@@ -211,6 +212,8 @@ export function Resumen() {
           beneficio medio de los meses registrados.
         </p>
       </section>
+
+      <PanelRentabilidad d={d} />
     </div>
   );
 }
