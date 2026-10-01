@@ -62,6 +62,26 @@ export interface Cuota {
   anticipada: number;
 }
 
+export type TipoObra = 'mejora' | 'reparacion';
+
+export interface PagoReforma {
+  id: string;
+  fecha: string;
+  importe: number;
+  estado: Estado;
+  factura: string;
+  nota: string;
+}
+
+export interface PartidaReforma {
+  id: string;
+  concepto: string;
+  presupuesto: number;
+  /** Fiscalmente: la mejora aumenta el valor del piso (se amortiza); la reparación se deduce */
+  tipo: TipoObra;
+  pagos: PagoReforma[];
+}
+
 export interface Nota {
   id: string;
   fecha: string;
@@ -100,14 +120,19 @@ export interface AppData {
     plazoAnios: number;
     tinPct: number;
     notas: string;
+    /** El banco ya ha entregado el dinero (en la escritura) */
+    recibida: boolean;
   };
   familiar: {
     importe: number;
     cuota: number;
     tinPct: number;
     notas: string;
+    recibido: boolean;
   };
   recurrentes: {
+    /** Fecha prevista o real del primer alquiler; antes de ella el piso está «en reforma» */
+    inicioAlquiler: string;
     alquiler: number;
     edificioAnual: number;
     ibiAnual: number;
@@ -117,6 +142,8 @@ export interface AppData {
   };
   gastosBase: Record<BaseKey, GastoBaseEstado>;
   gastosExtra: GastoExtra[];
+  /** Si tiene partidas, sustituye al importe único «reforma» de los gastos de compra */
+  reforma: { partidas: PartidaReforma[] };
   /** Clave "YYYY-MM" */
   meses: Record<string, Mes>;
   cuotas: {
@@ -146,9 +173,10 @@ export function emptyData(): AppData {
     piso: { precio: 0, tipoVivienda: '', comunidadAutonoma: 'Comunidad Valenciana', itpPct: 9 },
     hitos: { senalFecha: '', senal: 0, contratoFecha: '', arrasFecha: '', arras: 0, escrituraFecha: '' },
     gastos: { comision: 0, reforma: 0, notaria: 0, registro: 0, gestoria: 0, tasacion: 0, tasacionFecha: '' },
-    hipoteca: { banco: '', viabilidadFecha: '', importe: 0, plazoAnios: 25, tinPct: 0, notas: '' },
-    familiar: { importe: 0, cuota: 0, tinPct: 0, notas: '' },
+    hipoteca: { banco: '', viabilidadFecha: '', importe: 0, plazoAnios: 25, tinPct: 0, notas: '', recibida: false },
+    familiar: { importe: 0, cuota: 0, tinPct: 0, notas: '', recibido: false },
     recurrentes: {
+      inicioAlquiler: '',
       alquiler: 0,
       edificioAnual: 0,
       ibiAnual: 0,
@@ -158,6 +186,7 @@ export function emptyData(): AppData {
     },
     gastosBase,
     gastosExtra: [],
+    reforma: { partidas: [] },
     meses: {},
     cuotas: { hipoteca: [], familiar: [] },
     notas: [],

@@ -9,6 +9,7 @@ import { Gastos } from './sections/Gastos';
 import { Meses } from './sections/Meses';
 import { Notas } from './sections/Notas';
 import { Prestamo } from './sections/Prestamo';
+import { Reforma } from './sections/Reforma';
 import { Resumen } from './sections/Resumen';
 import { useEngine } from './store';
 import { engine } from './sync/engine';
@@ -60,6 +61,7 @@ function Shell() {
       case 'resumen': return <Resumen />;
       case 'compra': return <Compra />;
       case 'gastos': return <Gastos />;
+      case 'reforma': return <Reforma />;
       case 'meses': return <Meses />;
       case 'hipoteca': return <Prestamo kind="hipoteca" key="h" />;
       case 'familiar': return <Prestamo kind="familiar" key="f" />;

@@ -26,6 +26,8 @@ export interface FilaGasto {
   importe: number;
   estado: Estado;
   nota: string;
+  /** Fila generada desde la sección «Reforma» (se edita allí) */
+  reforma?: true;
 }
 
 export function importeBase(d: AppData, k: BaseKey): number {
@@ -60,7 +62,8 @@ function fechaDerivadaBase(d: AppData, k: BaseKey): string {
 }
 
 export function filasGastos(d: AppData): FilaGasto[] {
-  const base = BASE_KEYS.map((k): FilaGasto => {
+  const conPartidas = d.reforma.partidas.length > 0;
+  const base = BASE_KEYS.filter((k) => !(conPartidas && k === 'reforma')).map((k): FilaGasto => {
     const st = d.gastosBase[k];
     return {
       key: k,
@@ -77,7 +80,90 @@ export function filasGastos(d: AppData): FilaGasto[] {
     key: g.id, base: false, concepto: g.concepto, fecha: g.fecha, fechaDerivada: false,
     importe: g.importe, estado: g.estado, nota: g.nota,
   }));
-  return [...base, ...extra];
+  return [...base, ...filasReforma(d), ...extra];
+}
+
+/* ───────────── Reforma ───────────── */
+
+/** Cada pago es una fila; lo que queda de presupuesto sin pagos asignados, una fila pendiente sin fecha. */
+function filasReforma(d: AppData): FilaGasto[] {
+  return d.reforma.partidas.flatMap((p) => {
+    const nombre = `Reforma · ${p.concepto || 'Partida'}`;
+    const filas = p.pagos.map((x): FilaGasto => ({
+      key: `ref:${x.id}`, base: false, reforma: true, concepto: nombre, fecha: x.fecha, fechaDerivada: false,
+      importe: x.importe, estado: x.estado, nota: [x.factura && `Factura ${x.factura}`, x.nota].filter(Boolean).join(' · '),
+    }));
+    const resto = p.presupuesto - sumPagos(p.pagos);
+    if (resto > 0) {
+      filas.push({
+        key: `ref-resto:${p.id}`, base: false, reforma: true, concepto: `${nombre} (resto del presupuesto)`, fecha: '',
+        fechaDerivada: false, importe: resto, estado: 'pendiente', nota: '',
+      });
+    }
+    return filas;
+  });
+}
+
+function sumPagos(pagos: { importe: number }[]): number {
+  return pagos.reduce((s, x) => s + x.importe, 0);
+}
+
+export interface TotalesPartida {
+  id: string;
+  presupuesto: number;
+  /** Suma de todos los pagos apuntados (pagados o no) */
+  comprometido: number;
+  pagado: number;
+  /** Coste previsto: el presupuesto, o lo comprometido si ya lo supera */
+  previsto: number;
+  desviacion: number;
+}
+
+export function totalesReforma(d: AppData) {
+  const partidas = d.reforma.partidas.map((p): TotalesPartida => {
+    const comprometido = sumPagos(p.pagos);
+    const pagado = sumPagos(p.pagos.filter((x) => x.estado === 'pagado'));
+    return {
+      id: p.id, presupuesto: p.presupuesto, comprometido, pagado,
+      previsto: Math.max(p.presupuesto, comprometido), desviacion: Math.max(0, comprometido - p.presupuesto),
+    };
+  });
+  const sum = (k: keyof Omit<TotalesPartida, 'id'>) => partidas.reduce((s, x) => s + x[k], 0);
+  const presupuesto = sum('presupuesto');
+  const previsto = sum('previsto');
+  const pagado = sum('pagado');
+  const desviacion = sum('desviacion');
+  const mejora = d.reforma.partidas.reduce((s, p, i) => s + (p.tipo === 'mejora' ? partidas[i].previsto : 0), 0);
+  return {
+    partidas, presupuesto, previsto, pagado, pendiente: previsto - pagado, desviacion,
+    desviacionPct: presupuesto > 0 ? (desviacion / presupuesto) * 100 : 0,
+    mejora, reparacion: previsto - mejora,
+  };
+}
+
+/* ───────────── Dinero propio y fase ───────────── */
+
+/** Dinero de los préstamos que ya has recibido (con él se paga parte de los gastos de compra). */
+export function financiacionRecibida(d: AppData): number {
+  return (d.hipoteca.recibida ? d.hipoteca.importe : 0) + (d.familiar.recibido ? d.familiar.importe : 0);
+}
+
+/** Lo que ha salido de tu bolsillo: gastos de compra pagados menos lo pagado con dinero prestado. */
+export function dineroPropio(d: AppData) {
+  const g = totalesGastos(d);
+  const financiado = Math.min(financiacionRecibida(d), g.pagado);
+  return { pagado: g.pagado, financiado, propio: g.pagado - financiado, sinGastar: financiacionRecibida(d) - financiado };
+}
+
+/** Mes (YYYY-MM) del primer alquiler, o null si no hay fecha. */
+export function inicioAlquilerMes(d: AppData): string | null {
+  return d.recurrentes.inicioAlquiler ? d.recurrentes.inicioAlquiler.slice(0, 7) : null;
+}
+
+/** Hay fecha de alquiler y aún no ha llegado. */
+export function enReforma(d: AppData): boolean {
+  const ini = inicioAlquilerMes(d);
+  return !!ini && ini > currentMonthKey();
 }
 
 export function totalesGastos(d: AppData) {
@@ -108,11 +194,14 @@ export function cuotaHipotecaPrevista(d: AppData): number {
 }
 
 /** Conceptos por defecto de un mes nuevo, calculados a partir de Compra y financiación. */
-export function mesPrevision(d: AppData): Mes {
+export function mesPrevision(d: AppData, key?: string): Mes {
   const r = d.recurrentes;
   const l = (concepto: string, importe: number): Linea => ({ id: uid(), concepto, importe, estado: 'pendiente' });
   const ingresos: Linea[] = [];
-  if (r.alquiler) ingresos.push(l('Alquiler', r.alquiler));
+  // Antes del inicio del alquiler (reforma) el mes nuevo no lleva la línea de alquiler
+  const ini = inicioAlquilerMes(d);
+  const sinAlquiler = !!key && !!ini && key < ini;
+  if (r.alquiler && !sinAlquiler) ingresos.push(l('Alquiler', r.alquiler));
   const gastos: Linea[] = [];
   const hip = cuotaHipotecaPrevista(d);
   if (hip) gastos.push(l(`Cuota hipoteca${d.hipoteca.banco ? ` (${d.hipoteca.banco})` : ''}`, hip));
@@ -150,8 +239,20 @@ export interface PuntoAcumulado {
   acumulado: number;
 }
 
-export function seguimientoGlobal(d: AppData, invertido: number) {
-  const keys = mesesOrdenados(d);
+/**
+ * Recuperación de la inversión. Los meses anteriores al inicio del alquiler (reforma) no
+ * cuentan como resultado del alquiler: su saldo negativo es «coste de la espera» y se suma
+ * a lo invertido. Sin fecha de inicio, todos los meses cuentan como alquiler.
+ */
+export function seguimientoGlobal(d: AppData) {
+  const { propio } = dineroPropio(d);
+  const ini = inicioAlquilerMes(d);
+  const todos = mesesOrdenados(d);
+  const espera = ini ? todos.filter((k) => k < ini) : [];
+  const keys = ini ? todos.filter((k) => k >= ini) : todos;
+  const costeEspera = -espera.reduce((s, k) => s + totalesMes(d.meses[k]).beneficio, 0);
+  const invertido = propio + costeEspera;
+
   let acc = 0;
   let ingresado = 0;
   let gastado = 0;
@@ -172,7 +273,7 @@ export function seguimientoGlobal(d: AppData, invertido: number) {
     proyeccionKey = addMonths(keys[keys.length - 1], proyeccionMeses);
   }
   return {
-    serie, ingresado, gastado, beneficio: acc, media, invertido,
+    serie, ingresado, gastado, beneficio: acc, media, invertido, propio, costeEspera, mesesEspera: espera.length,
     recuperadoEn: recuperadoEn as string | null, proyeccionMeses, proyeccionKey,
     pctRecuperado: invertido > 0 ? Math.max(0, Math.min(1, acc / invertido)) : 0,
   };
@@ -198,6 +299,7 @@ export function lineaTiempo(d: AppData): Hito[] {
     { id: 'viabilidad', titulo: 'Viabilidad de la hipoteca', fecha: d.hipoteca.viabilidadFecha, detalle: d.hipoteca.banco || undefined },
     { id: 'tasacion', titulo: 'Tasación', fecha: d.gastos.tasacionFecha, importe: d.gastos.tasacion || undefined },
     { id: 'escritura', titulo: 'Escritura', fecha: d.hitos.escrituraFecha },
+    { id: 'alquiler', titulo: 'Inicio del alquiler', fecha: d.recurrentes.inicioAlquiler, importe: d.recurrentes.alquiler || undefined },
   ];
   return raw
     .map((h) => ({ ...h, estado: !h.fecha ? 'pendiente' : h.fecha <= hoy ? 'hecho' : 'programado' } as Hito))
@@ -212,7 +314,7 @@ export function lineaTiempo(d: AppData): Hito[] {
 /* ───────────── Avisos ───────────── */
 
 export type Nivel = 'alerta' | 'aviso' | 'info';
-export type SectionId = 'resumen' | 'compra' | 'gastos' | 'meses' | 'hipoteca' | 'familiar' | 'notas' | 'copia';
+export type SectionId = 'resumen' | 'compra' | 'gastos' | 'reforma' | 'meses' | 'hipoteca' | 'familiar' | 'notas' | 'copia';
 
 export interface Aviso {
   id: string;
@@ -253,6 +355,20 @@ export function avisos(d: AppData): Aviso[] {
       titulo: `${pendientes.length} gastos de compra pendientes · ${fmtEur(g.pendiente)}`,
       detalle: pendientes.slice(0, 5).map((f) => f.concepto).join(', ') + (pendientes.length > 5 ? '…' : ''), ir: 'gastos',
     });
+  }
+
+  // Reforma por encima del presupuesto
+  const ref = totalesReforma(d);
+  if (ref.desviacion > 0) {
+    out.push({
+      id: 'reforma-desviacion', nivel: 'aviso',
+      titulo: `Reforma ${fmtEur(ref.desviacion)} por encima del presupuesto (+${Math.round(ref.desviacionPct)} %)`,
+      detalle: d.reforma.partidas.filter((_, i) => ref.partidas[i].desviacion > 0).map((p) => p.concepto).join(', '),
+      ir: 'reforma',
+    });
+  }
+  if (!d.recurrentes.inicioAlquiler && d.hitos.escrituraFecha && d.hitos.escrituraFecha <= hoy) {
+    out.push({ id: 'inicio-alquiler', nivel: 'info', titulo: 'Indica la fecha prevista de inicio del alquiler', detalle: 'Separa los meses de reforma de los de alquiler en la rentabilidad.', ir: 'compra' });
   }
 
   // Cuotas sin fecha / desviadas
@@ -407,7 +523,11 @@ export interface Rentabilidad {
   brutaPct: number | null;
   netaPct: number | null;
   /* C) Rentabilidad sobre el dinero propio (real) */
+  /** Dinero propio + coste de la espera (lo que has puesto en total) */
   capitalPropio: number;
+  dineroPropio: number;
+  costeEspera: number;
+  enReforma: boolean;
   mesesConDatos: number;
   /** Beneficio de los últimos 12 meses, o promedio mensual × 12 si hay menos de 12 */
   beneficioAnual: number | null;
@@ -433,9 +553,14 @@ export function rentabilidad(d: AppData): Rentabilidad {
   const inversionActivo = g.total;
   const pct = (num: number, den: number) => (den > 0 ? (num / den) * 100 : null);
 
-  // Meses reales: hasta el mes en curso y con algún concepto (los meses futuros creados por adelantado no cuentan)
+  // Meses reales de alquiler: desde el inicio del alquiler, hasta el mes en curso y con algún concepto
+  // (los meses de reforma y los futuros creados por adelantado no cuentan)
   const actual = currentMonthKey();
-  const reales = mesesOrdenados(d).filter((k) => k <= actual && (d.meses[k].ingresos.length || d.meses[k].gastos.length));
+  const ini = inicioAlquilerMes(d);
+  const seg = seguimientoGlobal(d);
+  const reales = mesesOrdenados(d).filter(
+    (k) => k <= actual && (!ini || k >= ini) && (d.meses[k].ingresos.length || d.meses[k].gastos.length),
+  );
   const ultimos = reales.slice(-12);
   const suma = ultimos.reduce((s, k) => s + totalesMes(d.meses[k]).beneficio, 0);
   const proyectado = reales.length > 0 && reales.length < 12;
@@ -456,10 +581,13 @@ export function rentabilidad(d: AppData): Rentabilidad {
     gastosRecurrentesAnuales,
     brutaPct: pct(alquilerAnual, inversionActivo),
     netaPct: pct(alquilerAnual - gastosRecurrentesAnuales, inversionActivo),
-    capitalPropio: g.pagado,
+    capitalPropio: seg.invertido,
+    dineroPropio: seg.propio,
+    costeEspera: seg.costeEspera,
+    enReforma: enReforma(d),
     mesesConDatos: reales.length,
     beneficioAnual,
     proyectado,
-    cashOnCashPct: beneficioAnual === null ? null : pct(beneficioAnual, g.pagado),
+    cashOnCashPct: beneficioAnual === null ? null : pct(beneficioAnual, seg.invertido),
   };
 }

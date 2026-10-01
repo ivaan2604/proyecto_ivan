@@ -1,8 +1,9 @@
-import { cuotaHipotecaPrevista, importeBase } from '../lib/derive';
+import { cuotaHipotecaPrevista, importeBase, totalesReforma } from '../lib/derive';
 import { fmtEur } from '../lib/format';
 import type { AppData } from '../lib/model';
 import { update, useData } from '../store';
-import { DateInput, Field, MoneyInput, NumberInput, TextArea, TextInput } from '../ui/fields';
+import { DateInput, Field, MoneyInput, NumberInput, Segmented, TextArea, TextInput } from '../ui/fields';
+import { go } from '../router';
 import { PageHead } from '../ui/layout';
 
 type Sec = keyof Pick<AppData, 'piso' | 'hitos' | 'gastos' | 'hipoteca' | 'familiar' | 'recurrentes'>;
@@ -20,6 +21,17 @@ export function Compra() {
   const cuota = cuotaHipotecaPrevista(d);
   const totalPagarHip = cuota * Math.round(d.hipoteca.plazoAnios * 12);
   const r = d.recurrentes;
+  const conPartidas = d.reforma.partidas.length > 0;
+  const recibido = (v: boolean, on: (x: boolean) => void, quien: string) => (
+    <Field label="¿Dinero recibido?" hint={v ? `Lo pagado con él no cuenta como dinero propio` : `Márcalo cuando ${quien}`}>
+      <Segmented
+        value={v ? 'si' : 'no'}
+        options={[{ value: 'no', label: 'Aún no' }, { value: 'si', label: 'Recibido' }]}
+        onChange={(x) => on(x === 'si')}
+        ariaLabel="¿Dinero recibido?"
+      />
+    </Field>
+  );
   const mensualFijos =
     Math.round((r.edificioAnual + r.ibiAnual + r.seguroHogarAnual + r.seguroVidaAnual) / 12) + r.mantenimientoMensual;
 
@@ -69,7 +81,19 @@ export function Compra() {
           <div className="card-head"><h2>Gastos de la compra</h2></div>
           <div className="form">
             <Field label="Comisión inmobiliaria"><MoneyInput value={d.gastos.comision} onChange={set('gastos', 'comision')} /></Field>
-            <Field label="Presupuesto de reforma"><MoneyInput value={d.gastos.reforma} onChange={set('gastos', 'reforma')} /></Field>
+            {conPartidas ? (
+              <div className="field">
+                <span>Reforma (por partidas)</span>
+                <div className="computed">
+                  <a href="#/reforma" onClick={(e) => (e.preventDefault(), go('reforma'))}>ver «Reforma»</a>
+                  <b>{fmtEur(totalesReforma(d).previsto)}</b>
+                </div>
+              </div>
+            ) : (
+              <Field label="Presupuesto de reforma" hint="Para desglosarla en partidas y pagos, usa «Reforma»">
+                <MoneyInput value={d.gastos.reforma} onChange={set('gastos', 'reforma')} />
+              </Field>
+            )}
             <Field label="Notaría"><MoneyInput value={d.gastos.notaria} onChange={set('gastos', 'notaria')} /></Field>
             <Field label="Registro"><MoneyInput value={d.gastos.registro} onChange={set('gastos', 'registro')} /></Field>
             <Field label="Gestoría"><MoneyInput value={d.gastos.gestoria} onChange={set('gastos', 'gestoria')} /></Field>
@@ -87,6 +111,7 @@ export function Compra() {
               <Field label="Importe"><MoneyInput value={d.hipoteca.importe} onChange={set('hipoteca', 'importe')} /></Field>
               <Field label="Plazo"><NumberInput value={d.hipoteca.plazoAnios} onChange={set('hipoteca', 'plazoAnios')} suffix="años" /></Field>
               <Field label="TIN anual"><NumberInput value={d.hipoteca.tinPct} onChange={set('hipoteca', 'tinPct')} suffix="%" /></Field>
+              {recibido(d.hipoteca.recibida, set('hipoteca', 'recibida'), 'el banco lo entregue en la escritura')}
               <div className="field">
                 <span>Cuota mensual (PMT)</span>
                 <div className="computed"><span>calculada</span><b>{fmtEur(cuota)}</b></div>
@@ -106,7 +131,8 @@ export function Compra() {
           <section className="card">
             <div className="card-head"><h2>Préstamo familiar</h2></div>
             <div className="form">
-              <Field label="Importe recibido"><MoneyInput value={d.familiar.importe} onChange={set('familiar', 'importe')} /></Field>
+              <Field label="Importe"><MoneyInput value={d.familiar.importe} onChange={set('familiar', 'importe')} /></Field>
+              {recibido(d.familiar.recibido, set('familiar', 'recibido'), 'te lo hayan dado')}
               <Field label="Cuota mensual de devolución"><MoneyInput value={d.familiar.cuota} onChange={set('familiar', 'cuota')} /></Field>
               <Field label="Interés (opcional)" hint="0 si no hay interés formal">
                 <NumberInput value={d.familiar.tinPct} onChange={set('familiar', 'tinPct')} suffix="%" />
@@ -132,6 +158,9 @@ export function Compra() {
             </span>
           </div>
           <div className="form">
+            <Field label="Inicio del alquiler" hint="Previsto o real. Antes de esta fecha el piso está en reforma">
+              <DateInput value={r.inicioAlquiler} onChange={set('recurrentes', 'inicioAlquiler')} />
+            </Field>
             <Field label="Alquiler mensual estimado"><MoneyInput value={r.alquiler} onChange={set('recurrentes', 'alquiler')} /></Field>
             <Field label="Cuota anual del edificio" hint={`${fmtEur(Math.round(r.edificioAnual / 12))}/mes`}>
               <MoneyInput value={r.edificioAnual} onChange={set('recurrentes', 'edificioAnual')} />

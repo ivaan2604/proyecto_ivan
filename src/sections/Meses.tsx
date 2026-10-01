@@ -42,7 +42,7 @@ export function Meses() {
     }
     if (modo === 'duplicar' && !last) return;
     update((x) => {
-      x.meses[nuevoKey] = modo === 'prevision' ? mesPrevision(x) : duplicarMes(x.meses[last!]);
+      x.meses[nuevoKey] = modo === 'prevision' ? mesPrevision(x, nuevoKey) : duplicarMes(x.meses[last!]);
     });
     setSel(nuevoKey);
     setAnio(nuevoAnio);
@@ -72,7 +72,7 @@ export function Meses() {
   return (
     <div className="page">
       <PageHead
-        folio="04"
+        folio="05"
         title="Meses e ingresos"
         subtitle="Tú decides cuándo crear cada mes. Los conceptos se rellenan al crearlo y luego son totalmente libres."
       />

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { eurRow, LineChart, ProfitBars } from '../charts/charts';
-import { avisos, lineaTiempo, mesesOrdenados, seguimientoGlobal, totalesGastos, totalesMes } from '../lib/derive';
+import { avisos, enReforma, lineaTiempo, seguimientoGlobal, totalesGastos, totalesMes } from '../lib/derive';
 import { fmtDate, fmtEur, fmtInt, fmtMonthKey } from '../lib/format';
 import { useData } from '../store';
 import { IconArrow } from '../ui/icons';
@@ -13,12 +13,16 @@ export function Resumen() {
   const g = useMemo(() => totalesGastos(d), [d]);
   const av = useMemo(() => avisos(d), [d]);
   const hitos = useMemo(() => lineaTiempo(d), [d]);
-  const seg = useMemo(() => seguimientoGlobal(d, g.pagado), [d, g.pagado]);
-  const keys = mesesOrdenados(d);
+  const seg = useMemo(() => seguimientoGlobal(d), [d]);
+  const reforma = enReforma(d);
+  // Gráfica mes a mes: todos los meses; recuperación: solo los de alquiler (seg.serie)
+  const keys = Object.keys(d.meses).sort();
+  const keysAlquiler = seg.serie.map((p) => p.key);
   const pct = g.total ? g.pagado / g.total : 0;
-  const euros = Math.trunc(g.pagado / 100);
-  const cents = String(Math.abs(g.pagado % 100)).padStart(2, '0');
+  const euros = Math.trunc(seg.propio / 100);
+  const cents = String(Math.abs(seg.propio % 100)).padStart(2, '0');
   const financiado = d.hipoteca.importe + d.familiar.importe;
+  const recibido = g.pagado - seg.propio;
 
   return (
     <div className="page">
@@ -31,12 +35,16 @@ export function Resumen() {
             {fmtInt(euros)}
             <span className="cents">,{cents} €</span>
           </div>
-          <div className="sub">Suma de los gastos de compra marcados como pagados</div>
+          <div className="sub">
+            {recibido > 0
+              ? `Pagado ${fmtEur(g.pagado)} − ${fmtEur(recibido)} con dinero prestado`
+              : 'Gastos de compra pagados (aún no has marcado ningún préstamo como recibido)'}
+          </div>
           <div className="tilebar" role="progressbar" aria-valuenow={Math.round(pct * 100)} aria-valuemin={0} aria-valuemax={100}>
             <span style={{ width: `${pct * 100}%` }} />
           </div>
           <div className="tilebar-legend">
-            <span>{Math.round(pct * 100)} % del total previsto</span>
+            <span>Pagado el {Math.round(pct * 100)} % de la compra</span>
             <span className="num">{fmtEur(g.total)}</span>
           </div>
           <div className="hero-foot">
@@ -149,16 +157,31 @@ export function Resumen() {
         <div className="card-head">
           <h2 id="h-global">Seguimiento global y recuperación de la inversión</h2>
         </div>
+        {reforma && (
+          <p className="rent-warn" style={{ marginBottom: 14 }}>
+            En reforma: la recuperación empezará a contar con el primer alquiler ({fmtDate(d.recurrentes.inicioAlquiler)}).
+            Mientras tanto, lo que pagas cada mes se suma a lo invertido como coste de la espera.
+          </p>
+        )}
         <div className="stats" style={{ marginBottom: 18 }}>
+          <div className="stat">
+            <div className="k">Invertido</div>
+            <div className="v">{fmtEur(seg.invertido, { compact: true })}</div>
+            <div className="d">
+              {seg.costeEspera
+                ? `${fmtEur(seg.propio, { compact: true })} propio + ${fmtEur(seg.costeEspera, { compact: true })} espera`
+                : 'dinero propio'}
+            </div>
+          </div>
           <div className="stat">
             <div className="k">Ingresado</div>
             <div className="v">{fmtEur(seg.ingresado, { compact: true })}</div>
-            <div className="d">suma de todos los meses</div>
+            <div className="d">meses de alquiler</div>
           </div>
           <div className="stat">
             <div className="k">Gastado</div>
             <div className="v">{fmtEur(seg.gastado, { compact: true })}</div>
-            <div className="d">suma de todos los meses</div>
+            <div className="d">meses de alquiler</div>
           </div>
           <div className="stat">
             <div className="k">Beneficio acumulado</div>
@@ -174,14 +197,16 @@ export function Resumen() {
                 : seg.proyeccionKey
                   ? `≈ ${seg.proyeccionMeses} meses más · ${fmtMonthKey(seg.proyeccionKey)}`
                   : seg.invertido > 0
-                    ? keys.length
+                    ? keysAlquiler.length
                       ? 'Sin beneficio medio positivo aún'
-                      : 'Sin meses registrados'
+                      : reforma
+                        ? 'En reforma'
+                        : 'Sin meses de alquiler'
                     : 'Aún no hay nada aportado'}
             </div>
           </div>
         </div>
-        {keys.length > 0 ? (
+        {keysAlquiler.length > 0 ? (
           <LineChart
             ariaLabel="Beneficio acumulado frente a lo invertido"
             data={seg.serie.map((p) => ({
@@ -205,11 +230,12 @@ export function Resumen() {
             }
           />
         ) : (
-          <div className="empty">La gráfica aparecerá cuando registres meses de alquiler.</div>
+          <div className="empty">La gráfica aparecerá cuando registres meses de alquiler{reforma ? ', después de la reforma' : ''}.</div>
         )}
         <p className="muted" style={{ fontSize: 12.5, margin: '12px 0 0' }}>
-          «Invertido» es lo aportado de tu bolsillo (gastos de compra pagados). La proyección es lineal al
-          beneficio medio de los meses registrados.
+          «Invertido» es tu dinero propio (gastos de compra pagados menos lo pagado con los préstamos) más el
+          coste de la espera: el saldo de los meses anteriores al inicio del alquiler. La proyección es lineal al
+          beneficio medio de los meses de alquiler.
         </p>
       </section>
 

@@ -127,12 +127,13 @@ export function fromPrototype(p: Any): AppData {
   };
   d.hipoteca = {
     banco: str(dg.banco), viabilidadFecha: fecha(dg.hipotecaViabilidadFecha), importe: eur(dg.hipotecaImporte),
-    plazoAnios: Number(dg.hipotecaPlazo) || 0, tinPct: pct(dg.hipotecaTin), notas: str(dg.hipotecaEstado),
+    plazoAnios: Number(dg.hipotecaPlazo) || 0, tinPct: pct(dg.hipotecaTin), notas: str(dg.hipotecaEstado), recibida: false,
   };
   d.familiar = {
-    importe: eur(dg.prestamoPadresImporte), cuota: eur(dg.prestamoPadresCuota), tinPct: 0, notas: str(dg.prestamoPadresNotas),
+    importe: eur(dg.prestamoPadresImporte), cuota: eur(dg.prestamoPadresCuota), tinPct: 0, notas: str(dg.prestamoPadresNotas), recibido: false,
   };
   d.recurrentes = {
+    inicioAlquiler: '',
     alquiler: eur(dg.alquiler), edificioAnual: eur(dg.cuotaEdificioAnual), ibiAnual: eur(dg.ibiAnual),
     seguroHogarAnual: eur(dg.seguroHogarAnual), seguroVidaAnual: eur(dg.seguroVidaAnual),
     mantenimientoMensual: eur(dg.mantenimientoMensual),
@@ -142,6 +143,8 @@ export function fromPrototype(p: Any): AppData {
     const s = gbe[k];
     if (s) d.gastosBase[k] = { estado: est(s.estado), nota: str(pick(s, 'nota', 'notas')), fecha: fecha(s.fecha) };
   }
+  // El prototipo no distingue si los préstamos se recibieron: se deduce del resto del precio pagado
+  d.hipoteca.recibida = d.familiar.recibido = d.gastosBase.restoPrecio.estado === 'pagado';
   d.gastosExtra = arr(p.gastosExtra).map((x) => ({
     id: uid(),
     concepto: str(pick(x, 'concepto', 'nombre', 'name')),

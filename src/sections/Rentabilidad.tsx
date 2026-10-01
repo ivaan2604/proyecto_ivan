@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { rentabilidad } from '../lib/derive';
-import { fmtEur, fmtInt } from '../lib/format';
+import { fmtDate, fmtEur, fmtInt } from '../lib/format';
 import type { AppData } from '../lib/model';
 
 const pct = (v: number | null) => (v === null ? '—' : `${v.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %`);
@@ -109,7 +109,11 @@ export function PanelRentabilidad({ d }: { d: AppData }) {
           {r.beneficioAnual === null ? (
             <>
               <div className="rent-big">—</div>
-              <p className="rent-warn">Hace falta al menos un mes con datos en «Meses» para calcularla.</p>
+              <p className="rent-warn">
+                {r.enReforma
+                  ? `En reforma: se calculará con el primer mes de alquiler (${fmtDate(d.recurrentes.inicioAlquiler)}).`
+                  : 'Hace falta al menos un mes de alquiler con datos en «Meses» para calcularla.'}
+              </p>
             </>
           ) : (
             <>
@@ -125,10 +129,13 @@ export function PanelRentabilidad({ d }: { d: AppData }) {
             k={r.proyectado ? 'Beneficio neto anual (proyectado)' : 'Beneficio neto últimos 12 meses'}
             v={r.beneficioAnual === null ? '—' : fmtEur(r.beneficioAnual, { sign: true })}
           />
+          <Fila k="Dinero propio" v={fmtEur(r.dineroPropio)} />
+          {r.costeEspera !== 0 && <Fila k="Coste de la espera (meses de reforma)" v={fmtEur(r.costeEspera)} />}
           <Fila k="Capital propio invertido" v={fmtEur(r.capitalPropio)} strong />
           <p className="rent-note">
-            Real, con los meses registrados hasta hoy (beneficio después de cuotas y gastos). El capital
-            propio es lo aportado de tu bolsillo, igual que en la recuperación de la inversión.
+            Real, con los meses de alquiler registrados hasta hoy (beneficio después de cuotas y gastos). El
+            dinero propio es lo pagado de la compra menos lo pagado con los préstamos; la espera es el saldo de
+            los meses anteriores al alquiler. Es lo mismo que «Invertido» en la recuperación.
           </p>
         </div>
       </div>

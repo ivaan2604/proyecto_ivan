@@ -1881,3 +1881,54 @@ table.ledger {
   font-size: 12px;
   color: var(--ink-2);
 }
+
+/* ───────────── Reforma ───────────── */
+.partida-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 170px auto;
+  gap: 12px;
+  align-items: end;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.partida-head > .input,
+.partida-head input[aria-label='Partida'] {
+  font-weight: 600;
+}
+.partida-presu {
+  margin: 0;
+}
+.partida-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-top: 1px solid var(--line);
+}
+.partida-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 220px;
+  flex: 1;
+  max-width: 420px;
+  font-size: 13px;
+}
+.partida-progress .tilebar {
+  margin: 0;
+}
+@media (max-width: 720px) {
+  .partida-head {
+    grid-template-columns: 1fr auto;
+  }
+  .partida-head .segmented {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+  .partida-presu {
+    grid-column: 1 / -1;
+    order: 4;
+  }
+}
