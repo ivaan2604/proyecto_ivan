@@ -25,7 +25,7 @@ export function Notas() {
 
   return (
     <div className="page">
-      <PageHead folio="07" title="Notas" subtitle="Llamadas, dudas, lo que dijo el banco… todo lo que no encaja en otra parte." />
+      <PageHead folio="08" title="Notas" subtitle="Llamadas, dudas, lo que dijo el banco… todo lo que no encaja en otra parte." />
 
       <section className="card no-print" style={{ marginBottom: 18 }}>
         <div className="form note-form">

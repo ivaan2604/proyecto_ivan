@@ -1,11 +1,12 @@
 import { useMemo } from 'react';
 import { totalesGastos } from '../lib/derive';
-import { fmtEur, todayISO } from '../lib/format';
+import { fmtDate, fmtEur, todayISO } from '../lib/format';
+import { go } from '../router';
 import { uid, type BaseKey, type Estado } from '../lib/model';
 import { update, useData } from '../store';
 import { useDialogs } from '../ui/dialogs';
 import { DateInput, EstadoToggle, MoneyInput, TextInput } from '../ui/fields';
-import { IconPlus, IconTrash } from '../ui/icons';
+import { IconArrow, IconPlus, IconTrash } from '../ui/icons';
 import { PageHead } from '../ui/layout';
 
 export function Gastos() {
@@ -73,7 +74,25 @@ export function Gastos() {
               </tr>
             </thead>
             <tbody>
-              {t.filas.map((f) => (
+              {t.filas.map((f) =>
+                f.reforma ? (
+                  <tr key={f.key} className="derived">
+                    <td className="full" style={{ minWidth: 190 }}>
+                      <b>{f.concepto}</b>
+                    </td>
+                    <td data-label="Fecha">{f.fecha ? fmtDate(f.fecha) : <span className="muted">—</span>}</td>
+                    <td className="amount" data-label="Importe">{fmtEur(f.importe)}</td>
+                    <td data-label="Estado">
+                      <span className={`chip ${f.estado === 'pagado' ? 'pos' : 'ochre'}`}>{f.estado === 'pagado' ? 'Pagado' : 'Pendiente'}</span>
+                    </td>
+                    <td data-label="Notas" className="muted">{f.nota || '—'}</td>
+                    <td className="row-actions">
+                      <button className="icon-btn" aria-label="Editar en Reforma" title="Editar en Reforma" onClick={() => go('reforma')}>
+                        <IconArrow />
+                      </button>
+                    </td>
+                  </tr>
+                ) : (
                 <tr key={f.key}>
                   <td className="full" data-label={f.base ? undefined : 'Concepto'} style={{ minWidth: 190 }}>
                     {f.base ? (
@@ -106,7 +125,8 @@ export function Gastos() {
                     )}
                   </td>
                 </tr>
-              ))}
+                ),
+              )}
             </tbody>
           </table>
         </div>
@@ -127,7 +147,8 @@ export function Gastos() {
       </section>
       <p className="muted" style={{ fontSize: 13 }}>
         La fecha de los conceptos base se toma de los hitos (señal, arras, escritura, tasación) salvo que pongas
-        una aquí. Para cambiar un importe base, edítalo en «Compra y financiación».
+        una aquí. Para cambiar un importe base, edítalo en «Compra y financiación». Si desglosas la reforma en
+        partidas, sus pagos aparecen aquí y se editan en «Reforma».
       </p>
     </div>
   );

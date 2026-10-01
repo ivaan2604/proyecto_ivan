@@ -25,11 +25,11 @@ export const appDataSchema = z.object({
   }),
   hipoteca: z.object({
     banco: z.string(), viabilidadFecha: fecha, importe: cents, plazoAnios: z.number().min(0),
-    tinPct: z.number(), notas: z.string(),
+    tinPct: z.number(), notas: z.string(), recibida: z.boolean(),
   }),
-  familiar: z.object({ importe: cents, cuota: cents, tinPct: z.number(), notas: z.string() }),
+  familiar: z.object({ importe: cents, cuota: cents, tinPct: z.number(), notas: z.string(), recibido: z.boolean() }),
   recurrentes: z.object({
-    alquiler: cents, edificioAnual: cents, ibiAnual: cents, seguroHogarAnual: cents,
+    inicioAlquiler: fecha, alquiler: cents, edificioAnual: cents, ibiAnual: cents, seguroHogarAnual: cents,
     seguroVidaAnual: cents, mantenimientoMensual: cents,
   }),
   gastosBase: z.object(
@@ -41,6 +41,17 @@ export const appDataSchema = z.object({
   gastosExtra: z.array(
     z.object({ id: z.string(), concepto: z.string(), fecha, importe: cents, estado, nota: z.string() }),
   ),
+  reforma: z.object({
+    partidas: z.array(
+      z.object({
+        id: z.string(),
+        concepto: z.string(),
+        presupuesto: cents.min(0),
+        tipo: z.enum(['mejora', 'reparacion']),
+        pagos: z.array(z.object({ id: z.string(), fecha, importe: cents, estado, factura: z.string(), nota: z.string() })),
+      }),
+    ),
+  }),
   meses: z.record(
     z.string().regex(/^\d{4}-\d{2}$/),
     z.object({ ingresos: z.array(linea), gastos: z.array(linea) }),
@@ -66,18 +77,22 @@ export interface BackupFile {
 export function validateAppData(input: unknown): AppData {
   const base = emptyData();
   const obj = (input ?? {}) as Partial<AppData>;
+  // Datos anteriores a «financiación recibida»: si el resto del precio está pagado, se entiende
+  // que los préstamos ya se recibieron (se pagó con ellos en la escritura).
+  const restoPagado = obj.gastosBase?.restoPrecio?.estado === 'pagado';
   const merged = {
     ...base,
     ...obj,
     piso: { ...base.piso, ...obj.piso },
     hitos: { ...base.hitos, ...obj.hitos },
     gastos: { ...base.gastos, ...obj.gastos },
-    hipoteca: { ...base.hipoteca, ...obj.hipoteca },
-    familiar: { ...base.familiar, ...obj.familiar },
+    hipoteca: { ...base.hipoteca, recibida: restoPagado, ...obj.hipoteca },
+    familiar: { ...base.familiar, recibido: restoPagado, ...obj.familiar },
     recurrentes: { ...base.recurrentes, ...obj.recurrentes },
     gastosBase: Object.fromEntries(
       BASE_KEYS.map((k) => [k, { ...base.gastosBase[k], ...(obj.gastosBase?.[k] ?? {}) }]),
     ),
+    reforma: { ...base.reforma, ...obj.reforma },
     cuotas: { ...base.cuotas, ...obj.cuotas },
     meta: { ...base.meta, ...obj.meta },
   };

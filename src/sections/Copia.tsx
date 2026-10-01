@@ -106,7 +106,7 @@ export function Copia({ theme, setTheme }: { theme: Theme; setTheme: (t: Theme) 
 
   return (
     <div className="page">
-      <PageHead folio="08" title="Copia y ajustes" subtitle="Sincronización entre dispositivos, copias de seguridad, historial de versiones y apariencia." />
+      <PageHead folio="09" title="Copia y ajustes" subtitle="Sincronización entre dispositivos, copias de seguridad, historial de versiones y apariencia." />
 
       <div className="grid g-2 stagger">
         <section className="card">
