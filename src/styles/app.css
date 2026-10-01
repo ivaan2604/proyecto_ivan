@@ -763,7 +763,8 @@ textarea.input {
   position: relative;
 }
 .affix .input {
-  padding-right: 28px;
+  /* hueco para el sufijo: ~28px con «€» o «%», más con «años» */
+  padding-right: calc(19px + var(--affix-len, 1) * 0.62em);
 }
 .affix::after {
   content: attr(data-suffix);
@@ -1742,7 +1743,7 @@ table.ledger {
   align-items: start;
 }
 .ledger .affix .input {
-  padding-right: 26px;
+  padding-right: calc(17px + var(--affix-len, 1) * 0.62em);
 }
 @media (max-width: 860px) {
   .toasts {
