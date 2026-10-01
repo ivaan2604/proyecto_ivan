@@ -16,7 +16,7 @@ import { engine } from './sync/engine';
 import { cloudEnabled } from './sync/remote';
 import { useTheme } from './theme';
 import { DialogProvider, useDialogs } from './ui/dialogs';
-import { IconBank, IconCalendar, IconHome, IconMore, IconReceipt, TileMark } from './ui/icons';
+import { AzaharMark, IconBank, IconCalendar, IconHome, IconMore, IconReceipt } from './ui/icons';
 import { ConflictModal, SignInForm, SyncPill } from './ui/sync';
 
 export default function App() {
@@ -39,7 +39,7 @@ function Brand({ compact }: { compact?: boolean }) {
   return (
     <div className="brand-mark">
       <span className="brand-tile">
-        <TileMark size={compact ? 18 : 24} />
+        <AzaharMark size={compact ? 20 : 26} />
       </span>
       <div>
         <div className="brand-title">Piso Castellón</div>
@@ -173,7 +173,10 @@ function Welcome() {
   return (
     <div className="welcome">
       <div className="welcome-card">
-        <div className="welcome-tiles" />
+        <div className="welcome-tiles">
+          <AzaharMark className="welcome-blossom" size={220} />
+          <AzaharMark className="welcome-mark" size={44} />
+        </div>
         <div className="welcome-body">
           <div className="eyebrow">Castellón de la Plana</div>
           <h1>Las cuentas del piso, en orden.</h1>

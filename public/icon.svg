@@ -1,9 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="0" fill="#1f4fa0"/>
-  <rect x="40" y="40" width="432" height="432" rx="36" fill="none" stroke="#f2ede3" stroke-width="14"/>
-  <g fill="none" stroke="#f2ede3" stroke-width="22" stroke-linejoin="round" transform="translate(256 256) scale(7.4) translate(-24 -24)">
-    <path d="M24 4c6 8 6 12 0 20-6-8-6-12 0-20zM24 44c-6-8-6-12 0-20 6 8 6 12 0 20zM4 24c8-6 12-6 20 0-8 6-12 6-20 0zM44 24c-8 6-12 6-20 0 8-6 12-6 20 0z" stroke-width="2.6"/>
-    <circle cx="24" cy="24" r="3" stroke-width="2.6"/>
+  <defs>
+    <radialGradient id="g" cx="0.28" cy="0.22" r="1">
+      <stop offset="0" stop-color="#24543a"/>
+      <stop offset="0.55" stop-color="#12301f"/>
+      <stop offset="1" stop-color="#0b2015"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="1" cy="0" r="0.75">
+      <stop offset="0" stop-color="#f28c3b" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#f28c3b" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#g)"/>
+  <rect width="512" height="512" fill="url(#glow)"/>
+  <g transform="translate(256 256) scale(6.2) translate(-24 -24)" fill="#f6f1e2">
+    <path d="M24 23C19.5 18 19 10.5 24 5.5 29 10.5 28.5 18 24 23Z"/>
+    <path transform="rotate(72 24 24)" d="M24 23C19.5 18 19 10.5 24 5.5 29 10.5 28.5 18 24 23Z"/>
+    <path transform="rotate(144 24 24)" d="M24 23C19.5 18 19 10.5 24 5.5 29 10.5 28.5 18 24 23Z"/>
+    <path transform="rotate(216 24 24)" d="M24 23C19.5 18 19 10.5 24 5.5 29 10.5 28.5 18 24 23Z"/>
+    <path transform="rotate(288 24 24)" d="M24 23C19.5 18 19 10.5 24 5.5 29 10.5 28.5 18 24 23Z"/>
+    <circle cx="24" cy="24" r="4.2" fill="#e2701f"/>
   </g>
-  <circle cx="256" cy="256" r="10" fill="#c58b1c"/>
 </svg>

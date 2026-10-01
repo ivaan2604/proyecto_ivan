@@ -1,111 +1,8 @@
 /* ════════════════════════════════════════════════════════════════════
-   Piso Castellón — identidad visual
-   «Libro de cuentas y azulejo»: papel cálido, tinta, azul cobalto de la
-   cerámica de Castellón y terracota. Fraunces para cifras y títulos,
-   Figtree para texto, IBM Plex Mono para columnas de importes.
+   Piso Castellón — estructura y componentes base.
+   La paleta, la tipografía y el movimiento de la identidad «Azahar»
+   están en identidad.css (se carga después y define todos los tokens).
    ════════════════════════════════════════════════════════════════════ */
-
-:root {
-  --paper: #f2ede3;
-  --surface: #fbf8f2;
-  --surface-2: #f0e9dc;
-  --surface-3: #e7decd;
-  --ink: #1d2427;
-  --ink-2: #485256;
-  --muted: #7b8386;
-  --line: #ddd3c1;
-  --line-strong: #c8bca6;
-  --cobalt: #1f4fa0;
-  --cobalt-ink: #1a4389;
-  --cobalt-soft: #dde5f2;
-  --terracotta: #b9492a;
-  --terracotta-soft: #f5ddd2;
-  --ochre: #c58b1c;
-  --ochre-soft: #f6e8c8;
-  --pos: #0e8a6e;
-  --pos-ink: #0b6f58;
-  --pos-soft: #d6eee6;
-  --neg: #c8432b;
-  --neg-ink: #a8361f;
-  --neg-soft: #f7dcd5;
-  --chart-blue: #1f4fa0;
-  --hero-bg: #1d2427;
-  --hero-ink: #f2ede3;
-  --grid: #e3dacb;
-  --shadow: 0 1px 0 rgba(60, 40, 10, 0.04), 0 8px 24px -12px rgba(60, 40, 10, 0.18);
-  --radius: 14px;
-  --radius-sm: 9px;
-  --f-display: 'Fraunces Variable', 'Iowan Old Style', Georgia, serif;
-  --f-body: 'Figtree Variable', 'Segoe UI', system-ui, sans-serif;
-  --f-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
-  --tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%231f4fa0' stroke-width='1.4'%3E%3Cpath d='M24 4c6 8 6 12 0 20-6-8-6-12 0-20zM24 44c-6-8-6-12 0-20 6 8 6 12 0 20zM4 24c8-6 12-6 20 0-8 6-12 6-20 0zM44 24c-8 6-12 6-20 0 8-6 12-6 20 0z'/%3E%3Ccircle cx='24' cy='24' r='3'/%3E%3Cpath d='M0 0l8 8M48 0l-8 8M0 48l8-8M48 48l-8-8' /%3E%3C/g%3E%3C/svg%3E");
-  color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --paper: #0e1316;
-    --surface: #151c20;
-    --surface-2: #1b242a;
-    --surface-3: #243038;
-    --ink: #ece6da;
-    --ink-2: #bdb6a9;
-    --muted: #8a9091;
-    --line: #29343a;
-    --line-strong: #3a4850;
-    --cobalt: #7fa6e6;
-    --cobalt-ink: #a9c3ef;
-    --cobalt-soft: #1c2b44;
-    --terracotta: #e07a55;
-    --terracotta-soft: #3a231b;
-    --ochre: #e0b04f;
-    --ochre-soft: #352a14;
-    --pos: #33a383;
-    --pos-ink: #6fd0b2;
-    --pos-soft: #14302a;
-    --neg: #e8664a;
-    --neg-ink: #f59a85;
-    --neg-soft: #3a1d17;
-    --chart-blue: #5f8cd8;
-    --hero-bg: #17305c;
-    --hero-ink: #f2ede3;
-    --grid: #253036;
-    --shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 12px 28px -14px rgba(0, 0, 0, 0.6);
-    --tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%237fa6e6' stroke-width='1.4'%3E%3Cpath d='M24 4c6 8 6 12 0 20-6-8-6-12 0-20zM24 44c-6-8-6-12 0-20 6 8 6 12 0 20zM4 24c8-6 12-6 20 0-8 6-12 6-20 0zM44 24c-8 6-12 6-20 0 8-6 12-6 20 0z'/%3E%3Ccircle cx='24' cy='24' r='3'/%3E%3Cpath d='M0 0l8 8M48 0l-8 8M0 48l8-8M48 48l-8-8' /%3E%3C/g%3E%3C/svg%3E");
-    color-scheme: dark;
-  }
-}
-:root[data-theme='dark'] {
-  --paper: #0e1316;
-  --surface: #151c20;
-  --surface-2: #1b242a;
-  --surface-3: #243038;
-  --ink: #ece6da;
-  --ink-2: #bdb6a9;
-  --muted: #8a9091;
-  --line: #29343a;
-  --line-strong: #3a4850;
-  --cobalt: #7fa6e6;
-  --cobalt-ink: #a9c3ef;
-  --cobalt-soft: #1c2b44;
-  --terracotta: #e07a55;
-  --terracotta-soft: #3a231b;
-  --ochre: #e0b04f;
-  --ochre-soft: #352a14;
-  --pos: #33a383;
-  --pos-ink: #6fd0b2;
-  --pos-soft: #14302a;
-  --neg: #e8664a;
-  --neg-ink: #f59a85;
-  --neg-soft: #3a1d17;
-  --chart-blue: #5f8cd8;
-  --hero-bg: #17305c;
-  --hero-ink: #f2ede3;
-  --grid: #253036;
-  --shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 12px 28px -14px rgba(0, 0, 0, 0.6);
-  --tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='none' stroke='%237fa6e6' stroke-width='1.4'%3E%3Cpath d='M24 4c6 8 6 12 0 20-6-8-6-12 0-20zM24 44c-6-8-6-12 0-20 6 8 6 12 0 20zM4 24c8-6 12-6 20 0-8 6-12 6-20 0zM44 24c-8 6-12 6-20 0 8-6 12-6 20 0z'/%3E%3Ccircle cx='24' cy='24' r='3'/%3E%3Cpath d='M0 0l8 8M48 0l-8 8M0 48l8-8M48 48l-8-8' /%3E%3C/g%3E%3C/svg%3E");
-  color-scheme: dark;
-}
 
 /* ───────────── Base ───────────── */
 *,
@@ -209,15 +106,6 @@ a {
   padding: 26px 22px 22px;
   border-bottom: 1px solid var(--line);
   overflow: hidden;
-}
-.brand::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: var(--tile);
-  background-size: 34px 34px;
-  opacity: 0.12;
-  mask-image: linear-gradient(120deg, #000 10%, transparent 75%);
 }
 .brand-mark {
   position: relative;
@@ -421,56 +309,6 @@ a {
   animation-delay: 0.25s;
 }
 
-/* Héroe: dinero aportado */
-.hero {
-  position: relative;
-  overflow: hidden;
-  background: var(--hero-bg);
-  color: var(--hero-ink);
-  border: none;
-  padding: 26px 28px 24px;
-}
-.hero::after {
-  content: '';
-  position: absolute;
-  right: -40px;
-  top: -40px;
-  width: 260px;
-  height: 260px;
-  background-image: var(--tile);
-  background-size: 52px 52px;
-  opacity: 0.22;
-  filter: brightness(1.8) saturate(0.7);
-  transform: rotate(8deg);
-  mask-image: radial-gradient(circle at 70% 30%, #000 20%, transparent 70%);
-}
-.hero .label {
-  font-family: var(--f-mono);
-  font-size: 11.5px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  opacity: 0.7;
-}
-.hero .big {
-  font-family: var(--f-display);
-  font-size: clamp(44px, 7vw, 72px);
-  line-height: 1;
-  font-weight: 450;
-  letter-spacing: -0.03em;
-  margin: 10px 0 4px;
-  font-variation-settings: 'opsz' 144, 'SOFT' 0;
-  font-variant-numeric: tabular-nums lining-nums;
-}
-.hero .big .cents {
-  font-size: 0.42em;
-  opacity: 0.6;
-  margin-left: 2px;
-  letter-spacing: 0;
-}
-.hero .sub {
-  opacity: 0.75;
-  font-size: 14px;
-}
 .tilebar {
   position: relative;
   margin-top: 22px;

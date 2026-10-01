@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type CSSProperties } from 'react';
 import { totalesGastos } from '../lib/derive';
 import { fmtDate, fmtEur, todayISO } from '../lib/format';
 import { go } from '../router';
@@ -8,6 +8,7 @@ import { useDialogs } from '../ui/dialogs';
 import { DateInput, EstadoToggle, MoneyInput, TextInput } from '../ui/fields';
 import { IconArrow, IconPlus, IconTrash } from '../ui/icons';
 import { PageHead } from '../ui/layout';
+import { Counter } from '../ui/motion';
 
 export function Gastos() {
   const d = useData();
@@ -137,11 +138,18 @@ export function Gastos() {
           </div>
           <div className="t">
             <span>Pagado</span>
-            <b className="pos">{fmtEur(t.pagado)}</b>
+            <b className="pos">
+              <Counter id="gastos-pagado" duration={700} value={t.pagado} format={(v) => fmtEur(v)} />
+            </b>
           </div>
           <div className="t">
             <span>Pendiente</span>
-            <b className={t.pendiente ? 'neg' : undefined}>{fmtEur(t.pendiente)}</b>
+            <b className={t.pendiente ? 'neg' : undefined}>
+              <Counter id="gastos-pendiente" duration={700} value={t.pendiente} format={(v) => fmtEur(v)} />
+            </b>
+          </div>
+          <div className="meter totals-meter" role="progressbar" aria-label="Gastos de compra pagados" aria-valuenow={Math.round((t.total ? t.pagado / t.total : 0) * 100)} aria-valuemin={0} aria-valuemax={100}>
+            <span style={{ '--p': t.total ? t.pagado / t.total : 0 } as CSSProperties} />
           </div>
         </div>
       </section>

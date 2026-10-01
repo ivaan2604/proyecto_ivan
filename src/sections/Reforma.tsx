@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type CSSProperties } from 'react';
 import { totalesReforma } from '../lib/derive';
 import { fmtEur, todayISO } from '../lib/format';
 import { uid, type PagoReforma, type PartidaReforma, type TipoObra } from '../lib/model';
@@ -7,6 +7,7 @@ import { useDialogs } from '../ui/dialogs';
 import { DateInput, EstadoToggle, MoneyInput, Segmented, TextInput } from '../ui/fields';
 import { IconPlus, IconTrash } from '../ui/icons';
 import { PageHead } from '../ui/layout';
+import { Counter } from '../ui/motion';
 
 const TIPOS: { value: TipoObra; label: string }[] = [
   { value: 'mejora', label: 'Mejora' },
@@ -108,7 +109,9 @@ export function Reforma() {
           </div>
           <div className="stat">
             <div className="k">Pagado</div>
-            <div className="v pos">{fmtEur(t.pagado, { compact: true })}</div>
+            <div className="v pos">
+              <Counter id="reforma-pagado" duration={700} value={t.pagado} format={(v) => fmtEur(v, { compact: true })} />
+            </div>
             <div className="d">{t.previsto ? `${Math.round((t.pagado / t.previsto) * 100)} % del coste previsto` : '—'}</div>
           </div>
           <div className="stat">
@@ -194,8 +197,8 @@ export function Reforma() {
                   <IconPlus /> Añadir pago
                 </button>
                 <div className="partida-progress">
-                  <div className="tilebar" role="progressbar" aria-valuenow={Math.round(pct * 100)} aria-valuemin={0} aria-valuemax={100}>
-                    <span style={{ width: `${pct * 100}%` }} />
+                  <div className={`meter partida-meter${tp.desviacion > 0 ? ' over' : ''}`} role="progressbar" aria-label={`Pagado de ${p.concepto}`} aria-valuenow={Math.round(pct * 100)} aria-valuemin={0} aria-valuemax={100}>
+                    <span style={{ '--p': pct } as CSSProperties} />
                   </div>
                   <span className="muted">
                     Pagado <b>{fmtEur(tp.pagado)}</b> de {fmtEur(tp.previsto)}

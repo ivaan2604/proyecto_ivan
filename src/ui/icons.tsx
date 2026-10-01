@@ -34,3 +34,18 @@ export const TileMark = ({ size = 22 }: { size?: number }) => (
     <circle cx="24" cy="24" r="3" />
   </svg>
 );
+
+/** Flor de azahar (la flor del naranjo de la Plana): cinco pétalos y el centro. */
+export const AzaharMark = ({ size = 22, className }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden className={className}>
+    <g className="petals">
+      {[0, 72, 144, 216, 288].map((a) => (
+        <path key={a} transform={`rotate(${a} 24 24)`} d="M24 23C19.5 18 19 10.5 24 5.5 29 10.5 28.5 18 24 23Z" />
+      ))}
+    </g>
+    <circle className="core" cx="24" cy="24" r="4.2" />
+  </svg>
+);
+
+export const IconTrendUp = (p: P) => (<svg {...base(p)}><path d="m4 16 6-6 4 4 6-6" /><path d="M15 8h5v5" /></svg>);
+export const IconTrendDown = (p: P) => (<svg {...base(p)}><path d="m4 8 6 6 4-4 6 6" /><path d="M15 16h5v-5" /></svg>);
