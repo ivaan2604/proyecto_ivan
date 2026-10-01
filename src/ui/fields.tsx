@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { centsToInput, parseMoney, parsePct } from '../lib/format';
 import type { Estado } from '../lib/model';
 import { IconCheck } from './icons';
@@ -23,6 +23,11 @@ interface MoneyProps {
   suffix?: string;
 }
 
+/** Reserva a la derecha del campo el hueco que ocupa el sufijo (€, %, años…). */
+function affixStyle(suffix: string | undefined): CSSProperties {
+  return { '--affix-len': String(suffix?.length ?? 0) } as CSSProperties;
+}
+
 export function MoneyInput({ value, onChange, allowNegative, placeholder = '0,00', ariaLabel, suffix = '€' }: MoneyProps) {
   const s = useDraft(value, centsToInput);
   const commit = () => {
@@ -38,7 +43,7 @@ export function MoneyInput({ value, onChange, allowNegative, placeholder = '0,00
     s.setDraft(centsToInput(v));
   };
   return (
-    <span className="affix" data-suffix={suffix}>
+    <span className="affix" data-suffix={suffix} style={affixStyle(suffix)}>
       <input
         className={`input money${s.invalid ? ' invalid' : ''}`}
         inputMode="decimal"
@@ -116,7 +121,7 @@ export function NumberInput({
     if (v !== value) onChange(v);
   };
   return (
-    <span className="affix" data-suffix={suffix ?? ''}>
+    <span className="affix" data-suffix={suffix ?? ''} style={affixStyle(suffix ?? '')}>
       <input
         className={`input numeric${s.invalid ? ' invalid' : ''}`}
         inputMode="decimal"
