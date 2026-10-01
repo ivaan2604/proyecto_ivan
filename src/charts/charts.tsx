@@ -105,7 +105,13 @@ export function ProfitBars({ data, height = 220 }: { data: BarDatum[]; height?: 
             : `M${x0},${y0} V${y0 + h - r} Q${x0},${y0 + h} ${x0 + r},${y0 + h} H${x0 + bw - r} Q${x0 + bw},${y0 + h} ${x0 + bw},${y0 + h - r} V${y0} Z`;
           return (
             <g key={d.key}>
-              <path d={path} fill={pos ? 'var(--pos)' : 'var(--neg)'} opacity={hover === null || hover === i ? 1 : 0.45} />
+              <path
+                className={`bar ${pos ? 'up' : 'down'}`}
+                style={{ '--i': Math.min(i, 24) } as React.CSSProperties}
+                d={path}
+                fill={pos ? 'var(--pos)' : 'var(--neg)'}
+                opacity={hover === null || hover === i ? 1 : 0.4}
+              />
               {i % every === 0 && (
                 <text className="axis-label" x={cx} y={height - 8} textAnchor="middle">
                   {d.label}
@@ -207,17 +213,19 @@ export function LineChart({
           </g>
         ))}
         {reference && reference.value > 0 && (
-          <g>
+          <g className="line-ref">
             <line className="ref-line" x1={pad.l} x2={width - pad.r} y1={y(reference.value)} y2={y(reference.value)} />
             <text className="ref-label" x={pad.l + 4} y={y(reference.value) - 6} textAnchor="start">
               {reference.label}
             </text>
           </g>
         )}
-        {area && pts.length > 1 && <path d={areaPath} fill={`url(#${gid})`} />}
-        {pts.length > 1 && <path d={line} fill="none" stroke={color} strokeWidth={2} strokeLinejoin="round" />}
+        {area && pts.length > 1 && <path className="line-area" d={areaPath} fill={`url(#${gid})`} />}
+        {pts.length > 1 && (
+          <path className="line-path" pathLength={1} d={line} fill="none" stroke={color} strokeWidth={2.25} strokeLinejoin="round" strokeLinecap="round" />
+        )}
         {projection && pts.length > 0 && (
-          <g>
+          <g className="line-proj">
             <path
               d={`M${pts[pts.length - 1][0]},${pts[pts.length - 1][1]} L${x(steps)},${y(projection.value)}`}
               fill="none"

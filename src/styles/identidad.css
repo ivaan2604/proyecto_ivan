@@ -1,0 +1,1121 @@
+/* ════════════════════════════════════════════════════════════════════
+   Piso Castellón — «Azahar»
+   Identidad pensada para esto: la huerta de naranjos de la Plana.
+   · Verde hoja de naranjo para el dinero que entra y crece.
+   · Coral granada para el que sale (validado frente a daltonismo).
+   · Naranja de Castellón solo como color de marca: nunca en datos,
+     porque se confundiría con el coral.
+   · Miel para lo pendiente (siempre con texto o icono, nunca solo color).
+   Tipografía: Bricolage Grotesque (títulos y cifras grandes) +
+   Atkinson Hyperlegible Next (texto e importes, cifras inequívocas).
+   ════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Superficies: cal y piedra, con un punto de verde */
+  --paper: #edece2;
+  --surface: #fbfaf4;
+  --surface-2: #f3f2e9;
+  --surface-3: #e6e4d7;
+  --ink: #13241b;
+  --ink-2: #3d4b42;
+  --muted: #6c776f;
+  --line: #dcdacb;
+  --line-strong: #c3c0ad;
+
+  /* Marca */
+  --brand: #e2701f;
+  --brand-ink: #a9500f;
+  --brand-soft: #fbe4d0;
+
+  /* Significado (marcas de datos validadas: ΔE CVD 11,3) */
+  --pos: #1d6835;
+  --pos-ink: #17572b;
+  --pos-soft: #dcebdc;
+  --neg: #df676b;
+  --neg-ink: #ad3439;
+  --neg-soft: #f8dfdc;
+  --pend: #b9861a;
+  --pend-ink: #855f0c;
+  --pend-soft: #f3e7c4;
+  --data: #24533f;
+
+  /* Héroe: vidriado verde oscuro */
+  --hero-a: #24543a;
+  --hero-b: #12301f;
+  --hero-c: #0b2015;
+  --hero-ink: #f4f1e4;
+  --hero-glow: rgba(242, 140, 59, 0.28);
+
+  --grid: #e2e0d3;
+  --radius: 18px;
+  --radius-sm: 12px;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --f-display: 'Bricolage Grotesque Variable', 'Avenir Next Condensed', 'Arial Narrow', sans-serif;
+  --f-body: 'Atkinson Hyperlegible Next Variable', 'Segoe UI', system-ui, sans-serif;
+  --f-mono: var(--f-body);
+  --furrow: rgba(19, 36, 27, 0.035);
+  --page-glow-1: rgba(226, 112, 31, 0.07);
+  --page-glow-2: rgba(29, 104, 53, 0.06);
+
+  /* Tokens antiguos que usan el resto de secciones, apuntando a la nueva paleta */
+  --cobalt: var(--brand-ink);
+  --cobalt-ink: var(--brand-ink);
+  --cobalt-soft: var(--brand-soft);
+  --terracotta: var(--brand-ink);
+  --terracotta-soft: var(--brand-soft);
+  --ochre: var(--pend);
+  --ochre-soft: var(--pend-soft);
+  --chart-blue: var(--data);
+  --hero-bg: var(--hero-b);
+  --shadow: none;
+  color-scheme: light;
+}
+
+/* Noche en el huerto: no es una inversión de colores, es otra luz */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: #0a1510;
+    --surface: #111f18;
+    --surface-2: #16271e;
+    --surface-3: #1f3529;
+    --ink: #e9efe4;
+    --ink-2: #b4c2b5;
+    --muted: #82948a;
+    --line: #213428;
+    --line-strong: #2f4a3a;
+    --brand: #f28c3b;
+    --brand-ink: #ffb27a;
+    --brand-soft: #3a2414;
+    --pos: #49ab64;
+    --pos-ink: #8ad8a0;
+    --pos-soft: #15301f;
+    --neg: #b94739;
+    --neg-ink: #f4937f;
+    --neg-soft: #3a1c17;
+    --pend: #e2b04a;
+    --pend-ink: #f0cb7a;
+    --pend-soft: #33290f;
+    --data: #9fd0b2;
+    --hero-a: #1d4630;
+    --hero-b: #0f2a1b;
+    --hero-c: #08170f;
+    --hero-glow: rgba(242, 140, 59, 0.2);
+    --grid: #1c2e23;
+    --furrow: rgba(159, 208, 178, 0.03);
+    --page-glow-1: rgba(242, 140, 59, 0.09);
+    --page-glow-2: rgba(73, 171, 100, 0.07);
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --paper: #0a1510;
+  --surface: #111f18;
+  --surface-2: #16271e;
+  --surface-3: #1f3529;
+  --ink: #e9efe4;
+  --ink-2: #b4c2b5;
+  --muted: #82948a;
+  --line: #213428;
+  --line-strong: #2f4a3a;
+  --brand: #f28c3b;
+  --brand-ink: #ffb27a;
+  --brand-soft: #3a2414;
+  --pos: #49ab64;
+  --pos-ink: #8ad8a0;
+  --pos-soft: #15301f;
+  --neg: #b94739;
+  --neg-ink: #f4937f;
+  --neg-soft: #3a1c17;
+  --pend: #e2b04a;
+  --pend-ink: #f0cb7a;
+  --pend-soft: #33290f;
+  --data: #9fd0b2;
+  --hero-a: #1d4630;
+  --hero-b: #0f2a1b;
+  --hero-c: #08170f;
+  --hero-glow: rgba(242, 140, 59, 0.2);
+  --grid: #1c2e23;
+  --furrow: rgba(159, 208, 178, 0.03);
+  --page-glow-1: rgba(242, 140, 59, 0.09);
+  --page-glow-2: rgba(73, 171, 100, 0.07);
+  color-scheme: dark;
+}
+
+/* ───────────── Base ───────────── */
+body {
+  font-family: var(--f-body);
+  /* cero sin barra: en columnas de importes llenas de ceros la barra recarga la lectura */
+  font-feature-settings: 'salt' 1;
+  font-size: 15.5px;
+  letter-spacing: 0.002em;
+  background:
+    radial-gradient(900px 600px at 105% -10%, var(--page-glow-1), transparent 60%),
+    radial-gradient(900px 700px at -10% 110%, var(--page-glow-2), transparent 60%),
+    var(--paper);
+  background-attachment: fixed;
+}
+body::before {
+  /* surcos de la huerta: líneas diagonales casi invisibles en lugar del grano de papel */
+  opacity: 1;
+  background-image: repeating-linear-gradient(135deg, var(--furrow) 0 1px, transparent 1px 22px);
+  background-size: auto;
+}
+h1,
+h2,
+h3 {
+  font-family: var(--f-display);
+  font-weight: 640;
+  font-stretch: 88%;
+  letter-spacing: -0.02em;
+  font-variation-settings: normal;
+}
+a {
+  color: var(--brand-ink);
+  text-underline-offset: 3px;
+}
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+.num {
+  font-family: var(--f-body);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+.pos {
+  color: var(--pos-ink);
+}
+.neg {
+  color: var(--neg-ink);
+}
+::selection {
+  background: var(--brand-soft);
+}
+
+/* ───────────── Marco: barra lateral ───────────── */
+.sidebar {
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
+  backdrop-filter: blur(6px);
+}
+.brand::before {
+  display: none;
+}
+.brand-tile {
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: radial-gradient(120% 120% at 30% 20%, var(--hero-a), var(--hero-c));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+.brand-tile .petals path {
+  fill: #f6f1e2;
+}
+.brand-tile .core {
+  fill: var(--brand);
+}
+.brand-title {
+  font-family: var(--f-display);
+  font-size: 21px;
+  font-weight: 720;
+  font-stretch: 82%;
+  letter-spacing: -0.025em;
+  font-variation-settings: normal;
+}
+.brand-sub {
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+}
+.nav a {
+  position: relative;
+  align-items: center;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+.nav a .folio {
+  font-family: var(--f-body);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 11px;
+}
+.nav a::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 9px;
+  bottom: 9px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--brand);
+  transform: scaleY(0);
+  transition: transform 220ms var(--ease-out);
+}
+.nav a[aria-current='page'] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px var(--line);
+}
+.nav a[aria-current='page']::before {
+  transform: scaleY(1);
+}
+.nav a[aria-current='page'] .folio {
+  color: var(--brand-ink);
+}
+@media (hover: hover) and (pointer: fine) {
+  .nav a:hover {
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+  }
+}
+
+/* ───────────── Cabecera de página ───────────── */
+.page-head {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 28px;
+}
+.eyebrow {
+  font-family: var(--f-body);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--brand-ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.eyebrow::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50% 50% 50% 0;
+  background: var(--brand);
+  transform: rotate(-45deg);
+}
+.page-head h1 {
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 720;
+  font-stretch: 80%;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+}
+
+/* ───────────── Tarjetas ───────────── */
+.card {
+  border-radius: var(--radius);
+  border-color: var(--line);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 55%, transparent);
+  padding: 22px 24px;
+}
+:root[data-theme='dark'] .card {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .card {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  }
+}
+.card-head h2 {
+  font-size: 19px;
+  font-weight: 680;
+  font-stretch: 86%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.card-head h2::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50% 50% 50% 0;
+  background: var(--brand);
+  transform: rotate(-45deg);
+  flex: none;
+}
+.card-head .hint {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* ───────────── Botones ───────────── */
+.btn,
+.icon-btn {
+  transition: transform 160ms var(--ease-out), background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+.btn:active,
+.icon-btn:active,
+.segmented button:active,
+.toggle:active {
+  transform: scale(0.97);
+}
+.btn {
+  border-radius: 12px;
+  font-weight: 650;
+}
+.btn.primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #1d1006;
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn.primary:hover {
+    background: color-mix(in srgb, var(--brand) 88%, #000);
+  }
+}
+
+/* ───────────── Chips ───────────── */
+.chip {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.chip.ochre {
+  background: var(--pend-soft);
+  color: var(--pend-ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pend) 35%, transparent);
+}
+.chip.cobalt {
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+}
+
+/* ───────────── Movimiento: entrada de página ───────────── */
+.page {
+  animation: page-in 420ms var(--ease-out) both;
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 500ms ease, transform 650ms var(--ease-out);
+  margin-top: 18px;
+}
+.reveal[data-inview] {
+  opacity: 1;
+  transform: none;
+}
+.reveal > .card {
+  margin-top: 0 !important;
+}
+
+/* ════════════════════ Resumen ════════════════════ */
+.kpis {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  grid-template-areas:
+    'hero ben'
+    'hero roi'
+    'rec rec';
+  gap: 16px;
+}
+.kpis > * {
+  animation: rise-in 560ms var(--ease-out) both;
+}
+.kpis > :nth-child(2) {
+  animation-delay: 70ms;
+}
+.kpis > :nth-child(3) {
+  animation-delay: 140ms;
+}
+.kpis > :nth-child(4) {
+  animation-delay: 210ms;
+}
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+}
+.kpi {
+  position: relative;
+  min-width: 0;
+  border-radius: 22px;
+  padding: 22px 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  transition: border-color 200ms ease, transform 220ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .kpi-tile:hover,
+  .kpi-recovery:hover {
+    border-color: var(--line-strong);
+    transform: translateY(-2px);
+  }
+}
+.kpi-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Héroe — vidriado verde, la cifra más grande de la app */
+.kpi-hero {
+  grid-area: hero;
+  color: var(--hero-ink);
+  border: none;
+  padding: 28px 30px 24px;
+  background:
+    radial-gradient(70% 60% at 100% 0%, var(--hero-glow), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 38%),
+    radial-gradient(140% 120% at 0% 100%, var(--hero-a), var(--hero-b) 55%, var(--hero-c));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 30px 60px -40px rgba(11, 32, 21, 0.75);
+  display: flex;
+  flex-direction: column;
+}
+.kpi-hero .kpi-label {
+  color: color-mix(in srgb, var(--hero-ink) 66%, transparent);
+}
+.hero-blossom {
+  position: absolute;
+  right: -64px;
+  top: -70px;
+  pointer-events: none;
+}
+.intro .hero-blossom {
+  animation: blossom-in 1400ms var(--ease-out) both;
+}
+.hero-blossom .petals path {
+  fill: none;
+  stroke: rgba(246, 241, 226, 0.13);
+  stroke-width: 0.5;
+}
+.hero-blossom .core {
+  fill: none;
+  stroke: rgba(242, 140, 59, 0.45);
+  stroke-width: 0.6;
+}
+@keyframes blossom-in {
+  from {
+    opacity: 0;
+    transform: rotate(-18deg) scale(0.92);
+  }
+}
+.hero-figure {
+  position: relative;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-stretch: 78%;
+  font-size: clamp(54px, 8.2vw, 96px);
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums lining-nums;
+  margin: 14px 0 10px;
+}
+.hero-figure .cents {
+  font-size: 0.36em;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  opacity: 0.62;
+  margin-left: 3px;
+}
+.hero-sub {
+  position: relative;
+  font-size: 14px;
+  color: color-mix(in srgb, var(--hero-ink) 78%, transparent);
+}
+
+/* Barras de progreso: tejas que se rellenan */
+.meter {
+  position: relative;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 22px;
+}
+.meter > span {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  transform: scaleX(var(--p, 0));
+  transition: transform 800ms var(--ease-out);
+}
+.intro .meter > span {
+  animation: meter-in 1300ms var(--ease-out) 250ms both;
+}
+@keyframes meter-in {
+  from {
+    transform: scaleX(0);
+  }
+}
+.meter.tejas {
+  background: rgba(255, 255, 255, 0.1);
+  -webkit-mask: repeating-linear-gradient(90deg, #000 0 16px, transparent 16px 19px);
+  mask: repeating-linear-gradient(90deg, #000 0 16px, transparent 16px 19px);
+}
+.meter.tejas > span {
+  background: linear-gradient(90deg, #f6a25a, var(--brand));
+}
+.meter-legend {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 9px;
+  font-size: 13px;
+  color: color-mix(in srgb, var(--hero-ink) 80%, transparent);
+}
+.hero-foot {
+  position: relative;
+  display: flex;
+  gap: 26px;
+  flex-wrap: wrap;
+  margin: auto 0 0;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.kpi-hero .meter-legend {
+  margin-bottom: 18px;
+}
+.hero-foot dt {
+  font-size: 12px;
+  color: color-mix(in srgb, var(--hero-ink) 62%, transparent);
+}
+.hero-foot dd {
+  margin: 2px 0 0;
+  font-weight: 700;
+  font-size: 15.5px;
+}
+
+/* Tarjetas de beneficio y rentabilidad */
+.kpi-tile:nth-of-type(2) {
+  grid-area: ben;
+}
+.kpi-tile:nth-of-type(3) {
+  grid-area: roi;
+}
+.kpi-figure {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-stretch: 80%;
+  font-size: clamp(38px, 4.6vw, 52px);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums lining-nums;
+  margin: 12px 0 8px;
+}
+.kpi-figure .trend {
+  width: 30px;
+  height: 30px;
+  stroke-width: 2.4;
+  flex: none;
+}
+.kpi-figure.muted-figure {
+  color: var(--line-strong);
+}
+.kpi-figure .tag {
+  font-family: var(--f-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: var(--pend-soft);
+  color: var(--pend-ink);
+  align-self: center;
+}
+.kpi-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+.kpi-sub {
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.kpi-split {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+  font-size: 13px;
+  color: var(--muted);
+}
+.kpi-split b {
+  color: var(--ink);
+  margin-left: 4px;
+}
+.spark {
+  flex: none;
+  overflow: visible;
+}
+.spark-zero {
+  stroke: var(--line-strong);
+  stroke-dasharray: 2 3;
+}
+.spark-line {
+  fill: none;
+  stroke: var(--data);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.intro .spark-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 1100ms var(--ease-in-out) 350ms forwards;
+}
+.spark-dot {
+  stroke: var(--surface);
+  stroke-width: 2;
+}
+.intro .spark-dot {
+  animation: fade-in 300ms ease 1300ms both;
+}
+.spark-dot.up {
+  fill: var(--pos);
+}
+.spark-dot.down {
+  fill: var(--neg);
+}
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Banda de recuperación */
+.kpi-recovery {
+  grid-area: rec;
+  padding: 24px 28px 22px;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--pos-soft) 55%, transparent), transparent 55%),
+    var(--surface);
+}
+.recovery-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px 24px;
+  flex-wrap: wrap;
+}
+.recovery-figure {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-stretch: 78%;
+  font-size: clamp(48px, 6vw, 72px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums lining-nums;
+  margin-top: 8px;
+  color: var(--pos-ink);
+}
+.recovery-text {
+  margin: 0;
+  max-width: 46ch;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-2);
+  text-align: right;
+}
+.recovery-meter {
+  height: 18px;
+  border-radius: 9px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.recovery-meter > span {
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0 6px, transparent 6px 12px),
+    linear-gradient(90deg, color-mix(in srgb, var(--pos) 70%, var(--surface)), var(--pos));
+  border-radius: 9px;
+}
+.recovery-meter > i {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  width: 1px;
+  background: color-mix(in srgb, var(--ink) 18%, transparent);
+}
+.recovery-foot {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 18px 0 0;
+}
+.recovery-foot dt {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.recovery-foot dd {
+  margin: 3px 0 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+.recovery-foot small {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Destello cuando una cifra cambia */
+.kpi.flash-up {
+  animation: ring-up 900ms var(--ease-out);
+}
+.kpi.flash-down {
+  animation: ring-down 900ms var(--ease-out);
+}
+@keyframes ring-up {
+  from {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--pos) 45%, transparent);
+  }
+}
+@keyframes ring-down {
+  from {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--neg) 45%, transparent);
+  }
+}
+
+/* Avisos y proceso */
+.resumen .duo {
+  margin-top: 18px;
+}
+.alert {
+  border: none;
+  border-radius: 14px;
+  background: var(--surface-2);
+  box-shadow: inset 3px 0 0 var(--rail, var(--line-strong));
+  padding: 12px 12px 12px 16px;
+  animation: rise-in 420ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 45ms + 200ms);
+}
+.alert.alerta {
+  --rail: var(--neg);
+  background: var(--neg-soft);
+}
+.alert.aviso {
+  --rail: var(--pend);
+  background: color-mix(in srgb, var(--pend-soft) 70%, var(--surface));
+}
+.alert.info {
+  --rail: var(--data);
+}
+.alert .ico {
+  font-family: var(--f-display);
+  font-weight: 800;
+}
+.alert.alerta .ico {
+  background: var(--neg-ink);
+}
+.alert.aviso .ico {
+  background: var(--pend);
+}
+.alert .t {
+  font-weight: 700;
+}
+.alert .icon-btn {
+  color: var(--ink-2);
+}
+.timeline .hecho .dot {
+  background: var(--pos);
+  border-color: var(--pos);
+}
+.timeline .programado .dot {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+}
+.timeline .when {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* Cifras secundarias */
+.stat .k {
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  font-size: 11px;
+}
+.stat .v {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-stretch: 82%;
+  font-size: 28px;
+  letter-spacing: -0.03em;
+  font-variation-settings: normal;
+}
+
+/* ───────────── Gráficas ───────────── */
+.chart .grid-line {
+  stroke: var(--grid);
+  stroke-dasharray: 2 4;
+}
+.chart .zero-line {
+  stroke: var(--line-strong);
+}
+.chart .axis-label {
+  font-family: var(--f-body);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 11px;
+  fill: var(--muted);
+}
+.chart .ref-line {
+  stroke: var(--brand);
+  stroke-dasharray: 6 5;
+  stroke-width: 1.5;
+}
+.chart .ref-label {
+  fill: var(--brand-ink);
+  font-weight: 700;
+}
+.chart .bar {
+  transition: opacity 150ms ease;
+}
+.reveal .chart .bar {
+  transform-box: fill-box;
+  transform: scaleY(0);
+}
+.reveal .chart .bar.up {
+  transform-origin: 50% 100%;
+}
+.reveal .chart .bar.down {
+  transform-origin: 50% 0%;
+}
+.reveal[data-inview] .chart .bar {
+  animation: bar-grow 700ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 30ms + 150ms);
+}
+@keyframes bar-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+.reveal .chart .line-path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.reveal[data-inview] .chart .line-path {
+  animation: draw 1200ms var(--ease-in-out) 200ms forwards;
+}
+.reveal .chart .line-area,
+.reveal .chart .line-proj,
+.reveal .chart .line-ref {
+  opacity: 0;
+}
+.reveal[data-inview] .chart .line-area {
+  animation: fade-in 700ms ease 800ms forwards;
+}
+.reveal[data-inview] .chart .line-ref {
+  animation: fade-in 500ms ease 100ms forwards;
+}
+.reveal[data-inview] .chart .line-proj {
+  animation: fade-in 500ms ease 1300ms forwards;
+}
+.tooltip {
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 16px 32px -16px rgba(0, 0, 0, 0.5);
+  font-variant-numeric: tabular-nums;
+  animation: tip-in 140ms var(--ease-out) both;
+}
+.tooltip .tt-title {
+  color: color-mix(in srgb, var(--paper) 70%, transparent);
+}
+@keyframes tip-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-100% - 6px)) scale(0.97);
+  }
+}
+.legend {
+  font-weight: 600;
+}
+
+/* Panel de rentabilidad */
+.rent-big {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-stretch: 80%;
+  letter-spacing: -0.035em;
+  font-variation-settings: normal;
+}
+.rent-row b {
+  font-family: var(--f-body);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+.rent-warn {
+  background: var(--pend-soft);
+  color: var(--pend-ink);
+  font-weight: 600;
+}
+.rent-save {
+  background: var(--pos-soft);
+}
+
+/* ───────────── Barra de estado y navegación móvil ───────────── */
+.sync-pill {
+  font-weight: 600;
+}
+@media (max-width: 860px) {
+  .topbar .brand-tile {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+  }
+  .bottomnav [aria-current='page'] {
+    color: var(--brand-ink);
+  }
+  .bottomnav a::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 30%;
+    right: 30%;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+    background: var(--brand);
+    transform: scaleX(0);
+    transition: transform 220ms var(--ease-out);
+  }
+  .bottomnav a[aria-current='page']::before {
+    transform: scaleX(1);
+  }
+  .bottomnav a,
+  .bottomnav button {
+    transition: transform 140ms var(--ease-out), color 160ms ease;
+  }
+  .bottomnav a:active,
+  .bottomnav button:active {
+    transform: scale(0.94);
+  }
+  .kpis {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'hero' 'ben' 'roi' 'rec';
+    gap: 12px;
+  }
+  .kpi {
+    border-radius: 18px;
+    padding: 18px;
+  }
+  .kpi-hero {
+    padding: 22px 20px 20px;
+  }
+  .hero-figure {
+    font-size: clamp(50px, 15vw, 72px);
+  }
+  .kpi-figure {
+    font-size: 40px;
+  }
+  .recovery-text {
+    text-align: left;
+  }
+  .hero-foot {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .hero-foot dd {
+    font-size: 14px;
+  }
+  .page-head .print-btn {
+    display: none;
+  }
+  .recovery-foot {
+    gap: 10px;
+  }
+  .recovery-foot dd {
+    font-size: 15px;
+  }
+  .reveal {
+    transform: translateY(10px);
+  }
+}
+
+/* ───────────── Menos movimiento ───────────── */
+@media (prefers-reduced-motion: reduce) {
+  .page,
+  .kpis > *,
+  .alert,
+  .hero-blossom,
+  .meter > span,
+  .spark-line,
+  .spark-dot,
+  .tooltip,
+  .kpi.flash-up,
+  .kpi.flash-down {
+    animation: none !important;
+  }
+  .spark-line {
+    stroke-dashoffset: 0;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: opacity 200ms ease;
+  }
+  .reveal .chart .bar,
+  .reveal[data-inview] .chart .bar {
+    animation: none;
+    transform: none;
+  }
+  .reveal .chart .line-path {
+    stroke-dashoffset: 0;
+    animation: none !important;
+  }
+  .reveal .chart .line-area,
+  .reveal .chart .line-proj,
+  .reveal .chart .line-ref {
+    opacity: 1;
+    animation: none !important;
+  }
+  .kpi,
+  .meter > span {
+    transition: none;
+  }
+}
+
+/* Impresión: sin fondos ni animaciones */
+@media print {
+  .kpi-hero {
+    background: none;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    box-shadow: none;
+  }
+  .hero-blossom {
+    display: none;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+.settled {
+  margin-top: 18px;
+}
+.settled > .card {
+  margin-top: 0 !important;
+}

@@ -15,7 +15,7 @@ export function PageHead({
       </div>
       <div className="page-actions no-print">
         {actions}
-        <button className="btn ghost" onClick={() => window.print()} title="Imprimir o guardar como PDF">
+        <button className="btn ghost print-btn" onClick={() => window.print()} title="Imprimir o guardar como PDF">
           <IconPrint /> <span>Imprimir</span>
         </button>
       </div>
