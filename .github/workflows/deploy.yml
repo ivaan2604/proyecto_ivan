@@ -18,6 +18,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # Sin el secreto (p. ej. en PRs de forks) se publica solo la web del piso
+      HAS_TAI_TOKEN: ${{ secrets.AGENTE_TAI_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -34,6 +37,20 @@ jobs:
       - run: npm run build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
+      # App de estudio TAI: vive en el repositorio privado agente-tai y se publica en /tai/
+      - uses: actions/checkout@v4
+        if: env.HAS_TAI_TOKEN == 'true'
+        with:
+          repository: ivaan2604/agente-tai
+          token: ${{ secrets.AGENTE_TAI_TOKEN }}
+          path: agente-tai
+          sparse-checkout: app
+      - name: Construir la app TAI
+        if: env.HAS_TAI_TOKEN == 'true'
+        working-directory: agente-tai/app
+        run: npm ci && npm test && npm run build
+      - if: env.HAS_TAI_TOKEN == 'true'
+        run: cp -r agente-tai/app/dist dist/tai
       - uses: actions/upload-pages-artifact@v3
         if: github.ref == 'refs/heads/main'
         with:

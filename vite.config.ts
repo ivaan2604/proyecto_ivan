@@ -32,6 +32,8 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         navigateFallback: 'index.html',
+        // La app de estudio TAI (repo agente-tai) se publica en /tai/ con su propio index.html
+        navigateFallbackDenylist: [/\/tai\//],
         // Las llamadas a Supabase (otro dominio) no se cachean: los datos van siempre por el motor de sincronización
       },
     }),
