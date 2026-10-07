@@ -24,4 +24,4 @@ Se añade una norma: **registrar el 100 % de las sesiones** en Hevy.
 ## 2026-10-07 — Ajustes tras la primera sesión de pierna
 - Gemelo: Seated Calf Raise → gemelo de pie en máquina (es el que usa).
 - Abductores y gemelo en superserie, y elevaciones de piernas pasables al día opcional: el 07-oct se quedaron sin hacer por falta de tiempo.
-- Convención de registro: en ejercicios con barra se apuntan solo los discos.
+- Convención de registro: en ejercicios con barra se apunta **el peso por lado** (corregido el mismo día: no son los discos totales).

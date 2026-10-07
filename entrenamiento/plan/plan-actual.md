@@ -21,7 +21,7 @@ Ejemplo con L, X y V: lunes A, miércoles Pierna, viernes B.
 
 ## Reglas para todas las sesiones
 
-- **Barra: en Hevy se apuntan solo los discos** (0 kg = barra sola). Siempre igual.
+- **Barra: en Hevy se apunta el peso POR LADO** (0 kg = barra sola; 10 = barra + 10 kg por lado). Siempre igual.
 - **Registra el 100 % de las sesiones en Hevy**, incluso las cortas o las que salen mal. Sin datos no hay seguimiento.
 
 - **Calentamiento:** 1–2 series de aproximación en el primer ejercicio de cada grupo, **marcadas como "Warm up" en Hevy**.
