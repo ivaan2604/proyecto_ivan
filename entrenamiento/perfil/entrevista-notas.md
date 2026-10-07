@@ -53,7 +53,7 @@
 - Notas: 7 h es aceptable, pero 7,5–8 h mejoraría la recuperación en déficit. Sedentarismo → los pasos diarios (NEAT)
   son una palanca fácil para perder grasa: objetivo inicial 8.000–10.000/día.
 
-## Bloque 6 · Lesiones (2026-10-07) — EN CURSO
+## Bloque 6 · Lesiones (2026-10-07)
 - Rodilla derecha: resonancia → "síndrome de algo", estructura inflamada que roza; le pautaron ejercicio y que iría mejorando.
   Nombre exacto pendiente (candidatos compatibles con su descripción: síndrome de plica sinovial, de la grasa de Hoffa
   o femoropatelar; NO diagnosticar, confirmar con el informe).
@@ -61,3 +61,8 @@
 - Pendiente: nombre del diagnóstico, zona exacta del dolor, ejercicios que molestan, si hizo fisio, otras lesiones.
 - Criterio de trabajo provisional: carga progresiva de cuádriceps permitida si el dolor ≤3/10 durante el ejercicio
   y vuelve a la normalidad en 24 h; si persiste o empeora → fisio/traumatólogo.
+- Confirmado: **síndrome de dolor femoropatelar** en rodilla derecha. Sin otras molestias ni lesiones.
+- Pendiente aún: qué ejercicios concretos le molestan (preguntado en bloque 7).
+- Pautas para el plan: fortalecer cuádriceps + glúteo medio/mayor; elegir rangos de menor estrés femoropatelar
+  cuando moleste (cadena cerrada 0–60° de flexión; extensión de cuádriceps en 90–45°), progresar de forma gradual
+  y evitar picos bruscos de volumen de pierna. Semáforo de dolor 0–3 / 4–5 / >5.
