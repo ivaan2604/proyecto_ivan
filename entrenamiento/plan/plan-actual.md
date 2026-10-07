@@ -21,6 +21,8 @@ Ejemplo con L, X y V: lunes A, miércoles Pierna, viernes B.
 
 ## Reglas para todas las sesiones
 
+- **Duración máxima: ~1 hora**, calentamiento incluido (5 min de bici + aproximaciones). Si se alarga, se recorta lo último de la tabla.
+
 - **Barra: en Hevy se apunta el peso POR LADO** (0 kg = barra sola; 10 = barra + 10 kg por lado). Siempre igual.
 - **Registra el 100 % de las sesiones en Hevy**, incluso las cortas o las que salen mal. Sin datos no hay seguimiento.
 
@@ -39,7 +41,7 @@ Ejemplo con L, X y V: lunes A, miércoles Pierna, viernes B.
 
 ---
 
-## Torso A (~65 min)
+## Torso A (~60 min con calentamiento)
 | # | Ejercicio (nombre en Hevy) | Series × reps | Alternativa |
 |---|---|---|---|
 | 1 | Incline Chest Press (Machine) | 3 × 6–10 | Incline Bench Press (Smith Machine) |
@@ -50,7 +52,7 @@ Ejemplo con L, X y V: lunes A, miércoles Pierna, viernes B.
 | 6a | Preacher Curl (Machine) — SS | 2 × 10–15 | Bicep Curl (Cable) |
 | 6b | Overhead Triceps Extension (Cable) — SS | 2 × 10–15 | Triceps Pressdown |
 
-## Pierna (~60–65 min)
+## Pierna (~60 min con calentamiento)
 | # | Ejercicio | Series × reps | Notas |
 |---|---|---|---|
 | 1 | Leg Press (Machine) | 4 × 8–12 | Baja hasta donde no moleste la rodilla. La profundidad crece cuando la rodilla lo tolere |
@@ -64,17 +66,17 @@ Ejemplo con L, X y V: lunes A, miércoles Pierna, viernes B.
 Pesos de partida orientativos para la semana 1: prensa ≈ la carga con la que haces 12 reps sobrando 3
 (en marzo: 100×10); rumano 35×10; extensión 50×12; curl sentado el peso con el que hagas 12 con RIR 3.
 
-## Torso B (~65 min)
+## Torso B (~60 min con calentamiento)
 | # | Ejercicio | Series × reps | Alternativa |
 |---|---|---|---|
 | 1 | Incline Bench Press (Smith Machine) | 3 × 6–10 | Incline Chest Press (Machine) |
 | 2 | Seated Cable Row - V Grip (Cable) | 3 × 8–12 | Seated Row (Machine) |
-| 3 | Chin Up | 3 × 6–10 | Lat Pulldown - Close Grip (Cable). Si haces más de 10, usa Chin Up (Weighted) |
+| 3 | Lat Pulldown (Cable) | 3 × 8–12 | Lat Pulldown - Close Grip (Cable) |
 | 4 | Seated Shoulder Press (Machine) | 2 × 8–12 | Overhead Press (Dumbbell) |
 | 5a | Chest Fly (Machine) — SS | 2 × 12–15 | Cable Fly Crossovers |
 | 5b | Hammer Curl (Dumbbell) — SS | 2 × 8–12 | Hammer Curl (Cable) |
 | 6a | Single Arm Lateral Raise (Cable) — SS | 3 × 12–15 | |
-| 6b | Rear Delt Reverse Fly (Machine) — SS | 2 × 12–15 | Face Pull |
+| 6b | Rear Delt Reverse Fly (Machine) — SS | 2 × 12–15 | Face Pull. Si vas justo de tiempo, es lo primero que se quita |
 | 7 | Lying Leg Curl (Machine) | 2 × 10–12 | Solo si lo haces el jueves o antes. Si es viernes, sáltalo |
 
 ## Día 4 opcional: brazos, hombro y core (~45 min)
