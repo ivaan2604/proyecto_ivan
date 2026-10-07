@@ -4,6 +4,12 @@
 `datos/hevy/hevy_export_2026-10-07.csv`, con 63 sesiones del 20-nov-2025 al 06-oct-2026 (47 semanas).
 **Cálculos:** `scripts/analisis_inicial.py`. Las tablas están en `analisis/datos-inicial/` y las gráficas en `analisis/grafica-*.png`.
 
+> ⚠️ **Corrección (2026-10-07, tras el análisis):** Iván confirma que **muchas sesiones no están registradas en Hevy**.
+> Por tanto, la frecuencia (sesiones/semana, semanas sin entrenar) y el volumen semanal por músculo están **infraestimados** y no son fiables.
+> Lo que sigue siendo válido porque no depende de cuántas sesiones haya: las cargas y su evolución, la proporción entre tipos de sesión
+> registrada (solo 10 de 63 fueron de pierna), las cargas de iniciación en pierna, las pirámides, la rotación de ejercicios y la falta de RPE.
+> La **asistencia real** se medirá a partir de ahora, registrando el 100 % de las sesiones.
+
 > Aviso sobre los datos: Hevy no tiene registrado ningún RPE ni RIR, así que no puedo saber lo cerca del fallo que entrenas.
 > Las series se cuentan como efectivas si no están marcadas como calentamiento. Con pirámides ascendentes
 > (p. ej. 75×10, 85×10, 90×8), las primeras series probablemente no lo son, así que el volumen real es igual o **menor** que el calculado.
@@ -31,7 +37,7 @@
 
 ## 3. Errores principales (por orden de impacto)
 
-### 3.1 La constancia real es mucho menor de lo que crees ❗
+### 3.1 Constancia — ⚠️ NO CONCLUYENTE (hay sesiones sin registrar)
 | Métrica | Valor |
 |---|---|
 | Media de sesiones/semana (47 semanas) | **1,34** |
@@ -42,9 +48,9 @@
 
 Los parones no ocurren solo en verano: 22 días en Navidad, 14 en abril, 33 en mayo, **76 en verano** y 11 a finales de septiembre.
 "Mínimo 3 días por semana" se ha cumplido en menos de 1 de cada 4 semanas.
-*(Pendiente de confirmar: ¿hay sesiones que no apuntas en Hevy?)*
+*(Confirmado: hay muchas sesiones sin registrar, así que esta tabla no refleja la asistencia real. El error que sí queda claro es **no registrar todas las sesiones**: sin eso no se puede seguir la progresión.)*
 
-### 3.2 La pierna está prácticamente abandonada ❗
+### 3.2 La pierna está prácticamente abandonada ❗ (válido salvo que las sesiones sin registrar fueran sobre todo de pierna)
 - **10 sesiones de pierna en 47 semanas.** Desde la vuelta del verano, 2 en 6 semanas.
 - Series semanales (en las semanas que entrenaste): cuádriceps **2,0**, isquios **1,5**, glúteo **1,8**, gemelo 0,8.
   La referencia es 10–20.
@@ -83,7 +89,7 @@ No hay estancamientos "reales" que analizar: lo que hay son caídas por los paro
 
 ## 5. Prioridades para los próximos 2–3 meses
 
-1. **Constancia, 3 sesiones todas las semanas.** Sin esto, lo demás no sirve de nada. Es el indicador n.º 1 de las revisiones semanales.
+1. **Constancia, 3 sesiones todas las semanas, y registrarlas TODAS en Hevy.** Es el indicador n.º 1 de las revisiones semanales.
 2. **Recuperar la pierna**, de 2 a unas 10 series por semana de cuádriceps y de isquios, subiendo poco a poco por la rodilla y el fútbol.
 3. **Llevar el torso a 10–12 series por músculo y semana** con una frecuencia de 2 veces por semana.
 4. **Ejercicios fijos y doble progresión** con series al mismo peso, para que el progreso se pueda medir.

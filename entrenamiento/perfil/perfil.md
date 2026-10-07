@@ -10,7 +10,7 @@
 - ~2 años entrenando en serio (antes, de forma irregular). Suele bajar mucho el ritmo en verano.
 - Rutina previa: espalda/bíceps, pecho/tríceps/hombro y pierna, más un torso opcional.
 - **Nivel:** intermedio inicial en el torso, principiante en pierna (ver diagnóstico).
-- Historial en Hevy desde el 20-nov-2025. Asistencia real: 1,34 sesiones/semana de media; 2,0 desde el 25-ago-2026.
+- Historial en Hevy desde el 20-nov-2025: 63 sesiones registradas (1,34/semana). **Hay muchas sesiones sin registrar**, así que la asistencia real se desconoce y se medirá a partir de ahora.
 
 ## Objetivos (por prioridad)
 1. Perder grasa y verse definido para el verano de 2027 (meta orientativa: 87–89 kg y menos cintura).

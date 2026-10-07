@@ -10,3 +10,8 @@ y mucha rotación de ejercicios.
 - 78 ejercicios distintos en 63 sesiones impiden medir el progreso → se fija un ejercicio por hueco (con una alternativa).
 - La asistencia real ha sido de 1,3 sesiones/semana → un plan que funciona con 3 días y que con 2 sigue siendo útil.
 - Pierna fuera de lunes, viernes y sábado por el partido del domingo.
+
+## 2026-10-07 — Corrección del diagnóstico (sin cambios en el plan)
+Iván confirma que muchas sesiones no están registradas en Hevy. La frecuencia y el volumen semanal históricos quedan como no concluyentes.
+El plan se mantiene igual porque se basa en datos que siguen siendo válidos (pocas sesiones de pierna, cargas bajas en pierna, pirámides, rotación de ejercicios).
+Se añade una norma: **registrar el 100 % de las sesiones** en Hevy.
