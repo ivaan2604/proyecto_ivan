@@ -42,3 +42,13 @@
 - Fútbol: liga local, solo partido el domingo (sin entrenos de equipo).
 - Implicaciones para el plan: base de 3 sesiones que funcione por sí sola + 4ª opcional que sume,
   no que descuadre. Evitar pierna pesada el viernes/sábado (partido el domingo) y el lunes (agujetas/fatiga del partido).
+
+## Bloque 5 · Recuperación y actividad (2026-10-07)
+- Sueño: ~7 h entre semana; algo más el fin de semana si no sale.
+- Estrés: bajo de momento.
+- Fútbol: ~60 min por partido (con cambios), defensa. Llega cansado y al día siguiente algo cargado;
+  lo atribuye a que acaba de volver a jugar (temporada recién empezada).
+- Trabajo: sedentario (sentado). 3 días en casa + 2 días en la oficina. Pasos diarios: desconocidos.
+- Sin otras actividades (ni correr, ni bici, ni pádel).
+- Notas: 7 h es aceptable, pero 7,5–8 h mejoraría la recuperación en déficit. Sedentarismo → los pasos diarios (NEAT)
+  son una palanca fácil para perder grasa: objetivo inicial 8.000–10.000/día.
