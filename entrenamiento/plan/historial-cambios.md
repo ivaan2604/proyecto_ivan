@@ -20,3 +20,8 @@ Se añade una norma: **registrar el 100 % de las sesiones** en Hevy.
 - Torso B: se añade Hammer Curl (Dumbbell) 2 × 8–12 en superserie con la contractora. Así el bíceps se trabaja directamente 2 veces por semana
   (es uno de sus ejercicios favoritos y de los que más repite). Coste en tiempo: ~0, al ir en superserie.
 - Todos los ejercicios del plan salen de los que ya hacía con más frecuencia, por adherencia y para poder comparar con su historial.
+
+## 2026-10-07 — Ajustes tras la primera sesión de pierna
+- Gemelo: Seated Calf Raise → gemelo de pie en máquina (es el que usa).
+- Abductores y gemelo en superserie, y elevaciones de piernas pasables al día opcional: el 07-oct se quedaron sin hacer por falta de tiempo.
+- Convención de registro: en ejercicios con barra se apuntan solo los discos.

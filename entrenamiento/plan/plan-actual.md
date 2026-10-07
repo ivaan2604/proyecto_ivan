@@ -21,6 +21,7 @@ Ejemplo con L, X y V: lunes A, miércoles Pierna, viernes B.
 
 ## Reglas para todas las sesiones
 
+- **Barra: en Hevy se apuntan solo los discos** (0 kg = barra sola). Siempre igual.
 - **Registra el 100 % de las sesiones en Hevy**, incluso las cortas o las que salen mal. Sin datos no hay seguimiento.
 
 - **Calentamiento:** 1–2 series de aproximación en el primer ejercicio de cada grupo, **marcadas como "Warm up" en Hevy**.
@@ -56,9 +57,9 @@ Ejemplo con L, X y V: lunes A, miércoles Pierna, viernes B.
 | 2 | Romanian Deadlift (Barbell) | 3 × 8–10 | Espalda neutra; bajar hasta notar el estiramiento de los isquios |
 | 3 | Leg Extension (Machine) | 3 × 10–15 | Si molesta la rodilla, haz solo el recorrido de 90° a 45° (la mitad superior del movimiento no) |
 | 4 | Seated Leg Curl (Machine) | 3 × 10–12 | Alternativa: Lying Leg Curl (Machine) |
-| 5 | Hip Abduction (Machine) | 2 × 12–20 | Glúteo medio, que protege la rodilla |
-| 6 | Seated Calf Raise | 3 × 10–15 | |
-| 7 | Leg Raise Parallel Bars | 2–3 × 8–15 | Alternativa: Crunch (Machine) |
+| 5a | Hip Abduction (Machine) — SS | 2 × 12–20 | Glúteo medio, que protege la rodilla. **No se salta** |
+| 5b | Standing Calf Raise (Machine) — SS | 3 × 10–15 | Se ha cambiado al gemelo de pie |
+| 6 | Leg Raise Parallel Bars | 2 × 8–15 | Alternativa: Crunch (Machine). Si falta tiempo, se hace en el día opcional |
 
 Pesos de partida orientativos para la semana 1: prensa ≈ la carga con la que haces 12 reps sobrando 3
 (en marzo: 100×10); rumano 35×10; extensión 50×12; curl sentado el peso con el que hagas 12 con RIR 3.
