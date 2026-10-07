@@ -70,7 +70,8 @@ Pesos de partida orientativos para la semana 1: prensa ≈ la carga con la que h
 | 2 | Seated Cable Row - V Grip (Cable) | 3 × 8–12 | Seated Row (Machine) |
 | 3 | Chin Up | 3 × 6–10 | Lat Pulldown - Close Grip (Cable). Si haces más de 10, usa Chin Up (Weighted) |
 | 4 | Seated Shoulder Press (Machine) | 2 × 8–12 | Overhead Press (Dumbbell) |
-| 5 | Chest Fly (Machine) | 2 × 12–15 | Cable Fly Crossovers |
+| 5a | Chest Fly (Machine) — SS | 2 × 12–15 | Cable Fly Crossovers |
+| 5b | Hammer Curl (Dumbbell) — SS | 2 × 8–12 | Hammer Curl (Cable) |
 | 6a | Single Arm Lateral Raise (Cable) — SS | 3 × 12–15 | |
 | 6b | Rear Delt Reverse Fly (Machine) — SS | 2 × 12–15 | Face Pull |
 | 7 | Lying Leg Curl (Machine) | 2 × 10–12 | Solo si lo haces el jueves o antes. Si es viernes, sáltalo |
@@ -93,7 +94,7 @@ Pesos de partida orientativos para la semana 1: prensa ≈ la carga con la que h
 | Dorsal y espalda media | ~13–15 | ~13–15 | 6,1 / 4,2 |
 | Deltoides lateral | 6 + indirectas | 9 + | 3,0 |
 | Deltoides posterior | ~4 | ~6 | 3,0 |
-| Bíceps | ~2 + 6 indirectas | ~7 + 6 | 8,1 |
+| Bíceps | ~4 + 6 indirectas | ~9 + 6 | 8,1 |
 | Tríceps | ~2 + 6 indirectas | ~7 + 6 | 7,4 |
 | Cuádriceps | ~7 | ~7 | 2,0 |
 | Isquios | ~8 | ~8 | 1,5 |

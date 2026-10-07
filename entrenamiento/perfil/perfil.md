@@ -18,7 +18,7 @@
 3. Ganar músculo de forma equilibrada al mismo tiempo (recomposición).
 
 ## Disponibilidad
-- Gimnasio de lunes a viernes, sobre las 16:30. 3 días fijos y un 4.º según el estudio y el cansancio. Algún sábado por la mañana.
+- Gimnasio de lunes a viernes, normalmente sobre las 16:30, aunque la hora varía según el día. 3 días fijos y un 4.º según el estudio y el cansancio. Algún sábado por la mañana.
 - Sesiones de 60–75 min. Oposiciones de 18:00 a 21:00; el fin de semana lo dedica sobre todo a estudiar.
 - Trabajo sentado: 3 días en casa y 2 en la oficina.
 
@@ -44,4 +44,7 @@
 ## Preferencias y registro
 - Usa Hevy. **No registra RPE ni RIR.** Marca algunos calentamientos como warm up (85 series).
 - Ejercicios que más repite: press con mancuernas, laterales en polea, curl Scott en máquina, contractora, curl martillo, press inclinado.
-- Pendiente (bloque 9): ejercicios que le gustan y que odia, y cuánto se acerca al fallo.
+- **Le gustan sobre todo los ejercicios de pecho, espalda y bíceps**, en especial los que repite (ver arriba). Mantenerlos en el plan.
+- Llega al fallo a veces, según el día. Pauta: fallo solo en la última serie de los aislamientos; en compuestos y pierna, RIR 1–2.
+- Entrena a horas distintas según el día (en Hevy hay sesiones de las 12:00 a las 20:00).
+- **Compromiso (07-oct-2026): registrar todas las sesiones en Hevy y pasarlas a diario.**

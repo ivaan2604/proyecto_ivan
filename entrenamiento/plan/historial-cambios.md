@@ -15,3 +15,8 @@ y mucha rotación de ejercicios.
 Iván confirma que muchas sesiones no están registradas en Hevy. La frecuencia y el volumen semanal históricos quedan como no concluyentes.
 El plan se mantiene igual porque se basa en datos que siguen siendo válidos (pocas sesiones de pierna, cargas bajas en pierna, pirámides, rotación de ejercicios).
 Se añade una norma: **registrar el 100 % de las sesiones** en Hevy.
+
+## 2026-10-07 — Ajuste por preferencias
+- Torso B: se añade Hammer Curl (Dumbbell) 2 × 8–12 en superserie con la contractora. Así el bíceps se trabaja directamente 2 veces por semana
+  (es uno de sus ejercicios favoritos y de los que más repite). Coste en tiempo: ~0, al ir en superserie.
+- Todos los ejercicios del plan salen de los que ya hacía con más frecuencia, por adherencia y para poder comparar con su historial.
