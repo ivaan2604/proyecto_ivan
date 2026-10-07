@@ -31,3 +31,14 @@
 - Sin fecha cerrada, pero quiere empezar ya.
 - Propuesta de marco (pendiente de nutrición): fase de definición moderada (~0,4–0,6 kg/semana)
   con pausas en mantenimiento; meta orientativa ~87–89 kg para el verano, juzgada por cintura y fotos, no solo báscula.
+- Añadido: quiere ganar músculo a la vez que pierde grasa (recomposición). Viable por su caso (grasa que perder,
+  recuperación tras el verano), pero la ganancia será más lenta que en superávit.
+
+## Bloque 4 · Disponibilidad (2026-10-07)
+- 3 días/semana de lunes a viernes, sobre las 16:30. Días variables según la semana.
+- 4º día ocasional: depende del estudio y el cansancio (p. ej. semana actual: L, M, X, (J descanso), V).
+- Sábado: alguna vez por la mañana, si no ha salido el viernes. Fin de semana prioritario para estudiar.
+- Duración real de la sesión: 60–75 min.
+- Fútbol: liga local, solo partido el domingo (sin entrenos de equipo).
+- Implicaciones para el plan: base de 3 sesiones que funcione por sí sola + 4ª opcional que sume,
+  no que descuadre. Evitar pierna pesada el viernes/sábado (partido el domingo) y el lunes (agujetas/fatiga del partido).
