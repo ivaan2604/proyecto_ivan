@@ -10,4 +10,4 @@ plan/plan-actual.md       → rutina vigente y objetivos del bloque
 plan/historial-cambios.md → qué se cambió, cuándo y por qué
 ```
 
-Estado: Fase 1 (entrevista inicial) en curso.
+Estado: Fase 1 completada (07-oct-2026). Bloque 1 del plan: 12-oct → 22-nov-2026. Para recalcular: `python scripts/analisis_inicial.py`.
