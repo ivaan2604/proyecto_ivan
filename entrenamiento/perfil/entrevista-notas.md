@@ -72,3 +72,17 @@
 - Gimnasio completo: rack, poleas y máquinas de todo tipo (peso de mancuernas no especificado; se asume rango amplio).
 - A las 16:30 está medio lleno pero se entrena bien; más tarde, peor.
 - Implicación: plan con alternativa en máquina/polea para cada ejercicio clave por si hay que esperar.
+
+## Bloque 8 · Nutrición (2026-10-07)
+- No cuenta calorías. 3–4 comidas/día.
+- Proteína solo de las comidas, sin batidos (estimación probable: por debajo de 160 g/día; sin medir).
+- Alcohol: sale viernes y/o sábado, normalmente solo 1 noche/semana.
+- Suplementos: antes creatina, omega-3 y magnesio; ahora ninguno. Cafeína de los cafés diarios.
+- Causa de los +4 kg del verano: vacaciones (buffet libre), alcohol, casas rurales con amigos y agosto sin gimnasio.
+- Pautas acordadas (generales):
+  - Mantenimiento estimado ~2.700–2.900 kcal (estimación, sin medir). Objetivo: déficit de ~400–500 kcal,
+    validado por la tendencia de peso (−0,4 a −0,6 kg/semana), no por contar.
+  - Proteína 170–190 g/día, repartida en 3–4 tomas de 35–50 g. Batido de whey si no llega.
+  - Creatina monohidrato 3–5 g/día, todos los días. Omega-3 solo si come poco pescado azul. Magnesio opcional.
+  - Alcohol: máximo 1 noche/semana y controlando lo que se come después.
+  - Café: evitar cafeína a partir de ~16:00 si afecta al sueño.
