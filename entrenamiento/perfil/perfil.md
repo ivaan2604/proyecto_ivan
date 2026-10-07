@@ -23,7 +23,7 @@
 - Trabajo sentado: 3 días en casa y 2 en la oficina.
 
 ## Otras actividades y recuperación
-- Fútbol: liga local, partido los domingos por la tarde, ~60 min de defensa. Sin entrenamientos de equipo.
+- Fútbol: liga local, partido los domingos por la tarde, ~60 min de defensa. Sin entrenamientos de equipo. **La liga empieza el domingo 18-oct-2026** (el 11-oct no hay partido).
 - Sueño: ~7 h entre semana. Estrés bajo por ahora.
 - Pasos diarios: pendiente de saber.
 
