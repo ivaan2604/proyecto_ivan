@@ -52,3 +52,12 @@
 - Sin otras actividades (ni correr, ni bici, ni pádel).
 - Notas: 7 h es aceptable, pero 7,5–8 h mejoraría la recuperación en déficit. Sedentarismo → los pasos diarios (NEAT)
   son una palanca fácil para perder grasa: objetivo inicial 8.000–10.000/día.
+
+## Bloque 6 · Lesiones (2026-10-07) — EN CURSO
+- Rodilla derecha: resonancia → "síndrome de algo", estructura inflamada que roza; le pautaron ejercicio y que iría mejorando.
+  Nombre exacto pendiente (candidatos compatibles con su descripción: síndrome de plica sinovial, de la grasa de Hoffa
+  o femoropatelar; NO diagnosticar, confirmar con el informe).
+- Situación actual: molestia leve después de los partidos.
+- Pendiente: nombre del diagnóstico, zona exacta del dolor, ejercicios que molestan, si hizo fisio, otras lesiones.
+- Criterio de trabajo provisional: carga progresiva de cuádriceps permitida si el dolor ≤3/10 durante el ejercicio
+  y vuelve a la normalidad en 24 h; si persiste o empeora → fisio/traumatólogo.
