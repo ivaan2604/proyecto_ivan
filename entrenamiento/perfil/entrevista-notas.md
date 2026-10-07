@@ -23,3 +23,11 @@
 - Mejores marcas: no las sabe → sacarlas del CSV de Hevy.
 - Primera lectura (pendiente de confirmar con datos): con 3 días cada músculo se trabaja 1×/semana;
   con 4 días el torso llega a 2×, pero la pierna se queda siempre en 1×/semana.
+
+## Bloque 3 · Objetivos (2026-10-07)
+- Prioridad 1: estética + bajar grasa ("estar más definido el verano que viene", ~junio 2027).
+- Prioridad 2: rendimiento en fútbol (menos peso, más resistencia durante la temporada).
+- Prioridad 3: mantener/ganar músculo de forma equilibrada; no prioriza ninguna zona → se decidirá con los datos de Hevy.
+- Sin fecha cerrada, pero quiere empezar ya.
+- Propuesta de marco (pendiente de nutrición): fase de definición moderada (~0,4–0,6 kg/semana)
+  con pausas en mantenimiento; meta orientativa ~87–89 kg para el verano, juzgada por cintura y fotos, no solo báscula.
