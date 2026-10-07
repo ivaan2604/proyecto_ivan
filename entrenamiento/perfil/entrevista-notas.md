@@ -66,3 +66,9 @@
 - Pautas para el plan: fortalecer cuádriceps + glúteo medio/mayor; elegir rangos de menor estrés femoropatelar
   cuando moleste (cadena cerrada 0–60° de flexión; extensión de cuádriceps en 90–45°), progresar de forma gradual
   y evitar picos bruscos de volumen de pierna. Semáforo de dolor 0–3 / 4–5 / >5.
+- Ejercicios que molestan a la rodilla: no lo sabe → vigilar en las sesiones (pedir feedback tras pierna).
+
+## Bloque 7 · Equipamiento (2026-10-07)
+- Gimnasio completo: rack, poleas y máquinas de todo tipo (peso de mancuernas no especificado; se asume rango amplio).
+- A las 16:30 está medio lleno pero se entrena bien; más tarde, peor.
+- Implicación: plan con alternativa en máquina/polea para cada ejercicio clave por si hay que esperar.
