@@ -29,3 +29,9 @@ Se añade una norma: **registrar el 100 % de las sesiones** en Hevy.
 ## 2026-10-07 — Petición de Iván: sin dominadas y sesiones de ~1 hora
 - Torso B: Chin Up → Lat Pulldown (Cable) 3 × 8–12 (no quiere hacer dominadas). Torso A mantiene el jalón en máquina.
 - Todas las sesiones con un tope de ~60 min, calentamiento incluido. En cada día queda indicado qué se recorta primero si falta tiempo.
+
+## 2026-10-07 — Sin superseries
+- Motivo: a las 16:30 el gimnasio está lleno y no puede ocupar dos máquinas a la vez.
+- Todos los días pasan a series simples, con descansos de 2 min (compuestos) y 60–90 s (aislamiento).
+- Para mantener ~60 min: el pájaro sale del Torso B y pasa al día opcional, y las elevaciones de piernas salen de la pierna (el abdomen queda en el día opcional).
+- En cada día se indica qué se recorta primero si falta tiempo.
