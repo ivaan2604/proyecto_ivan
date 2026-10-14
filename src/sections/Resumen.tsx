@@ -1,7 +1,7 @@
 import { useMemo, useState, type CSSProperties } from 'react';
 import { eurRow, LineChart, ProfitBars } from '../charts/charts';
-import { avisos, enReforma, lineaTiempo, rentabilidad, seguimientoGlobal, totalesGastos, totalesMes } from '../lib/derive';
-import { fmtDate, fmtEur, fmtInt, fmtMonthKey } from '../lib/format';
+import { avisos, enReforma, lineaTiempo, rentabilidad, seguimientoGlobal, sobraFalta, totalesGastos, totalesMes } from '../lib/derive';
+import { daysBetween, fmtDate, fmtEur, fmtInt, fmtMonthKey, todayISO } from '../lib/format';
 import { useData } from '../store';
 import { AzaharMark, IconArrow, IconTrendDown, IconTrendUp } from '../ui/icons';
 import { PageHead } from '../ui/layout';
@@ -57,6 +57,10 @@ export function Resumen() {
   const financiado = d.hipoteca.importe + d.familiar.importe;
   const recibido = g.pagado - seg.propio;
   const falta = Math.max(0, seg.invertido - seg.beneficio);
+  const sf = useMemo(() => sobraFalta(d), [d]);
+  const flashSobra = useChangeFlash(sf.saldo, 'sobra');
+  const fein = d.hipoteca.fein;
+  const diasFein = fein.validaHasta ? daysBetween(todayISO(), fein.validaHasta) : null;
 
   // Cifra principal: cuenta hasta el valor y se parte en euros y céntimos
   const propioAnim = Math.round(useCountUp(seg.propio, 1100, 'propio'));
@@ -167,6 +171,58 @@ export function Resumen() {
             </span>
           </div>
         </article>
+
+        <article
+          className={`kpi kpi-sobra ${sf.saldo >= 0 ? 'sobra' : 'falta'}${flashSobra ? ` flash-${flashSobra}` : ''}`}
+          aria-labelledby="h-sobra-k"
+        >
+          <div className="sobra-main">
+            <div className="kpi-label" id="h-sobra-k">¿Te llega para la compra?</div>
+            <div className={`sobra-figure ${sf.saldo >= 0 ? 'pos' : 'neg'}`}>
+              {sf.saldo >= 0 ? 'Sobran ' : 'Faltan '}
+              <Counter id="sobra" value={Math.abs(sf.saldo)} format={(v) => fmtEur(v)} />
+            </div>
+          </div>
+          <dl className="sobra-parts">
+            <div>
+              <dt>Pendiente de pagar</dt>
+              <dd className="num">{fmtEur(sf.pendiente)}</dd>
+            </div>
+            <div className="deuda">
+              <dt>Préstamos (deuda)</dt>
+              <dd className="num">{fmtEur(sf.hipoteca + sf.familiar + sf.prestadoSinGastar)}</dd>
+              <small>
+                hipoteca {fmtEur(sf.hipoteca, { compact: true })}
+                {d.hipoteca.provisional && <span className="chip provisional mini">provisional</span>} · familia {fmtEur(sf.familiar, { compact: true })}
+              </small>
+            </div>
+            <div className="propio">
+              <dt>Tus ahorros (propio)</dt>
+              <dd className="num">{fmtEur(sf.ahorrosQuedan)}</dd>
+              <small>ya puesto {fmtEur(sf.ahorrosUsados, { compact: true })}</small>
+            </div>
+          </dl>
+        </article>
+
+        {fein.validaHasta && diasFein !== null && (
+          <article className={`kpi kpi-fein${diasFein <= 7 ? ' urgente' : ''}`} aria-label="Oferta de la FEIN">
+            <div className="kpi-label">Oferta FEIN · {d.hipoteca.banco || 'hipoteca'}</div>
+            <div className="fein-figure">
+              {diasFein >= 0 ? (
+                <>
+                  <b>{diasFein}</b> {diasFein === 1 ? 'día' : 'días'} para que caduque
+                </>
+              ) : (
+                <b>Caducada</b>
+              )}
+            </div>
+            <div className="kpi-sub">
+              Válida hasta {fmtDate(fein.validaHasta)}
+              {fein.taePct !== null && ` · TAE ${fein.taePct.toLocaleString('es-ES')} %`}
+              {fein.vinculaciones && ` · ${fein.vinculaciones}`}
+            </div>
+          </article>
+        )}
 
         <article className={`kpi kpi-recovery${flashRecup ? ` flash-${flashRecup}` : ''}`} aria-labelledby="h-recup">
           <div className="recovery-head">
@@ -285,11 +341,10 @@ export function Resumen() {
             <span className="hint">{keys.length ? `${keys.length} meses` : ''}</span>
           </div>
           {keys.length === 0 ? (
-            <div className="empty">
-              Aún no has creado ningún mes.{' '}
-              <a href="#/meses" onClick={(e) => (e.preventDefault(), go('meses'))}>
-                Crear el primero
-              </a>
+            <div className="empty invite">
+              <b>Aún no hay meses</b>
+              <span>Crea el primero y la app lo rellena con la previsión: cuotas, gastos fijos y alquiler si ya ha empezado. Luego solo marcas lo pagado.</span>
+              <button className="btn primary" onClick={() => go('meses')}>Crear el primer mes</button>
             </div>
           ) : (
             <ProfitBars
@@ -364,7 +419,15 @@ export function Resumen() {
               }
             />
           ) : (
-            <div className="empty">La gráfica aparecerá cuando registres meses de alquiler{reforma ? ', después de la reforma' : ''}.</div>
+            <div className="empty invite">
+              <b>La curva de recuperación empieza con el primer alquiler</b>
+              <span>
+                {d.recurrentes.inicioAlquiler
+                  ? `Desde ${fmtDate(d.recurrentes.inicioAlquiler)} verás aquí el beneficio acumulado acercándose a lo invertido.`
+                  : 'Pon la fecha prevista de inicio del alquiler para separar los meses de reforma de los de alquiler.'}
+              </span>
+              {!d.recurrentes.inicioAlquiler && <button className="btn" onClick={() => go('compra')}>Poner la fecha</button>}
+            </div>
           )}
           <p className="muted" style={{ fontSize: 12.5, margin: '12px 0 0' }}>
             «Invertido» es tu dinero propio (gastos de compra pagados menos lo pagado con los préstamos) más el

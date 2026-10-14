@@ -1800,3 +1800,253 @@ textarea.input:focus {
     grid-template-columns: 1fr;
   }
 }
+
+/* ───── Etapas: bandas de color con significado de etapa, no de alarma ───── */
+:root {
+  --etapa-espera: color-mix(in srgb, var(--ink) 9%, var(--surface));
+  --etapa-espera-ink: var(--ink-2);
+  --etapa-devolviendo: color-mix(in srgb, var(--data) 16%, var(--surface));
+  --etapa-devolviendo-ink: var(--data);
+  --etapa-libre: var(--pos-soft);
+  --etapa-libre-ink: var(--pos-ink);
+}
+.fase {
+  padding-top: 0;
+}
+.fase-band {
+  margin: 0 -18px 10px;
+  padding: 8px 18px;
+  font-size: 12.5px;
+  font-weight: 800;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+.fase-band span {
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+.fase-espera .fase-band {
+  background: var(--etapa-espera);
+  color: var(--etapa-espera-ink);
+}
+.fase-devolviendo .fase-band {
+  background: var(--etapa-devolviendo);
+  color: var(--etapa-devolviendo-ink);
+}
+.fase-libre .fase-band {
+  background: var(--etapa-libre);
+  color: var(--etapa-libre-ink);
+}
+.fases-prevision {
+  margin-top: 16px;
+}
+.chart .bar-band rect {
+  fill: var(--etapa-espera);
+  opacity: 0.7;
+}
+.chart .bar-band.devolviendo rect {
+  fill: var(--etapa-devolviendo);
+}
+.chart .bar-band.libre rect {
+  fill: var(--etapa-libre);
+}
+.chart .bar-band text {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  fill: var(--etapa-espera-ink);
+}
+.chart .bar-band.devolviendo text {
+  fill: var(--etapa-devolviendo-ink);
+}
+.chart .bar-band.libre text {
+  fill: var(--etapa-libre-ink);
+}
+.chart .bar-marker line {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+}
+.chart .bar-marker text {
+  font-size: 11px;
+  font-weight: 800;
+  fill: var(--ink);
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 4px;
+}
+
+/* Estados vacíos que invitan a empezar */
+.empty.invite {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 26px 22px;
+  font-weight: 500;
+}
+.empty.invite b {
+  font-family: var(--f-display);
+  font-size: 18px;
+  font-weight: 700;
+  font-stretch: 86%;
+  color: var(--ink);
+}
+.empty.invite span {
+  max-width: 52ch;
+}
+.empty.invite .btn {
+  margin-top: 6px;
+}
+
+/* ───── Resumen: más peso a las tres cifras principales ───── */
+.kpis {
+  grid-template-areas:
+    'hero ben'
+    'hero roi';
+}
+.kpi-sobra,
+.kpi-fein,
+.kpi-recovery {
+  grid-area: auto;
+  grid-column: 1 / -1;
+}
+.hero-figure {
+  font-size: clamp(60px, 9vw, 112px);
+}
+.kpi-figure {
+  font-size: clamp(44px, 5.4vw, 62px);
+}
+.kpis > :nth-child(5) {
+  animation-delay: 280ms;
+}
+.kpis > :nth-child(6) {
+  animation-delay: 350ms;
+}
+
+/* Sobra / falta: tarjeta destacada */
+.kpi-sobra {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  gap: 18px 28px;
+  align-items: center;
+  border-width: 2px;
+}
+.kpi-sobra.sobra {
+  border-color: color-mix(in srgb, var(--pos) 55%, var(--line));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--pos-soft) 70%, transparent), var(--surface) 60%);
+}
+.kpi-sobra.falta {
+  border-color: color-mix(in srgb, var(--neg) 55%, var(--line));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--neg-soft) 70%, transparent), var(--surface) 60%);
+}
+.sobra-figure {
+  font-family: var(--f-display);
+  font-weight: 720;
+  font-stretch: 80%;
+  font-size: clamp(36px, 4.4vw, 52px);
+  letter-spacing: -0.035em;
+  line-height: 1;
+  margin-top: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.sobra-parts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+.sobra-parts > div {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  border: 1px solid var(--line);
+}
+.sobra-parts .deuda {
+  border-style: dashed;
+}
+.sobra-parts dt {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.sobra-parts dd {
+  margin: 3px 0 2px;
+  font-size: 18px;
+  font-weight: 800;
+}
+.sobra-parts small {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+.chip.mini {
+  font-size: 10px;
+  padding: 1px 6px;
+}
+
+/* FEIN: fecha de caducidad de la oferta */
+.kpi-fein {
+  border-color: color-mix(in srgb, var(--pend) 50%, var(--line));
+  background: linear-gradient(90deg, var(--pend-soft), var(--surface) 70%);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 22px;
+}
+.kpi-fein .kpi-label {
+  flex-basis: 100%;
+}
+.fein-figure {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--pend-ink);
+}
+.fein-figure b {
+  font-family: var(--f-display);
+  font-size: 40px;
+  font-stretch: 80%;
+  letter-spacing: -0.03em;
+}
+.kpi-fein.urgente {
+  border-color: var(--neg);
+}
+.kpi-fein.urgente .fein-figure {
+  color: var(--neg-ink);
+}
+
+@media (max-width: 860px) {
+  .kpis {
+    grid-template-areas: 'hero' 'ben' 'roi';
+  }
+  .kpi-sobra {
+    grid-template-columns: 1fr;
+  }
+  .sobra-parts {
+    grid-template-columns: 1fr;
+  }
+  .hero-figure {
+    font-size: clamp(56px, 17vw, 80px);
+  }
+  .kpi-figure {
+    font-size: 46px;
+  }
+}
+.legend i.band-key {
+  border: 1px solid var(--line-strong);
+  background: var(--etapa-espera);
+}
+.legend i.band-key.devolviendo {
+  background: var(--etapa-devolviendo);
+}
+.legend i.band-key.libre {
+  background: var(--etapa-libre);
+}

@@ -1,10 +1,61 @@
 import { useMemo } from 'react';
-import { fasesResultado, type Fase } from '../lib/derive';
+import { fasesResultado, finPrestamoFamiliar, previsionMensual, type Fase } from '../lib/derive';
+import { eurRow, ProfitBars, type BarBand } from '../charts/charts';
+import { go } from '../router';
 import { addMonths } from '../lib/finance';
 import { fmtEur, fmtMonthKey } from '../lib/format';
 import type { AppData } from '../lib/model';
 
 const mes = (k: string) => fmtMonthKey(k);
+
+const ETAPA: Record<Fase['id'], { n: string; nombre: string }> = {
+  espera: { n: '1', nombre: 'Esperando' },
+  devolviendo: { n: '2', nombre: 'Devolviendo' },
+  libre: { n: '3', nombre: 'Beneficio' },
+};
+
+/** Previsión mes a mes con las etapas como bandas y el fin del préstamo familiar marcado. */
+function Prevision({ d }: { d: AppData }) {
+  const prev = useMemo(() => previsionMensual(d), [d]);
+  if (!prev) {
+    const faltan = [!d.hitos.escrituraFecha && 'la fecha de escritura', !d.recurrentes.inicioAlquiler && 'la fecha de inicio del alquiler'].filter(Boolean);
+    return (
+      <div className="empty invite">
+        <b>La previsión mes a mes aparecerá aquí</b>
+        <span>Pon {faltan.join(' y ') || 'las fechas que faltan'} y verás cada etapa en el calendario, con el mes en que acaba la devolución a tus padres.</span>
+        <button className="btn" onClick={() => go('compra')}>Poner fechas</button>
+      </div>
+    );
+  }
+  const bands: BarBand[] = [];
+  prev.forEach((m, i) => {
+    const last = bands[bands.length - 1];
+    if (last && last.className === m.fase) last.to = i;
+    else bands.push({ from: i, to: i, className: m.fase, label: `${ETAPA[m.fase].n} · ${ETAPA[m.fase].nombre}` });
+  });
+  const fin = finPrestamoFamiliar(d);
+  const finIdx = prev.findIndex((m) => m.key === fin);
+  return (
+    <ProfitBars
+      height={200}
+      legend={bands.map((b) => (
+        <span key={b.className}>
+          <i className={`band-key ${b.className}`} />
+          {b.label}
+        </span>
+      ))}
+      bands={bands}
+      markers={finIdx >= 0 ? [{ index: finIdx, label: `Última cuota a tus padres · ${fmtMonthKey(fin!, true)}` }] : undefined}
+      data={prev.map((m) => ({
+        key: m.key,
+        label: fmtMonthKey(m.key, true),
+        title: fmtMonthKey(m.key),
+        value: m.resultado,
+        rows: [{ label: 'Etapa', value: ETAPA[m.fase].nombre }, eurRow('Resultado previsto', m.resultado, true)],
+      }))}
+    />
+  );
+}
 
 function periodo(f: Fase, fases: Fase[]): string {
   const ini = fases[1].desde;
@@ -32,6 +83,10 @@ export function PanelFases({ d }: { d: AppData }) {
       <div className="fases-grid">
         {fases.map((f) => (
           <div key={f.id} className={`fase fase-${f.id}`}>
+            <div className="fase-band">
+              <span>Etapa {ETAPA[f.id].n}</span>
+              {ETAPA[f.id].nombre}
+            </div>
             <div className="fase-title">{f.titulo}</div>
             <div className={`fase-figure ${f.resultado > 0 ? 'pos' : f.resultado < 0 ? 'neg' : ''}`}>
               {fmtEur(f.resultado, { sign: true })}
@@ -49,7 +104,11 @@ export function PanelFases({ d }: { d: AppData }) {
           </div>
         ))}
       </div>
+      <div className="fases-prevision">
+        <Prevision d={d} />
+      </div>
       <p className="muted" style={{ fontSize: 12.5, margin: '12px 0 0' }}>
+        Las etapas 1 y 2 salen en negativo porque estás invirtiendo y devolviendo: es lo previsto, no una alarma.
         Antes de alquilar, todo sale de tu bolsillo. Los gastos fijos incluyen el mantenimiento que pongas en «Compra y
         financiación»; los meses reales que registres en «Meses» son los que cuentan para la rentabilidad.
         {d.hipoteca.provisional && ' La cuota de la hipoteca es provisional hasta la FEIN.'}

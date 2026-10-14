@@ -698,3 +698,29 @@ export function sobraFalta(d: AppData) {
     ahorrosUsados: Math.min(dp.propio, d.ahorros.paraCompra), disponible, saldo: disponible - g.pendiente,
   };
 }
+
+export interface PrevisionMes {
+  key: string;
+  fase: Fase['id'];
+  resultado: number;
+}
+
+/**
+ * Resultado mensual previsto mes a mes, desde el mes siguiente a la escritura (o el actual)
+ * hasta un año después de la última cuota del préstamo familiar. Necesita las fechas de
+ * inicio del alquiler y de fin del préstamo familiar; si falta alguna, devuelve null.
+ */
+export function previsionMensual(d: AppData): PrevisionMes[] | null {
+  const fases = fasesResultado(d);
+  const ini = inicioAlquilerMes(d);
+  const fin = finPrestamoFamiliar(d);
+  if (!ini || !fin) return null;
+  const desde = d.hitos.escrituraFecha ? addMonths(d.hitos.escrituraFecha.slice(0, 7), 1) : currentMonthKey();
+  const hasta = addMonths(fin > ini ? fin : ini, 12);
+  const out: PrevisionMes[] = [];
+  for (let k = desde; k <= hasta && out.length < 120; k = addMonths(k, 1)) {
+    const f = k < ini ? (k <= fin ? fases[0] : { ...fases[0], resultado: fases[0].resultado + d.familiar.cuota }) : k <= fin ? fases[1] : fases[2];
+    out.push({ key: k, fase: f.id, resultado: f.resultado });
+  }
+  return out;
+}
