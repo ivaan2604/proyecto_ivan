@@ -49,7 +49,6 @@ export const appDataSchema = z.object({
   gastosExtra: z.array(
     z.object({ id: z.string(), concepto: z.string(), fecha, importe: cents, estado, nota: z.string() }),
   ),
-  ahorros: z.object({ paraCompra: cents.min(0) }),
   reforma: z.object({
     partidas: z.array(
       z.object({
@@ -104,7 +103,6 @@ export function validateAppData(input: unknown): AppData {
     gastosBase: Object.fromEntries(
       BASE_KEYS.map((k) => [k, { ...base.gastosBase[k], ...(obj.gastosBase?.[k] ?? {}) }]),
     ),
-    ahorros: { ...base.ahorros, ...obj.ahorros },
     reforma: { ...base.reforma, ...obj.reforma },
     cuotas: { ...base.cuotas, ...obj.cuotas },
     meta: { ...base.meta, ...obj.meta },

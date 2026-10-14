@@ -1927,72 +1927,6 @@ textarea.input:focus {
   animation-delay: 350ms;
 }
 
-/* Sobra / falta: tarjeta destacada */
-.kpi-sobra {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
-  gap: 18px 28px;
-  align-items: center;
-  border-width: 2px;
-}
-.kpi-sobra.sobra {
-  border-color: color-mix(in srgb, var(--pos) 55%, var(--line));
-  background: linear-gradient(90deg, color-mix(in srgb, var(--pos-soft) 70%, transparent), var(--surface) 60%);
-}
-.kpi-sobra.falta {
-  border-color: color-mix(in srgb, var(--neg) 55%, var(--line));
-  background: linear-gradient(90deg, color-mix(in srgb, var(--neg-soft) 70%, transparent), var(--surface) 60%);
-}
-.sobra-figure {
-  font-family: var(--f-display);
-  font-weight: 720;
-  font-stretch: 80%;
-  font-size: clamp(36px, 4.4vw, 52px);
-  letter-spacing: -0.035em;
-  line-height: 1;
-  margin-top: 10px;
-  font-variant-numeric: tabular-nums;
-}
-.sobra-parts {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin: 0;
-}
-.sobra-parts > div {
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--surface) 85%, transparent);
-  border: 1px solid var(--line);
-}
-.sobra-parts .deuda {
-  border-style: dashed;
-}
-.sobra-parts dt {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.sobra-parts dd {
-  margin: 3px 0 2px;
-  font-size: 18px;
-  font-weight: 800;
-}
-.sobra-parts small {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  align-items: center;
-  font-size: 12px;
-  color: var(--muted);
-}
-.chip.mini {
-  font-size: 10px;
-  padding: 1px 6px;
-}
-
 /* FEIN: fecha de caducidad de la oferta */
 .kpi-fein {
   border-color: color-mix(in srgb, var(--pend) 50%, var(--line));
@@ -2051,39 +1985,97 @@ textarea.input:focus {
   background: var(--etapa-libre);
 }
 
-/* Colchón hasta que el piso se pague solo */
-.kpi-colchon {
+/* Lo que pones tú: la entrada y, después, el sueldo por etapas */
+.kpi-pones {
   grid-area: auto;
   grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: 18px 32px;
 }
-.kpi-colchon.corto {
-  border-color: color-mix(in srgb, var(--neg) 45%, var(--line));
-  background: linear-gradient(90deg, color-mix(in srgb, var(--neg-soft) 60%, transparent), var(--surface) 55%);
-}
-.colchon-body {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px 24px;
-  margin-top: 8px;
-}
-.colchon-figure {
+.pones-figure {
   font-family: var(--f-display);
   font-weight: 720;
   font-stretch: 80%;
-  font-size: clamp(28px, 3.4vw, 40px);
-  letter-spacing: -0.03em;
-  line-height: 1.05;
+  font-size: clamp(38px, 4.6vw, 56px);
+  letter-spacing: -0.035em;
+  line-height: 1;
+  margin: 10px 0 6px;
   font-variant-numeric: tabular-nums;
 }
-.colchon-body p {
-  flex: 1 1 360px;
-  margin: 0;
-  font-size: 14px;
-  color: var(--ink-2);
+.pones-meter {
+  height: 8px;
+  margin-top: 14px;
+  background: var(--surface-3);
 }
-.kpis > :nth-child(7) {
-  animation-delay: 420ms;
+.pones-meter > span {
+  background: linear-gradient(90deg, #f6a25a, var(--brand));
+  border-radius: 6px;
+}
+.pones-calc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.pones-sueldo ul {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.pones-sueldo li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 0 12px;
+  align-items: baseline;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+.pones-sueldo li.etapa-espera {
+  background: var(--etapa-espera);
+}
+.pones-sueldo li.etapa-devolviendo {
+  background: var(--etapa-devolviendo);
+}
+.pones-sueldo li.etapa-libre {
+  background: var(--etapa-libre);
+}
+.pones-etapa {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.pones-que {
+  font-weight: 700;
+  font-size: 14px;
+}
+.pones-sueldo li b {
+  font-size: 17px;
+  font-weight: 800;
+  text-align: right;
+}
+.pones-sueldo li small {
+  grid-column: 3;
+  text-align: right;
+  font-size: 12px;
+  color: var(--muted);
+}
+.pones-total {
+  margin: 10px 0 0;
+  font-size: 14px;
+}
+@media (max-width: 860px) {
+  .kpi-pones {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Resultado económico de cada etapa */

@@ -1,7 +1,7 @@
 import { useMemo, useState, type CSSProperties } from 'react';
 import { eurRow, LineChart, ProfitBars } from '../charts/charts';
 import {
-  avisos, capitalDevuelto, colchon, enReforma, lineaTiempo, recuperacionPrevista, rentabilidad, seguimientoGlobal, sobraFalta,
+  aportacion, avisos, capitalDevuelto, enReforma, lineaTiempo, recuperacionPrevista, rentabilidad, seguimientoGlobal,
   totalesGastos, totalesMes,
 } from '../lib/derive';
 import { daysBetween, fmtDate, fmtEur, fmtInt, fmtMonthKey, todayISO } from '../lib/format';
@@ -60,11 +60,9 @@ export function Resumen() {
   const financiado = d.hipoteca.importe + d.familiar.importe;
   const recibido = g.pagado - seg.propio;
   const falta = Math.max(0, seg.invertido - seg.beneficio);
-  const sf = useMemo(() => sobraFalta(d), [d]);
-  const col = useMemo(() => colchon(d), [d]);
+  const ap = useMemo(() => aportacion(d), [d]);
   const recPrev = useMemo(() => recuperacionPrevista(d), [d]);
   const capDevuelto = useMemo(() => capitalDevuelto(d), [d]);
-  const flashSobra = useChangeFlash(sf.saldo, 'sobra');
   const fein = d.hipoteca.fein;
   const diasFein = fein.validaHasta ? daysBetween(todayISO(), fein.validaHasta) : null;
 
@@ -189,73 +187,51 @@ export function Resumen() {
           </div>
         </article>
 
-        <article
-          className={`kpi kpi-sobra ${sf.saldo >= 0 ? 'sobra' : 'falta'}${flashSobra ? ` flash-${flashSobra}` : ''}`}
-          aria-labelledby="h-sobra-k"
-        >
-          <div className="sobra-main">
-            <div className="kpi-label" id="h-sobra-k">¿Te llega para la compra?</div>
-            <div className={`sobra-figure ${sf.saldo >= 0 ? 'pos' : 'neg'}`}>
-              {sf.saldo >= 0 ? 'Sobran ' : 'Faltan '}
-              <Counter id="sobra" value={Math.abs(sf.saldo)} format={(v) => fmtEur(v)} />
+        <article className="kpi kpi-pones" aria-labelledby="h-pones">
+          <div className="pones-entrada">
+            <div className="kpi-label" id="h-pones">Lo que pones tú · al principio</div>
+            <div className="pones-figure">
+              <Counter id="pones-quedan" value={ap.quedan} format={(v) => fmtEur(v)} />
             </div>
+            <div className="kpi-sub">
+              {ap.quedan > 0 ? 'te quedan por poner hasta la escritura' : 'entrada completa'} · de {fmtEur(ap.entrada)} de entrada, ya
+              has pagado {fmtEur(ap.pagado)}
+            </div>
+            <div className="meter pones-meter" role="progressbar" aria-label="Entrada pagada" aria-valuenow={Math.round((ap.entrada ? ap.pagado / ap.entrada : 0) * 100)} aria-valuemin={0} aria-valuemax={100}>
+              <span style={{ '--p': ap.entrada ? ap.pagado / ap.entrada : 0 } as CSSProperties} />
+            </div>
+            <small className="pones-calc">
+              Compra {fmtEur(ap.total, { compact: true })} − préstamos {fmtEur(ap.prestamos, { compact: true })}
+              {d.hipoteca.provisional && <span className="chip provisional mini">hipoteca provisional</span>}
+            </small>
           </div>
-          <dl className="sobra-parts">
-            <div>
-              <dt>Pendiente de pagar</dt>
-              <dd className="num">{fmtEur(sf.pendiente)}</dd>
-            </div>
-            <div className="deuda">
-              <dt>Préstamos (deuda)</dt>
-              <dd className="num">{fmtEur(sf.hipoteca + sf.familiar + sf.prestadoSinGastar)}</dd>
-              <small>
-                hipoteca {fmtEur(sf.hipoteca, { compact: true })}
-                {d.hipoteca.provisional && <span className="chip provisional mini">provisional</span>} · familia {fmtEur(sf.familiar, { compact: true })}
-              </small>
-            </div>
-            <div className="propio">
-              <dt>Tus ahorros (propio)</dt>
-              <dd className="num">{fmtEur(sf.ahorrosQuedan)}</dd>
-              <small>ya puesto {fmtEur(sf.ahorrosUsados, { compact: true })}</small>
-            </div>
-          </dl>
-        </article>
-
-        <article className={`kpi kpi-colchon${(col.necesario ?? (col.mesesCubiertos === 0 ? 1 : 0)) > 0 ? ' corto' : ''}`} aria-labelledby="h-colchon">
-          <div className="kpi-label" id="h-colchon">¿Te llega hasta que el piso se pague solo?</div>
-          {col.necesario !== null ? (
-            <div className="colchon-body">
-              <div className={`colchon-figure ${col.necesario > 0 ? 'neg' : 'pos'}`}>
-                {col.necesario > 0 ? <>Te faltarán {fmtEur(col.necesario)}</> : <>Sí, sin quedarte en negativo</>}
-              </div>
-              <p>
-                Tras pagar la compra te {sf.saldo >= 0 ? `sobran ${fmtEur(sf.saldo)}` : `faltan ${fmtEur(-sf.saldo)}`}. Antes del primer
-                alquiler te quedarán <b className={`num ${col.antesAlquiler! < 0 ? 'neg' : ''}`}>{fmtEur(col.antesAlquiler!)}</b>
-                {col.mesMinimo && (
-                  <>
-                    {' '}y en el peor momento, {fmtMonthKey(col.mesMinimo)} (última cuota a tus padres),{' '}
-                    <b className={`num ${col.minimo! < 0 ? 'neg' : ''}`}>{fmtEur(col.minimo!)}</b>
-                  </>
-                )}
-                . {col.necesario > 0 ? 'Es el dinero extra que necesitas tener para cubrir las etapas 1 y 2.' : ''}
+          <div className="pones-sueldo">
+            <div className="kpi-label">Después, de tu sueldo</div>
+            <ul>
+              {ap.etapas.map((e, i) => (
+                <li key={e.id} className={`etapa-${e.id}`}>
+                  <span className="pones-etapa">Etapa {i + 1}</span>
+                  <span className="pones-que">
+                    {e.id === 'espera' ? 'Antes de alquilar' : e.id === 'devolviendo' ? 'Alquilado, devolviendo a tus padres' : 'El piso se paga solo'}
+                  </span>
+                  <b className={`num ${e.resultado < 0 ? 'neg' : 'pos'}`}>
+                    {e.resultado < 0 ? `${fmtEur(-e.resultado)}/mes` : `+${fmtEur(e.resultado)}/mes`}
+                  </b>
+                  <small>{e.id === 'libre' ? 'te deja' : e.meses !== null ? `${e.meses} ${e.meses === 1 ? 'mes' : 'meses'}` : 'sin fechas'}</small>
+                </li>
+              ))}
+            </ul>
+            {ap.sueldoTotal !== null ? (
+              <p className="pones-total">
+                En total, <b className="num">{fmtEur(ap.sueldoTotal)}</b> de tu sueldo hasta que el piso se paga solo.
               </p>
-            </div>
-          ) : (
-            <div className="colchon-body">
-              <div className={`colchon-figure ${col.mesesCubiertos === 0 ? 'neg' : ''}`}>
-                Cada mes antes de alquilar salen {fmtEur(col.costeMesEspera)}
-              </div>
-              <p>
-                {col.mesesCubiertos === 0
-                  ? `Lo que te sobra tras la compra (${fmtEur(Math.max(0, sf.saldo))}) no cubre ni un mes de espera.`
-                  : col.mesesCubiertos !== null
-                    ? `Lo que te sobra tras la compra cubre ${col.mesesCubiertos} ${col.mesesCubiertos === 1 ? 'mes' : 'meses'} de espera.`
-                    : ''}{' '}
-                Pon la fecha de escritura y la de inicio del alquiler para calcular cuánto necesitas hasta que el piso se pague solo.
+            ) : (
+              <p className="pones-total muted">
+                Pon la fecha de escritura y la de inicio del alquiler para ver cuántos meses dura cada etapa y el total.{' '}
+                <a href="#/compra" onClick={(e) => (e.preventDefault(), go('compra'))}>Poner fechas</a>
               </p>
-              <button className="btn" onClick={() => go('compra')}>Poner fechas</button>
-            </div>
-          )}
+            )}
+          </div>
         </article>
 
         {fein.validaHasta && diasFein !== null && (

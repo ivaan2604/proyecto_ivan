@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  avisos, capitalHipotecaMes, colchon, costesPrestamos, cuotaHipotecaPrevista, fasesResultado, fijosMensuales, finPrestamoFamiliar,
-  mesPrevision, recuperacionPrevista, rentabilidad, sobraFalta, totalesGastos,
+  aportacion, avisos, capitalHipotecaMes, costesPrestamos, cuotaHipotecaPrevista, fasesResultado, fijosMensuales, finPrestamoFamiliar,
+  mesPrevision, recuperacionPrevista, rentabilidad, totalesGastos,
 } from '../derive';
 import { mesesRestantes } from '../finance';
 import { validateAppData } from '../schema';
@@ -20,7 +20,6 @@ function real() {
     },
     gastosBase: { arras: { estado: 'pagado', nota: '', fecha: '' }, senal: { estado: 'pagado', nota: '', fecha: '' }, tasacion: { estado: 'pagado', nota: '', fecha: '' } },
     recurrentes: { alquiler: 70000, ibiAnual: 30000, edificioAnual: 10000, inicioAlquiler: '', seguroVidaAnual: 8891, seguroHogarAnual: 16120, mantenimientoMensual: 0 },
-    ahorros: { paraCompra: 777225 + 1250000 },
   });
 }
 
@@ -52,23 +51,20 @@ describe('cifras de control (mantenimiento a 0 €)', () => {
     expect(finPrestamoFamiliar(d)).toBe('2029-05');
     expect(fasesResultado(d)[2].desde).toBe('2029-06');
   });
-  it('gastos de compra 97.422,25 € con 7.772,25 € pagados; sobran ≈ 650 €', () => {
+  it('gastos de compra 97.422,25 € con 7.772,25 € pagados; entrada de tu bolsillo 19.623,25 €', () => {
     const d = real();
     const g = totalesGastos(d);
     expect(g.total).toBe(9742225);
     expect(g.pagado).toBe(777225);
-    const s = sobraFalta(d);
-    expect(s.ahorrosQuedan).toBe(1250000);
-    expect(s.saldo).toBe(5379900 + 2400000 + 1250000 - 8965000); // +649 €
-    expect(Math.round(s.saldo / 100)).toBe(649);
+    const ap = aportacion(d);
+    expect(ap.entrada).toBe(9742225 - 5379900 - 2400000);
+    expect(ap.pagado).toBe(777225);
+    expect(ap.quedan).toBe(9742225 - 5379900 - 2400000 - 777225); // 11.851 €
   });
-  it('los ahorros que quedan bajan al marcar como pagado algo pagado de tu bolsillo; el saldo no cambia', () => {
+  it('lo que queda de la entrada baja al marcar como pagado algo de tu bolsillo', () => {
     const d = real();
-    const antes = sobraFalta(d).saldo;
     d.gastosBase.notaria.estado = 'pagado';
-    const s = sobraFalta(d);
-    expect(s.ahorrosQuedan).toBe(1250000 - 70000);
-    expect(s.saldo).toBe(antes);
+    expect(aportacion(d).quedan).toBe(9742225 - 5379900 - 2400000 - 777225 - 70000);
   });
   it('rentabilidad teórica del piso sin maquillar: bruta 8,62 % y neta 7,95 %', () => {
     const r = rentabilidad(real());
@@ -137,20 +133,18 @@ describe('meses nuevos según la fase', () => {
   });
 });
 
-describe('colchón hasta que el piso se pague solo', () => {
-  it('sin fechas: cada mes de espera cuesta 1.111,83 € y lo que sobra no cubre ni uno', () => {
-    const c = colchon(real());
-    expect(c.costeMesEspera).toBe(111183);
-    expect(c.mesesCubiertos).toBe(0);
-    expect(c.necesario).toBeNull();
+describe('lo que sale de tu sueldo', () => {
+  it('sin fechas: 1.111,83 €/mes antes de alquilar y 411,83 €/mes devolviendo; sin total', () => {
+    const ap = aportacion(real());
+    expect(ap.etapas.map((e) => e.resultado)).toEqual([-111183, -41183, 38817]);
+    expect(ap.etapas[0].meses).toBeNull();
+    expect(ap.sueldoTotal).toBeNull();
   });
-  it('con fechas: saldo antes del primer alquiler y en el peor momento (última cuota a la familia)', () => {
-    const c = colchon(conFechas());
-    expect(c.inicial).toBe(64900);
-    expect(c.antesAlquiler).toBe(64900 - 3 * 111183);
-    expect(c.minimo).toBe(64900 - 3 * 111183 - 27 * 41183);
-    expect(c.mesMinimo).toBe('2029-05');
-    expect(c.necesario).toBe(-(64900 - 3 * 111183 - 27 * 41183)); // ≈ 13.806 €
+  it('con fechas: 3 meses de espera y 27 devolviendo; total del sueldo hasta que el piso se paga solo', () => {
+    const ap = aportacion(conFechas());
+    expect(ap.etapas[0].meses).toBe(3);
+    expect(ap.etapas[1].meses).toBe(27);
+    expect(ap.sueldoTotal).toBe(3 * 111183 + 27 * 41183); // ≈ 14.455 €
   });
 });
 

@@ -713,24 +713,31 @@ export function fasesResultado(d: AppData): Fase[] {
   ];
 }
 
-/* ───────────── Sobra / falta para terminar de pagar la compra ───────────── */
+/* ───────────── Lo que pones tú ───────────── */
+
+export interface EtapaSueldo {
+  id: Fase['id'];
+  /** Lo que sale (o entra, si es positivo) cada mes */
+  resultado: number;
+  /** Meses que dura la etapa (null = sin fechas) */
+  meses: number | null;
+}
 
 /**
- * Lo pendiente de pagar frente al dinero que aún tienes para pagarlo: lo que queda de los
- * préstamos (sin recibir o recibido y sin gastar) y lo que te queda de tus ahorros.
+ * Lo que aportas de tu bolsillo: la entrada (lo que no cubren los préstamos) y, después, lo que
+ * sale de tu sueldo cada mes en las etapas en negativo hasta que el piso se paga solo.
  */
-export function sobraFalta(d: AppData) {
+export function aportacion(d: AppData) {
   const g = totalesGastos(d);
-  const dp = dineroPropio(d);
-  const hipoteca = (d.hipoteca.recibida ? 0 : d.hipoteca.importe);
-  const familiar = (d.familiar.recibido ? 0 : d.familiar.importe);
-  const prestadoSinGastar = dp.sinGastar;
-  const ahorrosQuedan = Math.max(0, d.ahorros.paraCompra - dp.propio);
-  const disponible = hipoteca + familiar + prestadoSinGastar + ahorrosQuedan;
-  return {
-    pendiente: g.pendiente, hipoteca, familiar, prestadoSinGastar, ahorrosQuedan,
-    ahorrosUsados: Math.min(dp.propio, d.ahorros.paraCompra), disponible, saldo: disponible - g.pendiente,
-  };
+  const entrada = Math.max(0, g.total - d.hipoteca.importe - d.familiar.importe);
+  const pagado = Math.min(dineroPropio(d).propio, entrada);
+  const fases = fasesResultado(d);
+  const prev = previsionMensual(d);
+  const meses = (id: Fase['id']) => (prev ? prev.filter((m) => m.fase === id).length : null);
+  const etapas: EtapaSueldo[] = fases.map((f) => ({ id: f.id, resultado: f.resultado, meses: f.id === 'libre' ? null : meses(f.id) }));
+  // Total del sueldo: los meses en negativo de la previsión (etapas 1 y 2)
+  const sueldoTotal = prev ? -prev.filter((m) => m.resultado < 0).reduce((a, m) => a + m.resultado, 0) : null;
+  return { total: g.total, prestamos: d.hipoteca.importe + d.familiar.importe, entrada, pagado, quedan: entrada - pagado, etapas, sueldoTotal };
 }
 
 export interface PrevisionMes {
@@ -768,50 +775,7 @@ export function previsionMensual(d: AppData): PrevisionMes[] | null {
   return out;
 }
 
-/* ───────────── Colchón y recuperación previstos ───────────── */
-
-export interface Colchon {
-  /** Lo que sobra (o falta, si es negativo) para terminar de pagar la compra */
-  inicial: number;
-  /** Lo que gastas cada mes antes de alquilar (positivo) */
-  costeMesEspera: number;
-  /** Meses de espera que cubre lo que sobra (null si no sobra nada) */
-  mesesCubiertos: number | null;
-  /** Con fechas: saldo justo antes del primer alquiler y en el peor momento */
-  antesAlquiler: number | null;
-  minimo: number | null;
-  mesMinimo: string | null;
-  /** Dinero extra que tienes que tener para no quedarte en negativo en ningún momento */
-  necesario: number | null;
-}
-
-/**
- * El dinero que te queda tras la compra, mes a mes: lo que sobra al terminar de pagar, menos lo
- * que sale cada mes en las etapas en negativo. Responde a «¿me llega hasta que el piso se pague solo?».
- */
-export function colchon(d: AppData): Colchon {
-  const inicial = sobraFalta(d).saldo;
-  const costeMesEspera = -fasesResultado(d)[0].resultado;
-  const mesesCubiertos = inicial > 0 && costeMesEspera > 0 ? Math.floor(inicial / costeMesEspera) : inicial > 0 ? null : 0;
-  const ini = inicioAlquilerMes(d);
-  const desde = inicioHipotecaMes(d);
-  if (!ini || !desde) return { inicial, costeMesEspera, mesesCubiertos, antesAlquiler: null, minimo: null, mesMinimo: null, necesario: null };
-  let saldo = inicial;
-  let antesAlquiler = inicial;
-  let minimo = inicial;
-  let mesMinimo: string | null = null;
-  const fin = finPrestamoFamiliar(d);
-  const hasta = addMonths(fin && fin > ini ? fin : ini, 1);
-  for (let k = desde; k <= hasta; k = addMonths(k, 1)) {
-    saldo += resultadoPrevistoMes(d, k).resultado;
-    if (k < ini) antesAlquiler = saldo;
-    if (saldo < minimo) {
-      minimo = saldo;
-      mesMinimo = k;
-    }
-  }
-  return { inicial, costeMesEspera, mesesCubiertos, antesAlquiler, minimo, mesMinimo, necesario: Math.max(0, -minimo) };
-}
+/* ───────────── Recuperación prevista ───────────── */
 
 export interface RecuperacionPrevista {
   /** Dinero propio de la compra (total − préstamos) + saldo de los meses antes de alquilar */
