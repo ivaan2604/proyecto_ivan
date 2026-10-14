@@ -1,4 +1,4 @@
-import { cuotaHipotecaPrevista, fijosMensuales, importeBase, sobraFalta, totalesReforma } from '../lib/derive';
+import { aportacion, cuotaHipotecaPrevista, fijosMensuales, importeBase, totalesReforma } from '../lib/derive';
 import { fmtEur } from '../lib/format';
 import type { AppData } from '../lib/model';
 import { update, useData } from '../store';
@@ -33,7 +33,7 @@ export function Compra() {
     </Field>
   );
   const mensualFijos = fijosMensuales(d);
-  const sf = sobraFalta(d);
+  const ap = aportacion(d);
   const fein = d.hipoteca.fein;
   const setFein = <K extends keyof typeof fein>(key: K) => (v: (typeof fein)[K]) =>
     update((x) => {
@@ -181,28 +181,18 @@ export function Compra() {
           </section>
         </div>
 
-        <section className="card" aria-labelledby="h-sobra">
+        <section className="card" aria-labelledby="h-pones">
           <div className="card-head">
-            <h2 id="h-sobra">¿Te llega para la compra?</h2>
-            <span className="hint">lo pendiente frente al dinero que tienes para pagarlo</span>
-          </div>
-          <div className="form">
-            <Field label="Tus ahorros para la compra" hint="Todo lo que pones de tu bolsillo, incluido lo ya pagado">
-              <MoneyInput value={d.ahorros.paraCompra} onChange={(v) => update((x) => void (x.ahorros.paraCompra = v))} />
-            </Field>
+            <h2 id="h-pones">Lo que pones tú al principio</h2>
+            <span className="hint">la entrada: lo que no cubren los préstamos</span>
           </div>
           <p className="sobra-line">
-            Pendiente de pagar <b className="num">{fmtEur(sf.pendiente)}</b>
-            {sf.hipoteca > 0 && <> − hipoteca <b className="num">{fmtEur(sf.hipoteca)}</b></>}
-            {sf.familiar > 0 && <> − préstamo familiar <b className="num">{fmtEur(sf.familiar)}</b></>}
-            {sf.prestadoSinGastar > 0 && <> − préstamo recibido sin gastar <b className="num">{fmtEur(sf.prestadoSinGastar)}</b></>}
-            {' '}− tus ahorros <b className="num">{fmtEur(sf.ahorrosQuedan)}</b> →{' '}
-            <b className={`num ${sf.saldo >= 0 ? 'pos' : 'neg'}`}>{sf.saldo >= 0 ? `Sobran ${fmtEur(sf.saldo)}` : `Faltan ${fmtEur(-sf.saldo)}`}</b>
+            Total de la compra <b className="num">{fmtEur(ap.total)}</b> − hipoteca <b className="num">{fmtEur(d.hipoteca.importe)}</b> − préstamo
+            familiar <b className="num">{fmtEur(d.familiar.importe)}</b> = <b className="num">{fmtEur(ap.entrada)}</b> de tu bolsillo.
           </p>
           <p className="muted" style={{ fontSize: 13, marginBottom: 0 }}>
-            Deuda (hipoteca y préstamo familiar) y dinero propio (tus ahorros) van por separado. Ya has puesto{' '}
-            {fmtEur(sf.ahorrosUsados)} de tus ahorros; los {fmtEur(sf.ahorrosQuedan)} restantes bajan solos cuando marcas
-            un gasto como pagado.
+            Ya has pagado {fmtEur(ap.pagado)}; te quedan {fmtEur(ap.quedan)} hasta la escritura. Después, lo que salga cada mes lo
+            pones de tu sueldo (lo ves por etapas en el Resumen).
           </p>
         </section>
 

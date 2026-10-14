@@ -161,11 +161,6 @@ export interface AppData {
   };
   gastosBase: Record<BaseKey, GastoBaseEstado>;
   gastosExtra: GastoExtra[];
-  /**
-   * Ahorros que pones en la compra, en total (incluido lo ya pagado de tu bolsillo).
-   * Lo que te queda = esto − dinero propio ya pagado.
-   */
-  ahorros: { paraCompra: number };
   /** Si tiene partidas, sustituye al importe único «reforma» de los gastos de compra */
   reforma: { partidas: PartidaReforma[] };
   /** Clave "YYYY-MM" */
@@ -213,7 +208,6 @@ export function emptyData(): AppData {
     },
     gastosBase,
     gastosExtra: [],
-    ahorros: { paraCompra: 0 },
     reforma: { partidas: [] },
     meses: {},
     cuotas: { hipoteca: [], familiar: [] },
