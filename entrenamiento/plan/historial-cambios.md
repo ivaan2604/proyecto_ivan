@@ -35,3 +35,9 @@ Se añade una norma: **registrar el 100 % de las sesiones** en Hevy.
 - Todos los días pasan a series simples, con descansos de 2 min (compuestos) y 60–90 s (aislamiento).
 - Para mantener ~60 min: el pájaro sale del Torso B y pasa al día opcional, y las elevaciones de piernas salen de la pierna (el abdomen queda en el día opcional).
 - En cada día se indica qué se recorta primero si falta tiempo.
+
+## 2026-10-14 — Ajuste puntual: semana del 12 al 18 de octubre
+- Sin entrenar del 08 al 14-oct (pueblo y conjuntivitis). Partido el **sábado 17-oct a las 16:00** (no el domingo).
+- Jueves 15: Torso A sin press con mancuernas, más 2 ejercicios ligeros de pierna (abductores y extensión a RIR 3) para no pasar casi 2 semanas sin estímulo, con pocas agujetas.
+- Viernes 16: Torso B sin curl femoral (víspera del partido), sin fallo.
+- La pierna completa pasa a la semana siguiente (lunes 19 o martes 20).
