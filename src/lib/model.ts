@@ -82,6 +82,18 @@ export interface PartidaReforma {
   pagos: PagoReforma[];
 }
 
+/** Ficha Europea de Información Normalizada de la hipoteca (campos opcionales). */
+export interface Fein {
+  /** TAE en %; null = aún sin dato */
+  taePct: number | null;
+  vinculaciones: string;
+  fechaEmision: string;
+  /** Fecha hasta la que la oferta es vinculante */
+  validaHasta: string;
+  /** Comisión por amortización anticipada (parcial o total), en % del importe amortizado */
+  comisionAmortPct: number;
+}
+
 export interface Nota {
   id: string;
   fecha: string;
@@ -122,6 +134,9 @@ export interface AppData {
     notas: string;
     /** El banco ya ha entregado el dinero (en la escritura) */
     recibida: boolean;
+    /** Condiciones provisionales hasta recibir la FEIN */
+    provisional: boolean;
+    fein: Fein;
   };
   familiar: {
     importe: number;
@@ -142,6 +157,11 @@ export interface AppData {
   };
   gastosBase: Record<BaseKey, GastoBaseEstado>;
   gastosExtra: GastoExtra[];
+  /**
+   * Ahorros que pones en la compra, en total (incluido lo ya pagado de tu bolsillo).
+   * Lo que te queda = esto − dinero propio ya pagado.
+   */
+  ahorros: { paraCompra: number };
   /** Si tiene partidas, sustituye al importe único «reforma» de los gastos de compra */
   reforma: { partidas: PartidaReforma[] };
   /** Clave "YYYY-MM" */
@@ -173,7 +193,10 @@ export function emptyData(): AppData {
     piso: { precio: 0, tipoVivienda: '', comunidadAutonoma: 'Comunidad Valenciana', itpPct: 9 },
     hitos: { senalFecha: '', senal: 0, contratoFecha: '', arrasFecha: '', arras: 0, escrituraFecha: '' },
     gastos: { comision: 0, reforma: 0, notaria: 0, registro: 0, gestoria: 0, tasacion: 0, tasacionFecha: '' },
-    hipoteca: { banco: '', viabilidadFecha: '', importe: 0, plazoAnios: 25, tinPct: 0, notas: '', recibida: false },
+    hipoteca: {
+      banco: '', viabilidadFecha: '', importe: 0, plazoAnios: 25, tinPct: 0, notas: '', recibida: false, provisional: false,
+      fein: { taePct: null, vinculaciones: '', fechaEmision: '', validaHasta: '', comisionAmortPct: 0 },
+    },
     familiar: { importe: 0, cuota: 0, tinPct: 0, notas: '', recibido: false },
     recurrentes: {
       inicioAlquiler: '',
@@ -186,6 +209,7 @@ export function emptyData(): AppData {
     },
     gastosBase,
     gastosExtra: [],
+    ahorros: { paraCompra: 0 },
     reforma: { partidas: [] },
     meses: {},
     cuotas: { hipoteca: [], familiar: [] },

@@ -128,6 +128,7 @@ export function fromPrototype(p: Any): AppData {
   d.hipoteca = {
     banco: str(dg.banco), viabilidadFecha: fecha(dg.hipotecaViabilidadFecha), importe: eur(dg.hipotecaImporte),
     plazoAnios: Number(dg.hipotecaPlazo) || 0, tinPct: pct(dg.hipotecaTin), notas: str(dg.hipotecaEstado), recibida: false,
+    provisional: false, fein: d.hipoteca.fein,
   };
   d.familiar = {
     importe: eur(dg.prestamoPadresImporte), cuota: eur(dg.prestamoPadresCuota), tinPct: 0, notas: str(dg.prestamoPadresNotas), recibido: false,

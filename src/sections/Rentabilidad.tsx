@@ -34,7 +34,7 @@ export function PanelRentabilidad({ d }: { d: AppData }) {
           {r.prestamos.map((p) => (
             <Fila
               key={p.nombre}
-              k={`Intereses ${p.nombre.toLowerCase()}${p.meses ? ` (${fmtInt(p.meses)} cuotas)` : ''}`}
+              k={`Intereses ${p.nombre.toLowerCase()}${p.meses ? ` (${fmtInt(p.meses)} cuotas)` : ''}${p.nombre === 'Hipoteca' && d.hipoteca.provisional ? ' · provisional' : ''}`}
               v={p.intereses === null ? 'no se liquida' : fmtEur(p.intereses)}
             />
           ))}
@@ -55,6 +55,7 @@ export function PanelRentabilidad({ d }: { d: AppData }) {
                       />
                     </div>
                   ))}
+                {r.comisionesAmort > 0 && <Fila k="Comisión por amortizar antes" v={fmtEur(r.comisionesAmort)} />}
                 <Fila k="Coste total con amortizaciones" v={fmtEur(r.costeTotalConAmort)} strong />
                 <div className="rent-save">
                   <span>Te ahorras</span>

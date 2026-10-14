@@ -8,6 +8,7 @@ import { PageHead } from '../ui/layout';
 import { Counter, InView, useChangeFlash, useCountUp } from '../ui/motion';
 import { go } from '../router';
 import { PanelRentabilidad } from './Rentabilidad';
+import { PanelFases } from './Fases';
 
 const eur0 = (c: number) => fmtEur(c, { compact: true });
 const pct2 = (hundredths: number) =>
@@ -211,6 +212,10 @@ export function Resumen() {
           </dl>
         </article>
       </section>
+
+      <div className="resumen-fases">
+        <PanelFases d={d} />
+      </div>
 
       {/* ───── Avisos y proceso ───── */}
       <div className="grid g-2 duo">
