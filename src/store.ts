@@ -14,3 +14,10 @@ export function useData(): AppData {
 }
 
 export const update = (fn: (d: AppData) => AppData | void) => engine.update(fn);
+
+/** Datos actuales fuera de React (p. ej. tras un cambio, dentro de un manejador). */
+export function getData(): AppData {
+  const d = engine.getState().data;
+  if (!d) throw new Error('Sin datos');
+  return d;
+}

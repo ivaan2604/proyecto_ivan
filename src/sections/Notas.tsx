@@ -55,7 +55,10 @@ export function Notas() {
       </section>
 
       {notas.length === 0 ? (
-        <div className="empty">Todavía no hay notas.</div>
+        <div className="empty invite">
+          <b>Todavía no hay notas</b>
+          <span>Apunta lo que te digan el banco, la gestoría o el inquilino: la fecha se guarda sola y no se pierde nada.</span>
+        </div>
       ) : (
         <div className="notes stagger">
           {notas.map((n) => (

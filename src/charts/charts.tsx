@@ -65,10 +65,27 @@ export interface BarDatum {
   rows: TooltipRow[];
 }
 
-export function ProfitBars({ data, height = 220 }: { data: BarDatum[]; height?: number }) {
+export interface BarBand {
+  /** Índices de la primera y la última barra de la banda */
+  from: number;
+  to: number;
+  className: string;
+  label: string;
+}
+
+export interface BarMarker {
+  /** La línea se dibuja al final de esta barra */
+  index: number;
+  label: string;
+}
+
+export function ProfitBars({
+  data, height = 220, bands, markers, legend,
+}: { data: BarDatum[]; height?: number; bands?: BarBand[]; markers?: BarMarker[]; legend?: ReactNode }) {
   const [ref, width] = useWidth<HTMLDivElement>();
   const [hover, setHover] = useState<number | null>(null);
-  const pad = { l: 44, r: 8, t: 12, b: 26 };
+  // Con bandas, sus etiquetas van en una franja encima del gráfico para que las barras no las tapen
+  const pad = { l: 44, r: 8, t: bands?.length ? 26 : 12, b: 26 };
   const vals = data.map((d) => d.value);
   const ticks = niceTicks(Math.min(0, ...vals), Math.max(0, ...vals));
   const lo = ticks[0];
@@ -84,6 +101,12 @@ export function ProfitBars({ data, height = 220 }: { data: BarDatum[]; height?: 
   return (
     <div className="chart" ref={ref} onMouseLeave={() => setHover(null)}>
       <svg width={width} height={height} role="img" aria-label="Beneficio o pérdida por mes">
+        {bands?.map((b) => (
+          <g key={b.label} className={`bar-band ${b.className}`}>
+            <rect x={pad.l + band * b.from} y={pad.t - 20} width={band * (b.to - b.from + 1)} height={ih + 20} />
+            {band * (b.to - b.from + 1) >= b.label.length * 6.4 + 12 && <text x={pad.l + band * b.from + 6} y={pad.t - 6}>{b.label}</text>}
+          </g>
+        ))}
         {ticks.map((t) => (
           <g key={t}>
             <line className={t === 0 ? 'zero-line' : 'grid-line'} x1={pad.l} x2={width - pad.r} y1={y(t)} y2={y(t)} />
@@ -129,6 +152,16 @@ export function ProfitBars({ data, height = 220 }: { data: BarDatum[]; height?: 
             </g>
           );
         })}
+        {markers?.map((m) => {
+          const mx = pad.l + band * (m.index + 1);
+          const right = mx > width - 160;
+          return (
+            <g key={m.label} className="bar-marker">
+              <line x1={mx} x2={mx} y1={pad.t - 4} y2={pad.t + ih} />
+              <text x={right ? mx - 6 : mx + 6} y={pad.t + ih - 8} textAnchor={right ? 'end' : 'start'}>{m.label}</text>
+            </g>
+          );
+        })}
       </svg>
       {hover !== null && data[hover] && (
         <Tooltip
@@ -141,6 +174,7 @@ export function ProfitBars({ data, height = 220 }: { data: BarDatum[]; height?: 
       <div className="legend">
         <span><i style={{ background: 'var(--pos)' }} />Beneficio</span>
         <span><i style={{ background: 'var(--neg)' }} />Pérdida</span>
+        {legend}
       </div>
     </div>
   );

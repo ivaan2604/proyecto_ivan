@@ -162,6 +162,9 @@ export function Compra() {
               <Field label="Importe"><MoneyInput value={d.familiar.importe} onChange={set('familiar', 'importe')} /></Field>
               {recibido(d.familiar.recibido, set('familiar', 'recibido'), 'te lo hayan dado')}
               <Field label="Cuota mensual de devolución"><MoneyInput value={d.familiar.cuota} onChange={set('familiar', 'cuota')} /></Field>
+              <Field label="Primera cuota" hint="Si la dejas vacía, el mes siguiente a la escritura">
+                <DateInput value={d.familiar.primeraCuota} onChange={set('familiar', 'primeraCuota')} />
+              </Field>
               <Field label="Interés (opcional)" hint="0 si no hay interés formal">
                 <NumberInput value={d.familiar.tinPct} onChange={set('familiar', 'tinPct')} suffix="%" />
               </Field>

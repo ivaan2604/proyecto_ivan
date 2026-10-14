@@ -149,7 +149,16 @@ export function Prestamo({ kind }: { kind: LoanKind }) {
                   {cal.filas.length === 0 && (
                     <tr>
                       <td colSpan={8} className="full">
-                        <div className="empty">Aún no hay cuotas. Añádelas una a una según las vayas pagando.</div>
+                        <div className="empty invite">
+                          <b>Aún no hay cuotas</b>
+                          <span>
+                            Cuando pagues la primera, márcala como pagada en «Meses» y la app te ofrecerá registrarla aquí. También
+                            puedes añadirla con «Añadir cuota».
+                          </span>
+                          <button className="btn primary" onClick={add}>
+                            <IconPlus /> Añadir la primera cuota
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )}

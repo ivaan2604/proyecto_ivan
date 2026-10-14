@@ -5,7 +5,9 @@ const cents = z.number().int();
 const fecha = z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/, 'Fecha con formato YYYY-MM-DD');
 const estado = z.enum(['pagado', 'pendiente']);
 
-const linea = z.object({ id: z.string(), concepto: z.string(), importe: cents, estado });
+const linea = z.object({
+  id: z.string(), concepto: z.string(), importe: cents, estado, vinculo: z.enum(['hipoteca', 'familiar']).optional(),
+});
 const cuota = z.object({
   id: z.string(),
   fecha,
@@ -31,7 +33,9 @@ export const appDataSchema = z.object({
       comisionAmortPct: z.number().min(0),
     }),
   }),
-  familiar: z.object({ importe: cents, cuota: cents, tinPct: z.number(), notas: z.string(), recibido: z.boolean() }),
+  familiar: z.object({
+    importe: cents, cuota: cents, tinPct: z.number(), notas: z.string(), recibido: z.boolean(), primeraCuota: fecha,
+  }),
   recurrentes: z.object({
     inicioAlquiler: fecha, alquiler: cents, edificioAnual: cents, ibiAnual: cents, seguroHogarAnual: cents,
     seguroVidaAnual: cents, mantenimientoMensual: cents,
