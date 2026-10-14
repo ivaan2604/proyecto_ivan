@@ -93,6 +93,11 @@ export function PanelFases({ d }: { d: AppData }) {
               <small>/mes</small>
             </div>
             <div className="fase-when">{periodo(f, fases)}</div>
+            <div className="fase-eco" title="La parte de capital de las cuotas es deuda que dejas de deber: es ahorro, no gasto">
+              <span>Resultado económico</span>
+              <b className={`num ${f.economico > 0 ? 'pos' : f.economico < 0 ? 'neg' : ''}`}>≈ {fmtEur(f.economico, { sign: true })}/mes</b>
+              <small>con {fmtEur(f.capital)} de capital devuelto</small>
+            </div>
             <ul className="fase-lines">
               {f.lineas.map((l) => (
                 <li key={l.concepto}>
@@ -108,7 +113,9 @@ export function PanelFases({ d }: { d: AppData }) {
         <Prevision d={d} />
       </div>
       <p className="muted" style={{ fontSize: 12.5, margin: '12px 0 0' }}>
-        Las etapas 1 y 2 salen en negativo porque estás invirtiendo y devolviendo: es lo previsto, no una alarma.
+        Las etapas 1 y 2 salen en negativo porque estás invirtiendo y devolviendo: es lo previsto, no una alarma. La cifra
+        grande es la caja (lo que entra y sale de tu cuenta); el resultado económico suma el capital que devuelves, que es
+        deuda que dejas de deber.
         Antes de alquilar, todo sale de tu bolsillo. Los gastos fijos incluyen el mantenimiento que pongas en «Compra y
         financiación»; los meses reales que registres en «Meses» son los que cuentan para la rentabilidad.
         {d.hipoteca.provisional && ' La cuota de la hipoteca es provisional hasta la FEIN.'}

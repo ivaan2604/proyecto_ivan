@@ -44,6 +44,8 @@ export interface Linea {
   concepto: string;
   importe: number;
   estado: Estado;
+  /** Línea de cuota de un préstamo: al pagarla se puede registrar también en su cuadro de cuotas */
+  vinculo?: LoanKind;
 }
 
 export interface Mes {
@@ -144,6 +146,8 @@ export interface AppData {
     tinPct: number;
     notas: string;
     recibido: boolean;
+    /** Fecha prevista o real de la primera cuota; vacía = el mes siguiente a la escritura */
+    primeraCuota: string;
   };
   recurrentes: {
     /** Fecha prevista o real del primer alquiler; antes de ella el piso está «en reforma» */
@@ -197,7 +201,7 @@ export function emptyData(): AppData {
       banco: '', viabilidadFecha: '', importe: 0, plazoAnios: 25, tinPct: 0, notas: '', recibida: false, provisional: false,
       fein: { taePct: null, vinculaciones: '', fechaEmision: '', validaHasta: '', comisionAmortPct: 0 },
     },
-    familiar: { importe: 0, cuota: 0, tinPct: 0, notas: '', recibido: false },
+    familiar: { importe: 0, cuota: 0, tinPct: 0, notas: '', recibido: false, primeraCuota: '' },
     recurrentes: {
       inicioAlquiler: '',
       alquiler: 0,

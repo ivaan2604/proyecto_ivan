@@ -1,16 +1,59 @@
 import { useEffect, useState } from 'react';
-import { duplicarMes, mesesOrdenados, mesPrevision, sumLineas, totalesMes } from '../lib/derive';
+import { cuotaPactada, duplicarMes, mesesOrdenados, mesPrevision, sumLineas, totalesMes } from '../lib/derive';
 import { addMonths } from '../lib/finance';
 import { currentMonthKey, fmtEur, fmtMonthKey, monthName } from '../lib/format';
-import { uid, type Linea } from '../lib/model';
-import { update, useData } from '../store';
+import { uid, type Linea, type LoanKind } from '../lib/model';
+import { getData, update, useData } from '../store';
 import { useDialogs } from '../ui/dialogs';
 import { EstadoToggle, MoneyInput, TextInput } from '../ui/fields';
-import { IconChevron, IconCopy, IconPlus, IconTrash } from '../ui/icons';
+import { IconCheck, IconChevron, IconCopy, IconPlus, IconTrash } from '../ui/icons';
 import { PageHead } from '../ui/layout';
 import { Counter } from '../ui/motion';
 
 type Lado = 'ingresos' | 'gastos';
+
+/** Préstamo al que pertenece una línea: por su enlace o, en meses antiguos, por el concepto. */
+function vinculoDe(l: Linea): LoanKind | null {
+  if (l.vinculo) return l.vinculo;
+  if (/^cuota hipoteca/i.test(l.concepto)) return 'hipoteca';
+  if (/^cuota pr[eé]stamo familiar/i.test(l.concepto)) return 'familiar';
+  return null;
+}
+
+/**
+ * Al pagar la línea de una cuota en «Meses», ofrece registrarla también en el cuadro de cuotas
+ * del préstamo (si ese mes no tiene ya una), para no apuntarla dos veces. Nunca lo hace sin preguntar.
+ */
+function useRegistrarCuotas() {
+  const { confirm, toast } = useDialogs();
+  return async (k: string, lineas: Linea[]) => {
+    const d = getData();
+    const pendientes = lineas
+      .map((l) => ({ l, kind: vinculoDe(l) }))
+      .filter((x): x is { l: Linea; kind: LoanKind } => !!x.kind)
+      .filter(({ kind }) => (kind === 'hipoteca' ? d.hipoteca.importe : d.familiar.importe) > 0)
+      .filter(({ kind }) => !d.cuotas[kind].some((c) => c.fecha.startsWith(k)));
+    if (!pendientes.length) return;
+    const delNombre = (kind: LoanKind) => (kind === 'hipoteca' ? 'de la hipoteca' : 'del préstamo familiar');
+    const ok = await confirm({
+      title: pendientes.length === 1 ? `¿Registrar también la cuota ${delNombre(pendientes[0].kind)}?` : '¿Registrar también estas cuotas?',
+      body:
+        pendientes.map(({ l, kind }) => `· Cuota nº ${d.cuotas[kind].length + 1} ${delNombre(kind)}: ${fmtEur(l.importe)}`).join('\n') +
+        `\n\nSe añadirá con fecha de ${fmtMonthKey(k)} en su cuadro de cuotas, para que el capital pendiente se actualice sin apuntarla dos veces.`,
+      confirmText: 'Registrar',
+    });
+    if (!ok) return;
+    update((x) => {
+      for (const { l, kind } of pendientes) {
+        const lista = x.cuotas[kind];
+        const dia = lista[lista.length - 1]?.fecha.slice(8, 10) || '01';
+        const pactada = cuotaPactada(x, kind);
+        lista.push({ id: uid(), fecha: `${k}-${dia}`, cuota: l.importe === pactada ? null : l.importe, interes: null, anticipada: 0 });
+      }
+    });
+    toast(pendientes.length === 1 ? 'Cuota registrada en su préstamo.' : `${pendientes.length} cuotas registradas en sus préstamos.`);
+  };
+}
 
 export function Meses() {
   const d = useData();
@@ -137,7 +180,17 @@ export function Meses() {
           )}
         </div>
         {delAnio.length === 0 ? (
-          <div className="empty">No hay meses creados en {anio}.</div>
+          keys.length === 0 ? (
+            <div className="empty invite">
+              <b>Aún no hay meses</b>
+              <span>
+                Arriba eliges el mes y pulsas «Añadir mes»: se rellena con la previsión (cuotas solo cuando tocan, gastos fijos y
+                alquiler si ya ha empezado). Luego solo marcas lo pagado.
+              </span>
+            </div>
+          ) : (
+            <div className="empty">No hay meses creados en {anio}.</div>
+          )
         ) : (
           <div className="month-chips">
             {delAnio.map((k) => {
@@ -204,8 +257,27 @@ function MesDetalle({ k, onDelete }: { k: string; onDelete: () => void }) {
   const d = useData();
   const m = d.meses[k];
   const t = totalesMes(m);
+  const registrar = useRegistrarCuotas();
+  const sinPagar = [...m.ingresos, ...m.gastos].filter((l) => l.estado === 'pendiente');
+  const marcarTodo = async () => {
+    update((x) => {
+      for (const l of [...x.meses[k].ingresos, ...x.meses[k].gastos]) l.estado = 'pagado';
+    });
+    await registrar(k, sinPagar);
+  };
   return (
     <section className="card month-detail" aria-label={fmtMonthKey(k)}>
+      {sinPagar.length > 0 && (
+        <div className="cierre no-print">
+          <span>
+            <b>{sinPagar.length}</b> {sinPagar.length === 1 ? 'concepto sin marcar' : 'conceptos sin marcar'} ·{' '}
+            {fmtEur(sumLineas(sinPagar.filter((l) => m.gastos.includes(l))))} de gastos
+          </span>
+          <button className="btn primary big" onClick={() => void marcarTodo()}>
+            <IconCheck /> Marcar todo como pagado
+          </button>
+        </div>
+      )}
       <div className="card-head">
         <h2 style={{ textTransform: 'capitalize', fontSize: 26 }}>{fmtMonthKey(k)}</h2>
         <button className="btn ghost sm no-print" onClick={onDelete} style={{ color: 'var(--neg-ink)' }}>
@@ -228,6 +300,7 @@ function MesDetalle({ k, onDelete }: { k: string; onDelete: () => void }) {
 
 function Lineas({ k, lado, lineas }: { k: string; lado: Lado; lineas: Linea[] }) {
   const { confirm } = useDialogs();
+  const registrar = useRegistrarCuotas();
   const mod = (id: string, patch: Partial<Linea>) =>
     update((x) => {
       Object.assign(x.meses[k][lado].find((l) => l.id === id)!, patch);
@@ -270,7 +343,13 @@ function Lineas({ k, lado, lineas }: { k: string; lado: Lado; lineas: Linea[] })
                 <MoneyInput value={l.importe} onChange={(v) => mod(l.id, { importe: v })} ariaLabel="Importe" />
               </td>
               <td style={{ width: 1 }}>
-                <EstadoToggle value={l.estado} onChange={(v) => mod(l.id, { estado: v })} />
+                <EstadoToggle
+                  value={l.estado}
+                  onChange={(v) => {
+                    mod(l.id, { estado: v });
+                    if (v === 'pagado') void registrar(k, [l]);
+                  }}
+                />
               </td>
               <td className="row-actions">
                 <button className="icon-btn" aria-label="Eliminar concepto" onClick={() => del(l)}>

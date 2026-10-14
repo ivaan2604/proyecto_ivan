@@ -1,6 +1,9 @@
 import { useMemo, useState, type CSSProperties } from 'react';
 import { eurRow, LineChart, ProfitBars } from '../charts/charts';
-import { avisos, enReforma, lineaTiempo, rentabilidad, seguimientoGlobal, sobraFalta, totalesGastos, totalesMes } from '../lib/derive';
+import {
+  avisos, capitalDevuelto, colchon, enReforma, lineaTiempo, recuperacionPrevista, rentabilidad, seguimientoGlobal, sobraFalta,
+  totalesGastos, totalesMes,
+} from '../lib/derive';
 import { daysBetween, fmtDate, fmtEur, fmtInt, fmtMonthKey, todayISO } from '../lib/format';
 import { useData } from '../store';
 import { AzaharMark, IconArrow, IconTrendDown, IconTrendUp } from '../ui/icons';
@@ -58,6 +61,9 @@ export function Resumen() {
   const recibido = g.pagado - seg.propio;
   const falta = Math.max(0, seg.invertido - seg.beneficio);
   const sf = useMemo(() => sobraFalta(d), [d]);
+  const col = useMemo(() => colchon(d), [d]);
+  const recPrev = useMemo(() => recuperacionPrevista(d), [d]);
+  const capDevuelto = useMemo(() => capitalDevuelto(d), [d]);
   const flashSobra = useChangeFlash(sf.saldo, 'sobra');
   const fein = d.hipoteca.fein;
   const diasFein = fein.validaHasta ? daysBetween(todayISO(), fein.validaHasta) : null;
@@ -70,7 +76,11 @@ export function Resumen() {
   const flashBeneficio = useChangeFlash(seg.beneficio, 'beneficio');
   const flashRecup = useChangeFlash(seg.pctRecuperado, 'recup');
 
-  const recupTexto = seg.recuperadoEn
+  const recupPrevTexto =
+    !keysAlquiler.length && recPrev?.mes && recPrev.mesesDesdeAlquiler
+      ? `Previsión: recuperas lo invertido en ≈ ${(recPrev.mesesDesdeAlquiler / 12).toLocaleString('es-ES', { maximumFractionDigits: 1 })} años de alquiler · ${fmtMonthKey(recPrev.mes)}`
+      : null;
+  const recupTexto = recupPrevTexto ?? (seg.recuperadoEn
     ? `Recuperado en ${fmtMonthKey(seg.recuperadoEn)}`
     : seg.proyeccionKey
       ? `Al ritmo actual, en ≈ ${seg.proyeccionMeses} meses · ${fmtMonthKey(seg.proyeccionKey)}`
@@ -80,7 +90,7 @@ export function Resumen() {
           : reforma
             ? `En reforma: empieza a contar con el primer alquiler (${fmtDate(d.recurrentes.inicioAlquiler)})`
             : 'Empezará a contar con el primer mes de alquiler'
-        : 'Aún no hay nada aportado';
+        : 'Aún no hay nada aportado');
 
   return (
     <div className="page resumen">
@@ -143,6 +153,13 @@ export function Resumen() {
             </div>
             <Sparkline values={seg.serie.map((p) => p.acumulado)} />
           </div>
+          {capDevuelto > 0 && (
+            <div className="kpi-split">
+              <span>
+                Capital devuelto de los préstamos <b className="num pos">{fmtEur(capDevuelto)}</b> · es ahorro, no gasto
+              </span>
+            </div>
+          )}
         </article>
 
         <article className="kpi kpi-tile" aria-labelledby="h-roi">
@@ -202,6 +219,43 @@ export function Resumen() {
               <small>ya puesto {fmtEur(sf.ahorrosUsados, { compact: true })}</small>
             </div>
           </dl>
+        </article>
+
+        <article className={`kpi kpi-colchon${(col.necesario ?? (col.mesesCubiertos === 0 ? 1 : 0)) > 0 ? ' corto' : ''}`} aria-labelledby="h-colchon">
+          <div className="kpi-label" id="h-colchon">¿Te llega hasta que el piso se pague solo?</div>
+          {col.necesario !== null ? (
+            <div className="colchon-body">
+              <div className={`colchon-figure ${col.necesario > 0 ? 'neg' : 'pos'}`}>
+                {col.necesario > 0 ? <>Te faltarán {fmtEur(col.necesario)}</> : <>Sí, sin quedarte en negativo</>}
+              </div>
+              <p>
+                Tras pagar la compra te {sf.saldo >= 0 ? `sobran ${fmtEur(sf.saldo)}` : `faltan ${fmtEur(-sf.saldo)}`}. Antes del primer
+                alquiler te quedarán <b className={`num ${col.antesAlquiler! < 0 ? 'neg' : ''}`}>{fmtEur(col.antesAlquiler!)}</b>
+                {col.mesMinimo && (
+                  <>
+                    {' '}y en el peor momento, {fmtMonthKey(col.mesMinimo)} (última cuota a tus padres),{' '}
+                    <b className={`num ${col.minimo! < 0 ? 'neg' : ''}`}>{fmtEur(col.minimo!)}</b>
+                  </>
+                )}
+                . {col.necesario > 0 ? 'Es el dinero extra que necesitas tener para cubrir las etapas 1 y 2.' : ''}
+              </p>
+            </div>
+          ) : (
+            <div className="colchon-body">
+              <div className={`colchon-figure ${col.mesesCubiertos === 0 ? 'neg' : ''}`}>
+                Cada mes antes de alquilar salen {fmtEur(col.costeMesEspera)}
+              </div>
+              <p>
+                {col.mesesCubiertos === 0
+                  ? `Lo que te sobra tras la compra (${fmtEur(Math.max(0, sf.saldo))}) no cubre ni un mes de espera.`
+                  : col.mesesCubiertos !== null
+                    ? `Lo que te sobra tras la compra cubre ${col.mesesCubiertos} ${col.mesesCubiertos === 1 ? 'mes' : 'meses'} de espera.`
+                    : ''}{' '}
+                Pon la fecha de escritura y la de inicio del alquiler para calcular cuánto necesitas hasta que el piso se pague solo.
+              </p>
+              <button className="btn" onClick={() => go('compra')}>Poner fechas</button>
+            </div>
+          )}
         </article>
 
         {fein.validaHasta && diasFein !== null && (
@@ -392,6 +446,11 @@ export function Resumen() {
               <div className="k">Gastado</div>
               <div className="v">{eur0(seg.gastado)}</div>
               <div className="d">meses de alquiler</div>
+            </div>
+            <div className="stat">
+              <div className="k">Capital devuelto</div>
+              <div className="v pos">{eur0(capDevuelto)}</div>
+              <div className="d">de los préstamos: es ahorro, no gasto</div>
             </div>
           </div>
           {keysAlquiler.length > 0 ? (

@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { avisos, costesPrestamos, cuotaHipotecaPrevista, fasesResultado, fijosMensuales, finPrestamoFamiliar, rentabilidad, sobraFalta, totalesGastos } from '../derive';
+import {
+  avisos, capitalHipotecaMes, colchon, costesPrestamos, cuotaHipotecaPrevista, fasesResultado, fijosMensuales, finPrestamoFamiliar,
+  mesPrevision, recuperacionPrevista, rentabilidad, sobraFalta, totalesGastos,
+} from '../derive';
 import { mesesRestantes } from '../finance';
 import { validateAppData } from '../schema';
 
@@ -99,5 +102,88 @@ describe('comisión por amortización anticipada', () => {
     expect(r1.comisionesAmort).toBe(10_000); // 1 % de 10.000 €
     expect(r1.ahorro).toBe(r0.ahorro - 10_000);
     expect(r1.costeTotalConAmort).toBe(r0.costeTotalConAmort + 10_000);
+  });
+});
+
+/** Con fechas de ejemplo: escritura el 20/11/2026 y alquiler desde el 01/03/2027. */
+function conFechas() {
+  const d = real();
+  d.hitos.escrituraFecha = '2026-11-20';
+  d.recurrentes.inicioAlquiler = '2027-03-01';
+  return d;
+}
+
+describe('meses nuevos según la fase', () => {
+  const conceptos = (d: ReturnType<typeof real>, k: string) => mesPrevision(d, k).gastos.map((l) => l.vinculo ?? l.concepto);
+  it('antes de la escritura no se proponen cuotas', () => {
+    expect(conceptos(conFechas(), '2026-11')).not.toContain('hipoteca');
+    expect(conceptos(conFechas(), '2026-11')).not.toContain('familiar');
+  });
+  it('desde el mes siguiente a la escritura, las dos cuotas, enlazadas a su préstamo', () => {
+    expect(conceptos(conFechas(), '2026-12')).toEqual(expect.arrayContaining(['hipoteca', 'familiar']));
+  });
+  it('tras la cuota 30 ya no se propone la del préstamo familiar', () => {
+    expect(conceptos(conFechas(), '2029-05')).toContain('familiar');
+    expect(conceptos(conFechas(), '2029-06')).not.toContain('familiar');
+  });
+  it('sin fecha de escritura no se propone ninguna cuota', () => {
+    expect(conceptos(real(), '2027-01')).not.toContain('hipoteca');
+  });
+  it('la primera cuota a la familia puede ir más tarde que la escritura', () => {
+    const d = conFechas();
+    d.familiar.primeraCuota = '2027-03-01';
+    expect(conceptos(d, '2027-02')).not.toContain('familiar');
+    expect(finPrestamoFamiliar(d)).toBe('2029-08');
+  });
+});
+
+describe('colchón hasta que el piso se pague solo', () => {
+  it('sin fechas: cada mes de espera cuesta 1.111,83 € y lo que sobra no cubre ni uno', () => {
+    const c = colchon(real());
+    expect(c.costeMesEspera).toBe(111183);
+    expect(c.mesesCubiertos).toBe(0);
+    expect(c.necesario).toBeNull();
+  });
+  it('con fechas: saldo antes del primer alquiler y en el peor momento (última cuota a la familia)', () => {
+    const c = colchon(conFechas());
+    expect(c.inicial).toBe(64900);
+    expect(c.antesAlquiler).toBe(64900 - 3 * 111183);
+    expect(c.minimo).toBe(64900 - 3 * 111183 - 27 * 41183);
+    expect(c.mesMinimo).toBe('2029-05');
+    expect(c.necesario).toBe(-(64900 - 3 * 111183 - 27 * 41183)); // ≈ 13.806 €
+  });
+});
+
+describe('recuperación prevista', () => {
+  it('recupera lo invertido con el +388 €/mes de la etapa 3', () => {
+    const r = recuperacionPrevista(conFechas())!;
+    expect(r.invertido).toBe(9742225 - 5379900 - 2400000 + 3 * 111183);
+    expect(r.mesesDesdeAlquiler).toBe(27 + 88);
+    expect(r.mes).toBe('2036-09');
+  });
+  it('sin fechas no hay previsión', () => {
+    expect(recuperacionPrevista(real())).toBeNull();
+  });
+});
+
+describe('resultado económico', () => {
+  it('la cuota familiar sin interés es toda capital: devolviendo, la caja es negativa pero el patrimonio crece', () => {
+    const d = conFechas();
+    const [, devolviendo] = fasesResultado(d);
+    const capHip = capitalHipotecaMes(d, '2027-03');
+    expect(capHip).toBeGreaterThan(11_000); // ≈ 120 € de capital en las primeras cuotas
+    expect(capHip).toBeLessThan(13_000);
+    expect(devolviendo.capital).toBe(capHip + 80000);
+    expect(devolviendo.economico).toBe(devolviendo.resultado + capHip + 80000);
+    expect(devolviendo.economico).toBeGreaterThan(0);
+  });
+});
+
+describe('mes nuevo cuadra con las fases', () => {
+  it('la suma de las líneas de un mes de espera coincide con la etapa 1 (−1.111,83 €)', () => {
+    const d = conFechas();
+    const m = mesPrevision(d, '2026-12');
+    const total = m.gastos.reduce((a, l) => a + l.importe, 0) - m.ingresos.reduce((a, l) => a + l.importe, 0);
+    expect(-total).toBe(fasesResultado(d)[0].resultado);
   });
 });

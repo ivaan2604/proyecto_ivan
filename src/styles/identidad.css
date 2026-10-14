@@ -2050,3 +2050,120 @@ textarea.input:focus {
 .legend i.band-key.libre {
   background: var(--etapa-libre);
 }
+
+/* Colchón hasta que el piso se pague solo */
+.kpi-colchon {
+  grid-area: auto;
+  grid-column: 1 / -1;
+}
+.kpi-colchon.corto {
+  border-color: color-mix(in srgb, var(--neg) 45%, var(--line));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--neg-soft) 60%, transparent), var(--surface) 55%);
+}
+.colchon-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 24px;
+  margin-top: 8px;
+}
+.colchon-figure {
+  font-family: var(--f-display);
+  font-weight: 720;
+  font-stretch: 80%;
+  font-size: clamp(28px, 3.4vw, 40px);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+.colchon-body p {
+  flex: 1 1 360px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.kpis > :nth-child(7) {
+  animation-delay: 420ms;
+}
+
+/* Resultado económico de cada etapa */
+.fase-eco {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0 8px;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  font-size: 12.5px;
+}
+.fase-eco span {
+  font-weight: 700;
+  color: var(--muted);
+}
+.fase-eco b {
+  font-size: 14px;
+  font-weight: 800;
+}
+.fase-eco small {
+  grid-column: 1 / -1;
+  color: var(--muted);
+}
+
+/* Cierre de mes */
+.cierre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin: -6px -8px 16px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--pend-soft) 70%, var(--surface));
+  border: 1px dashed color-mix(in srgb, var(--pend) 50%, transparent);
+  color: var(--pend-ink);
+  font-size: 14px;
+}
+.btn.big {
+  min-height: 48px;
+  padding: 10px 20px;
+  font-size: 15px;
+  border-radius: 14px;
+}
+
+/* Móvil: botones grandes para lo que se hace cada mes */
+@media (max-width: 860px) {
+  .month-toolbar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .month-toolbar .field {
+    width: auto !important;
+  }
+  .month-toolbar .btn {
+    grid-column: 1 / -1;
+    min-height: 50px;
+    font-size: 15px;
+    border-radius: 14px;
+  }
+  .cierre {
+    margin: -2px 0 14px;
+  }
+  .cierre .btn.big {
+    width: 100%;
+    min-height: 52px;
+  }
+  .toggle {
+    min-height: 40px;
+    padding: 6px 14px 6px 8px;
+    font-size: 13.5px;
+  }
+  .toggle .knob {
+    width: 22px;
+    height: 22px;
+  }
+  .page-head .page-actions .btn.primary {
+    min-height: 48px;
+  }
+}
