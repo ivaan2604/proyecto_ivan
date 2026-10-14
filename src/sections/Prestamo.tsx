@@ -60,6 +60,7 @@ export function Prestamo({ kind }: { kind: LoanKind }) {
       <PageHead
         folio={kind === 'hipoteca' ? '06' : '07'}
         title={kind === 'hipoteca' ? `Hipoteca${d.hipoteca.banco ? ` · ${d.hipoteca.banco}` : ''}` : 'Préstamo familiar'}
+        badge={kind === 'hipoteca' && d.hipoteca.provisional ? 'Provisional · pendiente de FEIN' : undefined}
         subtitle={
           <>
             Cuota pactada fija de <b className="num">{fmtEur(pactada)}</b>

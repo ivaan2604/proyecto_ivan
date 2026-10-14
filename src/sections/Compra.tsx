@@ -1,4 +1,4 @@
-import { cuotaHipotecaPrevista, importeBase, totalesReforma } from '../lib/derive';
+import { cuotaHipotecaPrevista, fijosMensuales, importeBase, sobraFalta, totalesReforma } from '../lib/derive';
 import { fmtEur } from '../lib/format';
 import type { AppData } from '../lib/model';
 import { update, useData } from '../store';
@@ -32,8 +32,13 @@ export function Compra() {
       />
     </Field>
   );
-  const mensualFijos =
-    Math.round((r.edificioAnual + r.ibiAnual + r.seguroHogarAnual + r.seguroVidaAnual) / 12) + r.mantenimientoMensual;
+  const mensualFijos = fijosMensuales(d);
+  const sf = sobraFalta(d);
+  const fein = d.hipoteca.fein;
+  const setFein = <K extends keyof typeof fein>(key: K) => (v: (typeof fein)[K]) =>
+    update((x) => {
+      x.hipoteca.fein[key] = v;
+    });
 
   return (
     <div className="page">
@@ -104,7 +109,10 @@ export function Compra() {
 
         <div className="grid g-2">
           <section className="card">
-            <div className="card-head"><h2>Hipoteca</h2></div>
+            <div className="card-head">
+              <h2>Hipoteca</h2>
+              {d.hipoteca.provisional && <span className="chip provisional">Provisional · pendiente de FEIN</span>}
+            </div>
             <div className="form">
               <Field label="Banco"><TextInput value={d.hipoteca.banco} onChange={set('hipoteca', 'banco')} /></Field>
               <Field label="Viabilidad concedida"><DateInput value={d.hipoteca.viabilidadFecha} onChange={set('hipoteca', 'viabilidadFecha')} /></Field>
@@ -118,6 +126,26 @@ export function Compra() {
               </div>
               <Field label="Notas / estado" wide>
                 <TextArea value={d.hipoteca.notas} onChange={set('hipoteca', 'notas')} placeholder="Condiciones, vinculaciones, estado del expediente…" />
+              </Field>
+              <Field label="Condiciones" hint={d.hipoteca.provisional ? 'Cámbialo a «Confirmadas» cuando tengas la FEIN' : undefined}>
+                <Segmented
+                  value={d.hipoteca.provisional ? 'prov' : 'ok'}
+                  options={[{ value: 'prov', label: 'Provisionales' }, { value: 'ok', label: 'Confirmadas (FEIN)' }]}
+                  onChange={(v) => set('hipoteca', 'provisional')(v === 'prov')}
+                  ariaLabel="Condiciones de la hipoteca"
+                />
+              </Field>
+              <div className="subhead">FEIN (rellénalo cuando la recibas)</div>
+              <Field label="TAE">
+                <NumberInput value={fein.taePct ?? 0} onChange={(v) => setFein('taePct')(v || null)} suffix="%" />
+              </Field>
+              <Field label="Fecha de emisión"><DateInput value={fein.fechaEmision} onChange={setFein('fechaEmision')} /></Field>
+              <Field label="Oferta válida hasta"><DateInput value={fein.validaHasta} onChange={setFein('validaHasta')} /></Field>
+              <Field label="Comisión por amortizar antes" hint="Parcial o total. 0 % confirmado de palabra por el banco">
+                <NumberInput value={fein.comisionAmortPct} onChange={setFein('comisionAmortPct')} suffix="%" />
+              </Field>
+              <Field label="Vinculaciones exigidas" wide>
+                <TextArea value={fein.vinculaciones} onChange={setFein('vinculaciones')} placeholder="Nómina, seguros de vida y hogar, tarjeta…" />
               </Field>
             </div>
             {cuota > 0 && (
@@ -150,6 +178,31 @@ export function Compra() {
           </section>
         </div>
 
+        <section className="card" aria-labelledby="h-sobra">
+          <div className="card-head">
+            <h2 id="h-sobra">¿Te llega para la compra?</h2>
+            <span className="hint">lo pendiente frente al dinero que tienes para pagarlo</span>
+          </div>
+          <div className="form">
+            <Field label="Tus ahorros para la compra" hint="Todo lo que pones de tu bolsillo, incluido lo ya pagado">
+              <MoneyInput value={d.ahorros.paraCompra} onChange={(v) => update((x) => void (x.ahorros.paraCompra = v))} />
+            </Field>
+          </div>
+          <p className="sobra-line">
+            Pendiente de pagar <b className="num">{fmtEur(sf.pendiente)}</b>
+            {sf.hipoteca > 0 && <> − hipoteca <b className="num">{fmtEur(sf.hipoteca)}</b></>}
+            {sf.familiar > 0 && <> − préstamo familiar <b className="num">{fmtEur(sf.familiar)}</b></>}
+            {sf.prestadoSinGastar > 0 && <> − préstamo recibido sin gastar <b className="num">{fmtEur(sf.prestadoSinGastar)}</b></>}
+            {' '}− tus ahorros <b className="num">{fmtEur(sf.ahorrosQuedan)}</b> →{' '}
+            <b className={`num ${sf.saldo >= 0 ? 'pos' : 'neg'}`}>{sf.saldo >= 0 ? `Sobran ${fmtEur(sf.saldo)}` : `Faltan ${fmtEur(-sf.saldo)}`}</b>
+          </p>
+          <p className="muted" style={{ fontSize: 13, marginBottom: 0 }}>
+            Deuda (hipoteca y préstamo familiar) y dinero propio (tus ahorros) van por separado. Ya has puesto{' '}
+            {fmtEur(sf.ahorrosUsados)} de tus ahorros; los {fmtEur(sf.ahorrosQuedan)} restantes bajan solos cuando marcas
+            un gasto como pagado.
+          </p>
+        </section>
+
         <section className="card">
           <div className="card-head">
             <h2>Alquiler y gastos recurrentes</h2>
@@ -177,7 +230,7 @@ export function Compra() {
             <Field label="Mantenimiento mensual"><MoneyInput value={r.mantenimientoMensual} onChange={set('recurrentes', 'mantenimientoMensual')} /></Field>
           </div>
           <p className="muted" style={{ fontSize: 13, marginBottom: 0 }}>
-            Resultado teórico mensual: alquiler {fmtEur(r.alquiler)} − hipoteca {fmtEur(cuota)} − préstamo familiar{' '}
+            Resultado mensual alquilado, mientras devuelves el préstamo familiar: alquiler {fmtEur(r.alquiler)} − hipoteca {fmtEur(cuota)} − préstamo familiar{' '}
             {fmtEur(d.familiar.cuota)} − fijos {fmtEur(mensualFijos)} ={' '}
             <b className={`num ${r.alquiler - cuota - d.familiar.cuota - mensualFijos >= 0 ? 'pos' : 'neg'}`}>
               {fmtEur(r.alquiler - cuota - d.familiar.cuota - mensualFijos, { sign: true })}

@@ -25,7 +25,11 @@ export const appDataSchema = z.object({
   }),
   hipoteca: z.object({
     banco: z.string(), viabilidadFecha: fecha, importe: cents, plazoAnios: z.number().min(0),
-    tinPct: z.number(), notas: z.string(), recibida: z.boolean(),
+    tinPct: z.number(), notas: z.string(), recibida: z.boolean(), provisional: z.boolean(),
+    fein: z.object({
+      taePct: z.number().nullable(), vinculaciones: z.string(), fechaEmision: fecha, validaHasta: fecha,
+      comisionAmortPct: z.number().min(0),
+    }),
   }),
   familiar: z.object({ importe: cents, cuota: cents, tinPct: z.number(), notas: z.string(), recibido: z.boolean() }),
   recurrentes: z.object({
@@ -41,6 +45,7 @@ export const appDataSchema = z.object({
   gastosExtra: z.array(
     z.object({ id: z.string(), concepto: z.string(), fecha, importe: cents, estado, nota: z.string() }),
   ),
+  ahorros: z.object({ paraCompra: cents.min(0) }),
   reforma: z.object({
     partidas: z.array(
       z.object({
@@ -86,12 +91,16 @@ export function validateAppData(input: unknown): AppData {
     piso: { ...base.piso, ...obj.piso },
     hitos: { ...base.hitos, ...obj.hitos },
     gastos: { ...base.gastos, ...obj.gastos },
-    hipoteca: { ...base.hipoteca, recibida: restoPagado, ...obj.hipoteca },
+    hipoteca: {
+      ...base.hipoteca, recibida: restoPagado, ...obj.hipoteca,
+      fein: { ...base.hipoteca.fein, ...obj.hipoteca?.fein },
+    },
     familiar: { ...base.familiar, recibido: restoPagado, ...obj.familiar },
     recurrentes: { ...base.recurrentes, ...obj.recurrentes },
     gastosBase: Object.fromEntries(
       BASE_KEYS.map((k) => [k, { ...base.gastosBase[k], ...(obj.gastosBase?.[k] ?? {}) }]),
     ),
+    ahorros: { ...base.ahorros, ...obj.ahorros },
     reforma: { ...base.reforma, ...obj.reforma },
     cuotas: { ...base.cuotas, ...obj.cuotas },
     meta: { ...base.meta, ...obj.meta },

@@ -409,8 +409,23 @@ export function avisos(d: AppData): Aviso[] {
     });
   }
 
-  // Hipoteca sin escritura pero con viabilidad: recordatorio de condiciones
-  if (d.hipoteca.notas && !d.hitos.escrituraFecha && d.hipoteca.importe) {
+  // FEIN pendiente: condiciones de la hipoteca provisionales
+  if (d.hipoteca.importe && d.hipoteca.provisional && !d.hipoteca.fein.fechaEmision) {
+    out.push({
+      id: 'fein', nivel: 'aviso', titulo: 'FEIN pendiente',
+      detalle: d.hipoteca.notas || 'Las condiciones de la hipoteca son provisionales hasta recibir la FEIN.', ir: 'compra',
+    });
+  }
+  // Reforma como un único importe
+  if (d.reforma.partidas.length === 0 && d.gastos.reforma > 0) {
+    out.push({
+      id: 'reforma-sin-desglosar', nivel: 'info', titulo: 'Reforma sin desglosar',
+      detalle: `${fmtEur(d.gastos.reforma)} como un único importe. Desglósala en partidas para seguir pagos y desviaciones.`, ir: 'reforma',
+    });
+  }
+
+  // Hipoteca sin escritura pero con viabilidad: recordatorio de condiciones (si no va ya en el aviso de la FEIN)
+  if (d.hipoteca.notas && !d.hitos.escrituraFecha && d.hipoteca.importe && !d.hipoteca.provisional) {
     out.push({ id: 'hipoteca-notas', nivel: 'info', titulo: `Hipoteca ${d.hipoteca.banco}: ${d.hipoteca.notas}`, ir: 'compra' });
   }
 
@@ -443,6 +458,8 @@ export interface CostePrestamo {
   interesesPagados: number;
   /** Intereses ya pagados + los que faltan sobre el capital pendiente actual */
   interesesConAmort: number | null;
+  /** Comisión por amortización anticipada pagada sobre lo amortizado (0 si la comisión es 0 %) */
+  comisionAmort: number;
   mesesConAmort: number | null;
   ahorro: number | null;
   mesesAhorro: number | null;
@@ -467,7 +484,9 @@ function costePrestamo(d: AppData, kind: LoanKind): CostePrestamo {
   const nombre = kind === 'hipoteca' ? 'Hipoteca' : 'Préstamo familiar';
   const cuota = cuotaPactada(d, kind);
   const cal = calendarioDe(d, kind);
-  const base = { nombre, importe: p.importe, cuota, anticipado: cal.totalAnticipado, interesesPagados: cal.totalIntereses };
+  const comisionPct = kind === 'hipoteca' ? d.hipoteca.fein.comisionAmortPct : 0;
+  const comisionAmort = Math.round((cal.totalAnticipado * comisionPct) / 100);
+  const base = { nombre, importe: p.importe, cuota, anticipado: cal.totalAnticipado, interesesPagados: cal.totalIntereses, comisionAmort };
 
   // Peor caso. Hipoteca: cuota × plazo − importe. Familiar (sin plazo): lo que tarda la cuota en liquidarlo.
   let meses: number | null;
@@ -495,7 +514,8 @@ function costePrestamo(d: AppData, kind: LoanKind): CostePrestamo {
   const mesesConAmort = fut === null ? null : pagadas + fut.meses;
   return {
     ...base, meses, total, intereses, interesesConAmort, mesesConAmort,
-    ahorro: intereses === null || interesesConAmort === null ? null : intereses - interesesConAmort,
+    // El ahorro descuenta la comisión de amortización anticipada (con 0 % no resta nada)
+    ahorro: intereses === null || interesesConAmort === null ? null : intereses - interesesConAmort - comisionAmort,
     mesesAhorro: meses === null || mesesConAmort === null ? null : meses - mesesConAmort,
   };
 }
@@ -515,6 +535,7 @@ export interface Rentabilidad {
   hayAmortizaciones: boolean;
   interesesConAmort: number;
   costeTotalConAmort: number;
+  comisionesAmort: number;
   ahorro: number;
   /* B) Rentabilidad del activo (teórica) */
   inversionActivo: number;
@@ -546,6 +567,7 @@ export function rentabilidad(d: AppData): Rentabilidad {
   const intereses = prestamos.reduce((s, p) => s + (p.intereses ?? 0), 0);
   const interesesIncompletos = prestamos.some((p) => p.intereses === null || p.interesesConAmort === null);
   const interesesConAmort = prestamos.reduce((s, p) => s + (p.interesesConAmort ?? 0), 0);
+  const comisionesAmort = prestamos.reduce((s, p) => s + p.comisionAmort, 0);
 
   const r = d.recurrentes;
   const alquilerAnual = r.alquiler * 12;
@@ -574,8 +596,9 @@ export function rentabilidad(d: AppData): Rentabilidad {
     costeTotal: g.total + intereses,
     hayAmortizaciones: prestamos.some((p) => p.anticipado > 0),
     interesesConAmort,
-    costeTotalConAmort: g.total + interesesConAmort,
-    ahorro: intereses - interesesConAmort,
+    costeTotalConAmort: g.total + interesesConAmort + comisionesAmort,
+    comisionesAmort,
+    ahorro: intereses - interesesConAmort - comisionesAmort,
     inversionActivo,
     alquilerAnual,
     gastosRecurrentesAnuales,
@@ -589,5 +612,89 @@ export function rentabilidad(d: AppData): Rentabilidad {
     beneficioAnual,
     proyectado,
     cashOnCashPct: beneficioAnual === null ? null : pct(beneficioAnual, seg.invertido),
+  };
+}
+
+/* ───────────── Resultado mensual por fases ───────────── */
+
+export interface Fase {
+  id: 'espera' | 'devolviendo' | 'libre';
+  titulo: string;
+  /** Resultado mensual previsto (céntimos): ingresos − cuotas − fijos */
+  resultado: number;
+  /** Mes (YYYY-MM) en que empieza / acaba la fase; null = sin fecha todavía */
+  desde: string | null;
+  hasta: string | null;
+  lineas: { concepto: string; importe: number }[];
+}
+
+/** Gastos fijos del piso prorrateados al mes (IBI, edificio, seguros) + mantenimiento. */
+export function fijosMensuales(d: AppData): number {
+  const r = d.recurrentes;
+  return Math.round((r.edificioAnual + r.ibiAnual + r.seguroHogarAnual + r.seguroVidaAnual) / 12) + r.mantenimientoMensual;
+}
+
+/**
+ * Último mes (YYYY-MM) con cuota al préstamo familiar. Con cuotas registradas, a partir de la
+ * última y de lo que queda; sin cuotas, desde el mes siguiente a la escritura. null = sin fecha.
+ */
+export function finPrestamoFamiliar(d: AppData): string | null {
+  const f = d.familiar;
+  if (f.importe <= 0 || f.cuota <= 0) return null;
+  const cal = calendarioDe(d, 'familiar');
+  const restantes = mesesRestantes(cal.pendiente, f.tinPct, f.cuota);
+  if (restantes === null) return null;
+  const conFecha = cal.filas.filter((x) => x.fecha && !x.liquidado);
+  if (conFecha.length) return addMonths(conFecha[conFecha.length - 1].fecha.slice(0, 7), restantes);
+  if (d.hitos.escrituraFecha) return addMonths(d.hitos.escrituraFecha.slice(0, 7), restantes);
+  return null;
+}
+
+/**
+ * Las tres fases del resultado mensual previsto: antes de alquilar, alquilado devolviendo
+ * a la familia y alquilado sin esa cuota. Con los datos previstos de «Compra y financiación».
+ */
+export function fasesResultado(d: AppData): Fase[] {
+  const hip = cuotaHipotecaPrevista(d);
+  const fam = d.familiar.importe > 0 ? d.familiar.cuota : 0;
+  const fijos = fijosMensuales(d);
+  const alq = d.recurrentes.alquiler;
+  const ini = inicioAlquilerMes(d);
+  const fin = finPrestamoFamiliar(d);
+  const l = (concepto: string, importe: number) => ({ concepto, importe });
+  const base = [l('Cuota hipoteca', -hip), l('Gastos fijos', -fijos)];
+  return [
+    {
+      id: 'espera', titulo: 'Antes de alquilar', resultado: -(hip + fam + fijos), desde: null, hasta: ini,
+      lineas: [...base, ...(fam ? [l('Cuota préstamo familiar', -fam)] : [])],
+    },
+    {
+      id: 'devolviendo', titulo: 'Alquilado y devolviendo el préstamo familiar', resultado: alq - hip - fam - fijos,
+      desde: ini, hasta: fin, lineas: [l('Alquiler', alq), ...base, l('Cuota préstamo familiar', -fam)],
+    },
+    {
+      id: 'libre', titulo: 'Alquilado sin cuota del préstamo familiar', resultado: alq - hip - fijos,
+      desde: fin ? addMonths(fin, 1) : null, hasta: null, lineas: [l('Alquiler', alq), ...base],
+    },
+  ];
+}
+
+/* ───────────── Sobra / falta para terminar de pagar la compra ───────────── */
+
+/**
+ * Lo pendiente de pagar frente al dinero que aún tienes para pagarlo: lo que queda de los
+ * préstamos (sin recibir o recibido y sin gastar) y lo que te queda de tus ahorros.
+ */
+export function sobraFalta(d: AppData) {
+  const g = totalesGastos(d);
+  const dp = dineroPropio(d);
+  const hipoteca = (d.hipoteca.recibida ? 0 : d.hipoteca.importe);
+  const familiar = (d.familiar.recibido ? 0 : d.familiar.importe);
+  const prestadoSinGastar = dp.sinGastar;
+  const ahorrosQuedan = Math.max(0, d.ahorros.paraCompra - dp.propio);
+  const disponible = hipoteca + familiar + prestadoSinGastar + ahorrosQuedan;
+  return {
+    pendiente: g.pendiente, hipoteca, familiar, prestadoSinGastar, ahorrosQuedan,
+    ahorrosUsados: Math.min(dp.propio, d.ahorros.paraCompra), disponible, saldo: disponible - g.pendiente,
   };
 }

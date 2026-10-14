@@ -1715,3 +1715,88 @@ textarea.input:focus {
     letter-spacing: 0.08em;
   }
 }
+
+/* Provisional: ámbar fijo (pendiente de confirmar, no es una alarma) */
+.chip.provisional {
+  background: var(--pend-soft);
+  color: var(--pend-ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pend) 45%, transparent);
+}
+.head-badge {
+  margin-top: 10px;
+}
+.sobra-line {
+  margin: 14px 0 8px;
+  font-size: 15px;
+  line-height: 1.7;
+}
+.sobra-line b {
+  font-weight: 800;
+}
+
+/* Resultado mensual por fases */
+.resumen-fases {
+  margin-top: 18px;
+}
+.fases-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.fase {
+  background: var(--surface);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.fase-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.fase-figure {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-stretch: 80%;
+  font-size: 34px;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.fase-figure small {
+  font-size: 0.42em;
+  font-weight: 600;
+  margin-left: 3px;
+  color: var(--muted);
+}
+.fase-when {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.fase-lines {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px dashed var(--line);
+  font-size: 13px;
+}
+.fase-lines li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 2px 0;
+  color: var(--ink-2);
+}
+@media (max-width: 860px) {
+  .fases-grid {
+    grid-template-columns: 1fr;
+  }
+}
