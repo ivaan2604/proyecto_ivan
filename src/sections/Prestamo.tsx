@@ -1,6 +1,6 @@
 import { useMemo, type CSSProperties } from 'react';
 import { eurRow, LineChart } from '../charts/charts';
-import { calendarioDe, cuotaPactada } from '../lib/derive';
+import { calendarioDe, cuotaPactada, tramosHipoteca } from '../lib/derive';
 import { addMonths, mesesRestantes } from '../lib/finance';
 import { fmtDate, fmtEur } from '../lib/format';
 import { uid, type Cuota, type LoanKind } from '../lib/model';
@@ -19,12 +19,15 @@ export function Prestamo({ kind }: { kind: LoanKind }) {
   const p = kind === 'hipoteca' ? d.hipoteca : d.familiar;
   const pactada = cuotaPactada(d, kind);
   const cuotas = d.cuotas[kind];
-  const restantes = mesesRestantes(cal.pendiente, p.tinPct, pactada);
+  const t = tramosHipoteca(d);
+  const tin = kind === 'hipoteca' ? t.tinB : p.tinPct;
+  const restantes = mesesRestantes(cal.pendiente, tin, pactada);
   const plazoOriginal = kind === 'hipoteca' ? Math.round(d.hipoteca.plazoAnios * 12) : pactada ? Math.ceil(p.importe / pactada) : 0;
   const cuotasPagadas = cal.filas.filter((f) => !f.liquidado).length;
   const ahorroMeses = restantes !== null && plazoOriginal ? plazoOriginal - cuotasPagadas - restantes : 0;
   const titulo = kind === 'hipoteca' ? 'Hipoteca' : 'Préstamo familiar';
-  const sinInteres = p.tinPct === 0;
+  const sinInteres = tin === 0;
+  const pctTxt = (n: number) => `${n.toLocaleString('es-ES', { maximumFractionDigits: 2 })} %`;
   const amortPct = p.importe ? Math.min(1, (p.importe - cal.pendiente) / p.importe) : 0;
 
   const mod = (id: string, patch: Partial<Cuota>) =>
@@ -58,13 +61,24 @@ export function Prestamo({ kind }: { kind: LoanKind }) {
   return (
     <div className="page">
       <PageHead
-        folio={kind === 'hipoteca' ? '06' : '07'}
+        folio={kind === 'hipoteca' ? '06' : '08'}
         title={kind === 'hipoteca' ? `Hipoteca${d.hipoteca.banco ? ` · ${d.hipoteca.banco}` : ''}` : 'Préstamo familiar'}
         badge={kind === 'hipoteca' && d.hipoteca.provisional ? 'Provisional · pendiente de FEIN' : undefined}
         subtitle={
           <>
-            Cuota pactada fija de <b className="num">{fmtEur(pactada)}</b>
-            {sinInteres ? ', sin interés' : ` al ${p.tinPct.toLocaleString('es-ES')} % TIN`}. La amortización
+            {kind === 'hipoteca' && t.mesesA > 0 ? (
+              <>
+                {t.mesesA} primeras cuotas de <b className="num">{fmtEur(t.cuotaA)}</b> al {pctTxt(t.tinA)}; después{' '}
+                <b className="num">{fmtEur(pactada)}</b> al {pctTxt(t.tinB)}
+                {t.bonif > 0 ? ` (con −${pctTxt(t.bonif)} de rebaja)` : ''}
+              </>
+            ) : (
+              <>
+                Cuota pactada fija de <b className="num">{fmtEur(pactada)}</b>
+                {sinInteres ? ', sin interés' : ` al ${pctTxt(tin)} TIN`}
+              </>
+            )}
+            . La amortización
             anticipada reduce el plazo, no la cuota.{' '}
             <a href="#/compra" className="no-print" onClick={(e) => (e.preventDefault(), go('compra'))}>Editar condiciones</a>
           </>

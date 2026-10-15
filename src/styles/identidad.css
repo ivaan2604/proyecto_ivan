@@ -1740,7 +1740,7 @@ textarea.input:focus {
 }
 .fases-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 1px;
   background: var(--line);
   border: 1px solid var(--line);
@@ -2158,4 +2158,160 @@ textarea.input:focus {
   .page-head .page-actions .btn.primary {
     min-height: 48px;
   }
+}
+
+/* ───── Hipoteca por tramos, día de la firma, seguros, supuestos ───── */
+.chip.mini {
+  font-size: 10.5px;
+  padding: 2px 7px;
+  margin-left: 6px;
+  vertical-align: 1px;
+}
+.chip-btn {
+  border: none;
+  cursor: pointer;
+  margin-left: 8px;
+  font: inherit;
+  font-size: 11px;
+}
+.chip.ghost-chip {
+  background: transparent;
+  color: var(--muted);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.liquidacion {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+}
+.liquidacion label {
+  display: grid;
+  gap: 2px;
+  justify-items: end;
+}
+.liquidacion small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.tachado {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+.firma-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+.firma-list {
+  list-style: none;
+  margin: 8px 0 10px;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+.firma-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 14.5px;
+}
+.firma-list li b {
+  font-weight: 700;
+}
+.firma-list li.firma-total {
+  border-bottom: none;
+  font-weight: 800;
+}
+.firma-list li.firma-total b {
+  font-size: 17px;
+  font-weight: 800;
+}
+.firma-list li.firma-input .affix {
+  max-width: 150px;
+}
+.firma-ajuste {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  background: var(--pend-soft);
+  color: var(--pend-ink);
+  font-size: 13.5px;
+}
+.seg-ayuda {
+  font-size: 13px;
+  margin: 6px 24px 10px;
+}
+.card.flush > .seg-ayuda:last-child {
+  margin-bottom: 20px;
+}
+.card-head.pad {
+  align-items: center;
+}
+tr.seg-elegido td:first-child {
+  box-shadow: inset 3px 0 0 var(--pos);
+}
+tr.seg-actual td {
+  background: color-mix(in srgb, var(--data, var(--pos)) 8%, transparent);
+}
+.fase-sub {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: -2px;
+}
+.pones-sub {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.resumen-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.resumen-nota {
+  font-size: 13px;
+  margin: -6px 0 14px;
+}
+.sandbox-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--pend-soft);
+  color: var(--pend-ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pend) 45%, transparent);
+  font-size: 14px;
+}
+@media (max-width: 860px) {
+  .firma-grid {
+    grid-template-columns: 1fr;
+  }
+  .seg-ayuda {
+    margin: 6px 16px 10px;
+  }
+  .sandbox-bar {
+    top: 56px;
+  }
+}
+td.seg-combo {
+  min-width: 300px;
+  font-size: 13.5px;
+  line-height: 1.45;
 }

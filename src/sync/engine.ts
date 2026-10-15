@@ -42,6 +42,8 @@ export interface EngineState {
   error: string | null;
   conflict: Conflict | null;
   session: Session | null;
+  /** Modo supuesto: se edita una copia en memoria; los datos reales no se tocan ni se suben */
+  sandbox: boolean;
 }
 
 const PUSH_DEBOUNCE_MS = 1500;
@@ -53,8 +55,10 @@ type Listener = () => void;
 class SyncEngine {
   private state: EngineState = {
     data: null, status: 'loading', baseVersion: 0, dirty: false,
-    lastSyncAt: null, error: null, conflict: null, session: null,
+    lastSyncAt: null, error: null, conflict: null, session: null, sandbox: false,
   };
+  /** Datos reales guardados al entrar en un supuesto */
+  private real: AppData | null = null;
   private listeners = new Set<Listener>();
   private pushTimer: ReturnType<typeof setTimeout> | null = null;
   private busy = false;
@@ -141,12 +145,33 @@ class SyncEngine {
     if (this.state.session) void this.sync();
   }
 
+  /** Entra en un supuesto: a partir de aquí los cambios son de prueba (solo en memoria). */
+  enterSandbox() {
+    if (!this.state.data || this.state.sandbox) return;
+    this.real = this.state.data;
+    this.set({ sandbox: true, data: structuredClone(this.state.data) });
+  }
+
+  /** Sale del supuesto y vuelve a los datos reales, tal y como estaban. */
+  exitSandbox() {
+    if (!this.state.sandbox) return;
+    const real = this.real;
+    this.real = null;
+    this.set({ sandbox: false, data: real ?? this.state.data });
+    void this.sync();
+  }
+
   /** Aplica un cambio. `fn` recibe una copia y la modifica (o devuelve una nueva). */
   update(fn: (d: AppData) => AppData | void) {
     const cur = this.state.data;
     if (!cur) return;
     const draft = structuredClone(cur);
     const next = fn(draft) ?? draft;
+    if (this.state.sandbox) {
+      // En un supuesto no se guarda nada: ni en este dispositivo ni en la nube
+      this.set({ data: next });
+      return;
+    }
     this.edits++;
     this.set({ data: next, dirty: true });
     if (this.state.status !== 'syncing') this.set({ status: this.idleStatus() });
@@ -157,6 +182,7 @@ class SyncEngine {
 
   /** Sustituye todos los datos (importar, restablecer, restaurar). Guarda antes una instantánea. */
   async replaceAll(next: AppData, reason: string) {
+    if (this.state.sandbox) this.exitSandbox();
     if (this.state.data) await addSnapshot(this.state.data, `Antes de: ${reason}`).catch(() => undefined);
     this.edits++;
     this.set({ data: next, dirty: true });
@@ -183,6 +209,7 @@ class SyncEngine {
 
   /** Sube los cambios locales. Una sola subida a la vez. */
   async push(): Promise<void> {
+    if (this.state.sandbox) return;
     if (!this.state.session || !this.state.data || !this.state.dirty || this.state.conflict) return;
     if (this.busy) {
       this.again = true;
@@ -239,6 +266,7 @@ class SyncEngine {
 
   /** Comprueba si hay una versión más nueva en la nube y la aplica (o sube la local). */
   async sync(): Promise<void> {
+    if (this.state.sandbox) return;
     if (!this.state.session || this.busy || this.state.conflict) return;
     if (!navigator.onLine) {
       this.set({ status: 'offline' });

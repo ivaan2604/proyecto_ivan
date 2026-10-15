@@ -1,8 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, type CSSProperties } from 'react';
 import { fasesResultado, finPrestamoFamiliar, previsionMensual, type Fase } from '../lib/derive';
 import { eurRow, ProfitBars, type BarBand } from '../charts/charts';
 import { go } from '../router';
-import { addMonths } from '../lib/finance';
 import { fmtEur, fmtMonthKey } from '../lib/format';
 import type { AppData } from '../lib/model';
 
@@ -57,17 +56,18 @@ function Prevision({ d }: { d: AppData }) {
   );
 }
 
-function periodo(f: Fase, fases: Fase[]): string {
-  const ini = fases[1].desde;
-  const fin = fases[1].hasta;
+function periodo(f: Fase): string {
+  const n = f.meses !== null ? ` · ${f.meses} ${f.meses === 1 ? 'mes' : 'meses'}` : '';
+  if (f.desde && f.hasta) return f.desde === f.hasta ? `${mes(f.desde)}${n}` : `${mes(f.desde)} – ${mes(f.hasta)}${n}`;
+  if (f.hasta) return `Hasta ${mes(f.hasta)}`;
+  if (f.desde) return `Desde ${mes(f.desde)}`;
   switch (f.id) {
     case 'espera':
-      return ini ? `Hasta ${mes(addMonths(ini, -1))}` : 'Hasta que empiece el alquiler (sin fecha todavía)';
+      return 'Hasta que empiece el alquiler (sin fecha todavía)';
     case 'devolviendo':
-      if (ini && fin && fin < ini) return `No llega a darse: el préstamo familiar acaba en ${mes(fin)}, antes del alquiler`;
-      return `${ini ? `Desde ${mes(ini)}` : 'Desde el inicio del alquiler'} · ${fin ? `hasta ${mes(fin)}` : 'hasta la última cuota (sin fecha: falta la escritura)'}`;
+      return 'Desde el alquiler hasta la última cuota familiar (sin fechas todavía)';
     case 'libre':
-      return f.desde ? `Desde ${mes(f.desde)}` : 'Tras la última cuota del préstamo familiar';
+      return 'Tras la última cuota del préstamo familiar';
   }
 }
 
@@ -80,19 +80,20 @@ export function PanelFases({ d }: { d: AppData }) {
         <h2 id="h-fases">Resultado mensual por fases</h2>
         <span className="hint">previsto, con los datos de «Compra y financiación»</span>
       </div>
-      <div className="fases-grid">
-        {fases.map((f) => (
-          <div key={f.id} className={`fase fase-${f.id}`}>
+      <div className="fases-grid" style={{ '--n': fases.length } as CSSProperties}>
+        {fases.map((f, i) => (
+          <div key={f.key} className={`fase fase-${f.id}`}>
             <div className="fase-band">
-              <span>Etapa {ETAPA[f.id].n}</span>
+              <span>Etapa {i + 1}</span>
               {ETAPA[f.id].nombre}
             </div>
             <div className="fase-title">{f.titulo}</div>
+            {f.subtitulo && <div className="fase-sub">{f.subtitulo}</div>}
             <div className={`fase-figure ${f.resultado > 0 ? 'pos' : f.resultado < 0 ? 'neg' : ''}`}>
               {fmtEur(f.resultado, { sign: true })}
               <small>/mes</small>
             </div>
-            <div className="fase-when">{periodo(f, fases)}</div>
+            <div className="fase-when">{periodo(f)}</div>
             <div className="fase-eco" title="La parte de capital de las cuotas es deuda que dejas de deber: es ahorro, no gasto">
               <span>Resultado económico</span>
               <b className={`num ${f.economico > 0 ? 'pos' : f.economico < 0 ? 'neg' : ''}`}>≈ {fmtEur(f.economico, { sign: true })}/mes</b>

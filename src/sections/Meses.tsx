@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { cuotaPactada, duplicarMes, inicioAlquilerMes, mesesOrdenados, mesPrevision, mesSinPiso, sumLineas, totalesMes } from '../lib/derive';
+import { cuotaFamiliarMes, cuotaHipotecaMes, cuotaPactada, duplicarMes, inicioAlquilerMes, mesesOrdenados, mesPrevision, mesSinPiso, sumLineas, totalesMes } from '../lib/derive';
 import { addMonths } from '../lib/finance';
 import { currentMonthKey, fmtEur, fmtMonthKey, monthName } from '../lib/format';
 import { uid, type Linea, type LoanKind } from '../lib/model';
@@ -47,8 +47,10 @@ function useRegistrarCuotas() {
       for (const { l, kind } of pendientes) {
         const lista = x.cuotas[kind];
         const dia = lista[lista.length - 1]?.fecha.slice(8, 10) || '01';
-        const pactada = cuotaPactada(x, kind);
-        lista.push({ id: uid(), fecha: `${k}-${dia}`, cuota: l.importe === pactada ? null : l.importe, interes: null, anticipada: 0 });
+        // La cuota prevista de ese mes (cambia de tramo, y la última familiar es menor): si coincide, queda en automático
+        const prevista = kind === 'hipoteca' ? cuotaHipotecaMes(x, k) : cuotaFamiliarMes(x, k);
+        const auto = l.importe === prevista || l.importe === cuotaPactada(x, kind);
+        lista.push({ id: uid(), fecha: `${k}-${dia}`, cuota: auto ? null : l.importe, interes: null, anticipada: 0 });
       }
     });
     toast(pendientes.length === 1 ? 'Cuota registrada en su préstamo.' : `${pendientes.length} cuotas registradas en sus préstamos.`);

@@ -9,6 +9,7 @@ import { Modal } from './dialogs';
 import { go } from '../router';
 
 export function statusText(s: EngineState): string {
+  if (s.sandbox) return 'Supuesto · sin guardar';
   switch (s.status) {
     case 'loading': return 'Cargando…';
     case 'local': return 'Solo este dispositivo';
@@ -27,7 +28,7 @@ export function SyncPill() {
   return (
     <a
       href="#/copia"
-      className={`sync-pill ${s.status}`}
+      className={`sync-pill ${s.sandbox ? 'pending' : s.status}`}
       title={s.error ?? statusText(s)}
       onClick={(e) => {
         e.preventDefault();
@@ -90,6 +91,22 @@ function resumen(d: AppData) {
     ['Cuotas préstamo familiar', String(d.cuotas.familiar.length)],
     ['Notas', String(d.notas.length)],
   ];
+}
+
+/** Franja fija mientras se está probando un supuesto. */
+export function SandboxBar() {
+  const s = useEngine();
+  if (!s.sandbox) return null;
+  return (
+    <div className="sandbox-bar" role="status">
+      <span>
+        <b>Estás probando un supuesto.</b> Cambia lo que quieras: tus datos reales no se tocan y nada se guarda.
+      </span>
+      <button className="btn sm" onClick={() => engine.exitSandbox()}>
+        Salir y volver a mis datos
+      </button>
+    </div>
+  );
 }
 
 /** Aparece si otro dispositivo guardó cambios a la vez que este. Nada se pierde. */

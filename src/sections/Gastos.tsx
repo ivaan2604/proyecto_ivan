@@ -1,11 +1,11 @@
 import { useMemo, type CSSProperties } from 'react';
-import { totalesGastos } from '../lib/derive';
+import { importeBaseSinLiquidar, totalesGastos } from '../lib/derive';
 import { fmtDate, fmtEur, todayISO } from '../lib/format';
 import { go } from '../router';
 import { uid, type BaseKey, type Estado } from '../lib/model';
 import { update, useData } from '../store';
 import { useDialogs } from '../ui/dialogs';
-import { DateInput, EstadoToggle, MoneyInput, TextInput } from '../ui/fields';
+import { DateInput, EstadoToggle, MoneyInput, OptionalMoneyInput, TextInput } from '../ui/fields';
 import { IconArrow, IconPlus, IconTrash } from '../ui/icons';
 import { PageHead } from '../ui/layout';
 import { Counter } from '../ui/motion';
@@ -30,6 +30,17 @@ export function Gastos() {
       if (base) x.gastosBase[key as BaseKey].fecha = v;
       else x.gastosExtra.find((g) => g.id === key)!.fecha = v;
     });
+  // Notaría, registro, gestoría e impuesto pueden ir como provisión de fondos: la cifra final llega con la liquidación
+  const PROVISIONABLES: BaseKey[] = ['itp', 'notaria', 'registro', 'gestoria'];
+  const setProvision = (k: BaseKey, patch: { provision?: boolean; liquidacion?: number | null }) =>
+    update((x) => {
+      Object.assign(x.gastosBase[k], patch);
+      if (patch.provision === false) x.gastosBase[k].liquidacion = null;
+    });
+  const enProvision = t.filas.filter((f) => f.base && d.gastosBase[f.key as BaseKey].provision);
+  const provisionSinLiquidar = enProvision
+    .filter((f) => d.gastosBase[f.key as BaseKey].liquidacion === null)
+    .reduce((a, f) => a + f.importe, 0);
   const setExtra = (id: string, patch: { concepto?: string; importe?: number }) =>
     update((x) => {
       Object.assign(x.gastosExtra.find((g) => g.id === id)!, patch);
@@ -97,7 +108,18 @@ export function Gastos() {
                 <tr key={f.key}>
                   <td className="full" data-label={f.base ? undefined : 'Concepto'} style={{ minWidth: 190 }}>
                     {f.base ? (
-                      <b>{f.concepto}</b>
+                      <>
+                        <b>{f.concepto}</b>
+                        {PROVISIONABLES.includes(f.key as BaseKey) && (
+                          <button
+                            className={`chip ${d.gastosBase[f.key as BaseKey].provision ? 'provisional' : 'ghost-chip'} chip-btn`}
+                            onClick={() => setProvision(f.key as BaseKey, { provision: !d.gastosBase[f.key as BaseKey].provision })}
+                            title="Provisión de fondos: la gestoría liquida después la cifra final"
+                          >
+                            {d.gastosBase[f.key as BaseKey].provision ? 'Provisión' : 'Marcar como provisión'}
+                          </button>
+                        )}
+                      </>
                     ) : (
                       <TextInput value={f.concepto} onChange={(v) => setExtra(f.key, { concepto: v })} ariaLabel="Concepto" />
                     )}
@@ -106,7 +128,22 @@ export function Gastos() {
                     <DateInput value={f.fecha} onChange={(v) => setFecha(f.key, f.base, v)} ariaLabel="Fecha" />
                   </td>
                   <td className="amount" data-label="Importe" style={{ minWidth: 130 }}>
-                    {f.base ? (
+                    {f.base && d.gastosBase[f.key as BaseKey].provision ? (
+                      <div className="liquidacion">
+                        <span className={d.gastosBase[f.key as BaseKey].liquidacion !== null ? 'tachado' : undefined}>
+                          {fmtEur(importeBaseSinLiquidar(d, f.key as BaseKey))}
+                        </span>
+                        <label>
+                          <small>Liquidación final</small>
+                          <OptionalMoneyInput
+                            value={d.gastosBase[f.key as BaseKey].liquidacion}
+                            auto={importeBaseSinLiquidar(d, f.key as BaseKey)}
+                            onChange={(v) => setProvision(f.key as BaseKey, { liquidacion: v })}
+                            ariaLabel={`Liquidación final de ${f.concepto}`}
+                          />
+                        </label>
+                      </div>
+                    ) : f.base ? (
                       fmtEur(f.importe)
                     ) : (
                       <MoneyInput value={f.importe} onChange={(v) => setExtra(f.key, { importe: v })} ariaLabel="Importe" />
@@ -153,6 +190,13 @@ export function Gastos() {
           </div>
         </div>
       </section>
+      {enProvision.length > 0 && (
+        <p className="rent-warn" style={{ marginTop: 14 }}>
+          {provisionSinLiquidar > 0
+            ? `${fmtEur(provisionSinLiquidar)} son provisión de fondos sin liquidar: la gestoría te devolverá lo que sobre al tener las facturas. Cuando llegue la liquidación, pon la cifra final y se recalcula todo.`
+            : 'Provisión de fondos liquidada: ya se usan las cifras finales.'}
+        </p>
+      )}
       <p className="muted" style={{ fontSize: 13 }}>
         La fecha de los conceptos base se toma de los hitos (señal, arras, escritura, tasación) salvo que pongas
         una aquí. Para cambiar un importe base, edítalo en «Compra y financiación». Si desglosas la reforma en

@@ -78,6 +78,24 @@ describe('motor de sincronización', () => {
     expect(g.server.revisions).toHaveLength(2);
   });
 
+  it('un supuesto no guarda ni sube nada y al salir vuelven los datos reales', async () => {
+    const { engine, local, emptyData } = await device();
+    await engine.start(emptyData());
+    engine.update((d) => void (d.piso.precio = 7_500_000));
+    await engine.push();
+    const version = g.server.doc!.version;
+    engine.enterSandbox();
+    engine.update((d) => void (d.piso.precio = 1));
+    expect(engine.getState().data?.piso.precio).toBe(1);
+    await engine.push();
+    await engine.flush();
+    expect(g.server.doc!.version).toBe(version);
+    expect((await local.loadLocal())?.data?.piso.precio).toBe(7_500_000);
+    engine.exitSandbox();
+    expect(engine.getState().sandbox).toBe(false);
+    expect(engine.getState().data?.piso.precio).toBe(7_500_000);
+  });
+
   it('sin conexión el cambio queda guardado en el dispositivo y se sube después', async () => {
     const A = await device();
     await A.engine.start(A.emptyData());
