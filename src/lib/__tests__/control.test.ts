@@ -125,6 +125,20 @@ describe('meses nuevos según la fase', () => {
   it('sin fecha de escritura no se propone ninguna cuota', () => {
     expect(conceptos(real(), '2027-01')).not.toContain('hipoteca');
   });
+  it('sin fecha de escritura el mes nuevo sale vacío: ni gastos fijos ni alquiler', () => {
+    const m = mesPrevision(real(), '2026-10');
+    expect(m.gastos).toHaveLength(0);
+    expect(m.ingresos).toHaveLength(0);
+  });
+  it('antes del mes de la escritura, vacío; desde ese mes, los gastos fijos', () => {
+    expect(mesPrevision(conFechas(), '2026-10').gastos).toHaveLength(0);
+    expect(conceptos(conFechas(), '2026-11')).toContain('IBI (prorrateo)');
+  });
+  it('sin fecha de inicio del alquiler no se propone el alquiler', () => {
+    const d = conFechas();
+    d.recurrentes.inicioAlquiler = '';
+    expect(mesPrevision(d, '2027-06').ingresos).toHaveLength(0);
+  });
   it('la primera cuota a la familia puede ir más tarde que la escritura', () => {
     const d = conFechas();
     d.familiar.primeraCuota = '2027-03-01';
