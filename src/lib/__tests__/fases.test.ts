@@ -85,6 +85,7 @@ describe('inicio del alquiler', () => {
     const d = compra();
     d.recurrentes.alquiler = 80_000;
     d.recurrentes.inicioAlquiler = '2025-03-15';
+    d.hitos.escrituraFecha = '2025-01-10';
     expect(mesPrevision(d, '2025-02').ingresos).toHaveLength(0);
     expect(mesPrevision(d, '2025-03').ingresos).toHaveLength(1);
   });

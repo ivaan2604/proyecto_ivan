@@ -194,13 +194,21 @@ export function cuotaHipotecaPrevista(d: AppData): number {
 }
 
 /** Conceptos por defecto de un mes nuevo, calculados a partir de Compra y financiación. */
+/** El mes es anterior a la escritura (o aún no hay fecha): el piso todavía no es tuyo. */
+export function mesSinPiso(d: AppData, key: string): boolean {
+  const esc = d.hitos.escrituraFecha ? d.hitos.escrituraFecha.slice(0, 7) : null;
+  return !esc || key < esc;
+}
+
 export function mesPrevision(d: AppData, key?: string): Mes {
   const r = d.recurrentes;
   const l = (concepto: string, importe: number): Linea => ({ id: uid(), concepto, importe, estado: 'pendiente' });
   const ingresos: Linea[] = [];
-  // Antes del inicio del alquiler (reforma) el mes nuevo no lleva la línea de alquiler
+  // Antes de la escritura el piso aún no es tuyo: no hay gastos fijos, cuotas ni alquiler que proponer
+  if (key && mesSinPiso(d, key)) return { ingresos, gastos: [] };
+  // Sin fecha de alquiler, o antes de ella (reforma), el mes nuevo no lleva la línea de alquiler
   const ini = inicioAlquilerMes(d);
-  const sinAlquiler = !!key && !!ini && key < ini;
+  const sinAlquiler = !!key && (!ini || key < ini);
   if (r.alquiler && !sinAlquiler) ingresos.push(l('Alquiler', r.alquiler));
   const gastos: Linea[] = [];
   const hip = cuotaHipotecaPrevista(d);

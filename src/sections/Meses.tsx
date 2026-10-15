@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { cuotaPactada, duplicarMes, mesesOrdenados, mesPrevision, sumLineas, totalesMes } from '../lib/derive';
+import { cuotaPactada, duplicarMes, inicioAlquilerMes, mesesOrdenados, mesPrevision, mesSinPiso, sumLineas, totalesMes } from '../lib/derive';
 import { addMonths } from '../lib/finance';
 import { currentMonthKey, fmtEur, fmtMonthKey, monthName } from '../lib/format';
 import { uid, type Linea, type LoanKind } from '../lib/model';
@@ -93,7 +93,8 @@ export function Meses() {
     const next = addMonths(nuevoKey, 1);
     setNuevoAnio(Number(next.slice(0, 4)));
     setNuevoMes(Number(next.slice(5, 7)));
-    toast(`${cap(fmtMonthKey(nuevoKey))} creado${modo === 'duplicar' ? ` a partir de ${fmtMonthKey(last!)}` : ' con la previsión'}.`);
+    const vacio = modo === 'prevision' && mesSinPiso(d, nuevoKey);
+    toast(`${cap(fmtMonthKey(nuevoKey))} creado${modo === 'duplicar' ? ` a partir de ${fmtMonthKey(last!)}` : vacio ? ' vacío (antes de la escritura)' : ' con la previsión'}.`);
   };
 
   const borrarMes = async (k: string) => {
@@ -155,7 +156,22 @@ export function Meses() {
             <IconCopy /> Duplicar último mes
           </button>
         </div>
-        {d.meses[nuevoKey] && <p className="muted" style={{ fontSize: 13, margin: '10px 0 0' }}>{cap(fmtMonthKey(nuevoKey))} ya existe.</p>}
+        {d.meses[nuevoKey] ? (
+          <p className="muted" style={{ fontSize: 13, margin: '10px 0 0' }}>{cap(fmtMonthKey(nuevoKey))} ya existe.</p>
+        ) : mesSinPiso(d, nuevoKey) ? (
+          <p className="muted" style={{ fontSize: 13, margin: '10px 0 0' }}>
+            {d.hitos.escrituraFecha
+              ? `En ${fmtMonthKey(nuevoKey)} aún no habrás firmado la escritura: no hay gastos fijos ni alquiler que proponer y el mes se creará vacío.`
+              : 'Aún no hay fecha de escritura: hasta que el piso sea tuyo no hay gastos fijos ni alquiler, así que el mes se creará vacío.'}{' '}
+            Los meses son para apuntar lo que pasa de verdad; para ver un supuesto pon las fechas en <a href="#/compra">Compra y financiación</a> y míralo en el Resumen y en Fases.
+          </p>
+        ) : (
+          !inicioAlquilerMes(d) && d.recurrentes.alquiler > 0 && (
+            <p className="muted" style={{ fontSize: 13, margin: '10px 0 0' }}>
+              Sin fecha de inicio del alquiler, el mes no llevará la línea de alquiler. Pon la fecha en <a href="#/compra">Compra y financiación</a>.
+            </p>
+          )
+        )}
       </section>
 
       <section className="card" style={{ marginBottom: 18 }}>
