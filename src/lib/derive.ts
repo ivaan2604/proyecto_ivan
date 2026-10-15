@@ -1,6 +1,6 @@
-import { addMonths, calendario, mesesRestantes, pmt, type Calendario } from './finance';
+import { addMonths, calendario, mesesEntre, mesesRestantes, pmtMeses, saldoTras, type Calendario } from './finance';
 import { currentMonthKey, daysBetween, fmtEur, fmtMonthKey, todayISO } from './format';
-import { BASE_KEYS, uid, type AppData, type BaseKey, type Estado, type Linea, type LoanKind, type Mes } from './model';
+import { BASE_KEYS, uid, type AppData, type BaseKey, type Estado, type Linea, type LoanKind, type Mes, type Seguro } from './model';
 
 /* ───────────── Gastos de compra ───────────── */
 
@@ -31,6 +31,12 @@ export interface FilaGasto {
 }
 
 export function importeBase(d: AppData, k: BaseKey): number {
+  // Con la liquidación final de la gestoría, manda esa cifra sobre la provisional
+  return d.gastosBase[k].liquidacion ?? importeBaseSinLiquidar(d, k);
+}
+
+/** Importe previsto (provisión) de un gasto base, sin tener en cuenta la liquidación final. */
+export function importeBaseSinLiquidar(d: AppData, k: BaseKey): number {
   switch (k) {
     case 'senal': return d.hitos.senal;
     case 'arras': return d.hitos.arras;
@@ -189,8 +195,93 @@ export function mesesOrdenados(d: AppData): string[] {
   return Object.keys(d.meses).sort();
 }
 
+/* ───────────── Hipoteca: tramos y rebajas ───────────── */
+
+/** Seguros elegidos (los que cuentan en los gastos fijos y en las rebajas). */
+export function segurosElegidos(d: AppData): Seguro[] {
+  return d.seguros.filter((x) => x.elegido);
+}
+
+/** Rebaja del interés: nómina (+ Bizum) y seguros elegidos que la den, con el máximo de la FEIN. */
+export function bonificacionHipoteca(d: AppData, seguros: Seguro[] = segurosElegidos(d), nominaBizum = d.hipoteca.nominaBizum) {
+  const h = d.hipoteca;
+  const nomina = nominaBizum ? h.bonifNominaPct : 0;
+  const deSeguros = seguros.reduce((a, x) => a + x.bonifPct, 0);
+  const bruto = nomina + deSeguros;
+  const total = h.bonifMaxPct > 0 ? Math.min(h.bonifMaxPct, bruto) : bruto;
+  return { nomina, seguros: deSeguros, total: Math.round(total * 1000) / 1000 };
+}
+
+export interface TramosHipoteca {
+  /** Plazo total en meses */
+  n: number;
+  mesesA: number;
+  tinA: number;
+  cuotaA: number;
+  /** TIN del tramo principal ya con la rebaja */
+  tinB: number;
+  cuotaB: number;
+  bonif: number;
+}
+
+/**
+ * Cuotas de la hipoteca por tramos. Sin tramo inicial, una sola cuota al TIN rebajado. Con tramo
+ * inicial (p. ej. 6 meses al 3,29 %), su cuota se calcula a todo el plazo y, al acabar, la del resto
+ * se recalcula con lo que queda pendiente, como hace el banco.
+ */
+export function tramosHipoteca(d: AppData, bonif = bonificacionHipoteca(d).total): TramosHipoteca {
+  const h = d.hipoteca;
+  const n = Math.round(h.plazoAnios * 12);
+  const mesesA = Math.max(0, Math.min(n, Math.round(h.tramoAMeses)));
+  const tinB = Math.max(0, h.tinPct - bonif);
+  if (mesesA === 0) {
+    const c = pmtMeses(h.importe, tinB, n);
+    return { n, mesesA, tinA: tinB, cuotaA: c, tinB, cuotaB: c, bonif };
+  }
+  const cuotaA = pmtMeses(h.importe, h.tramoATinPct, n);
+  const saldo = saldoTras(h.importe, h.tramoATinPct, cuotaA, mesesA);
+  return { n, mesesA, tinA: h.tramoATinPct, cuotaA, tinB, cuotaB: pmtMeses(saldo, tinB, n - mesesA), bonif };
+}
+
+/** Cuota principal de la hipoteca (la del tramo largo). */
 export function cuotaHipotecaPrevista(d: AppData): number {
-  return pmt(d.hipoteca.importe, d.hipoteca.tinPct, d.hipoteca.plazoAnios);
+  return tramosHipoteca(d).cuotaB;
+}
+
+/** Cuota de la hipoteca prevista en un mes concreto (0 antes de empezar o tras la última). */
+export function cuotaHipotecaMes(d: AppData, key: string): number {
+  const ini = inicioHipotecaMes(d);
+  if (!ini || key < ini) return 0;
+  const t = tramosHipoteca(d);
+  const i = mesesEntre(ini, key);
+  if (i >= t.n) return 0;
+  return i < t.mesesA ? t.cuotaA : t.cuotaB;
+}
+
+/** Tramo de la hipoteca en un mes: 'A' (inicial) o 'B'; null sin tramos o fuera del plazo. */
+function tramoMes(d: AppData, key: string): 'A' | 'B' | null {
+  const ini = inicioHipotecaMes(d);
+  const t = tramosHipoteca(d);
+  if (!ini || key < ini || t.mesesA === 0) return null;
+  return mesesEntre(ini, key) < t.mesesA ? 'A' : 'B';
+}
+
+/** Cuota al préstamo familiar prevista en un mes: la pactada y, la última, solo lo que quede. */
+export function cuotaFamiliarMes(d: AppData, key: string): number {
+  const f = d.familiar;
+  const ini = inicioFamiliarMes(d);
+  const fin = finPrestamoFamiliar(d);
+  if (f.importe <= 0 || f.cuota <= 0 || !ini || key < ini || (fin && key > fin)) return 0;
+  if (!fin || key !== fin) return f.cuota;
+  const k = mesesEntre(ini, key);
+  const pend = saldoTras(f.importe, f.tinPct, f.cuota, k);
+  const resto = pend + Math.round(pend * (f.tinPct / 100 / 12));
+  return Math.min(f.cuota, resto > 0 ? resto : f.cuota);
+}
+
+/** Seguros elegidos prorrateados al año (céntimos). */
+export function segurosAnuales(d: AppData): number {
+  return segurosElegidos(d).reduce((a, x) => a + x.primaAnual, 0) + d.recurrentes.seguroHogarAnual + d.recurrentes.seguroVidaAnual;
 }
 
 /** Conceptos por defecto de un mes nuevo, calculados a partir de Compra y financiación. */
@@ -211,7 +302,7 @@ export function mesPrevision(d: AppData, key?: string): Mes {
   const sinAlquiler = !!key && (!ini || key < ini);
   if (r.alquiler && !sinAlquiler) ingresos.push(l('Alquiler', r.alquiler));
   const gastos: Linea[] = [];
-  const hip = cuotaHipotecaPrevista(d);
+  const hip = key ? cuotaHipotecaMes(d, key) : tramosHipoteca(d).cuotaA;
   // Las cuotas solo se proponen en los meses en que tocan: la hipoteca desde el mes siguiente a la
   // escritura y el préstamo familiar desde su primera cuota hasta la última.
   const iniHip = inicioHipotecaMes(d);
@@ -219,16 +310,18 @@ export function mesPrevision(d: AppData, key?: string): Mes {
   const finFam = finPrestamoFamiliar(d);
   const tocaHip = !key || (!!iniHip && key >= iniHip);
   const tocaFam = !key || (!!iniFam && key >= iniFam && (!finFam || key <= finFam));
-  if (hip && tocaHip) gastos.push({ ...l(`Cuota hipoteca${d.hipoteca.banco ? ` (${d.hipoteca.banco})` : ''}`, hip), vinculo: 'hipoteca' });
-  if (d.familiar.cuota && d.familiar.importe && tocaFam) gastos.push({ ...l('Cuota préstamo familiar', d.familiar.cuota), vinculo: 'familiar' });
+  if (hip && (key || tocaHip)) gastos.push({ ...l(`Cuota hipoteca${d.hipoteca.banco ? ` (${d.hipoteca.banco})` : ''}`, hip), vinculo: 'hipoteca' });
+  const fam = key ? cuotaFamiliarMes(d, key) : d.familiar.cuota;
+  if (fam && d.familiar.importe && tocaFam) gastos.push({ ...l('Cuota préstamo familiar', fam), vinculo: 'familiar' });
   if (r.edificioAnual) gastos.push(l('Cuota edificio (prorrateo)', Math.round(r.edificioAnual / 12)));
   if (r.ibiAnual) gastos.push(l('IBI (prorrateo)', Math.round(r.ibiAnual / 12)));
   if (r.seguroHogarAnual) gastos.push(l('Seguro de hogar (prorrateo)', Math.round(r.seguroHogarAnual / 12)));
   if (r.seguroVidaAnual) gastos.push(l('Seguro de vida (prorrateo)', Math.round(r.seguroVidaAnual / 12)));
+  for (const x of segurosElegidos(d)) if (x.primaAnual) gastos.push(l(`${x.nombre || 'Seguro'} (prorrateo)`, Math.round(x.primaAnual / 12)));
   // Los prorrateos se redondean por separado: el último absorbe la diferencia para que sumen lo mismo que el total
   const prorrateos = gastos.filter((g) => g.concepto.endsWith('(prorrateo)'));
   if (prorrateos.length) {
-    const total = Math.round((r.edificioAnual + r.ibiAnual + r.seguroHogarAnual + r.seguroVidaAnual) / 12);
+    const total = Math.round((r.edificioAnual + r.ibiAnual + segurosAnuales(d)) / 12);
     prorrateos[prorrateos.length - 1].importe += total - prorrateos.reduce((a, g) => a + g.importe, 0);
   }
   if (r.mantenimientoMensual) gastos.push(l('Mantenimiento', r.mantenimientoMensual));
@@ -248,8 +341,12 @@ export function cuotaPactada(d: AppData, kind: LoanKind): number {
 }
 
 export function calendarioDe(d: AppData, kind: LoanKind): Calendario {
-  const p = kind === 'hipoteca' ? d.hipoteca : d.familiar;
-  return calendario(p.importe, p.tinPct, cuotaPactada(d, kind), d.cuotas[kind]);
+  if (kind === 'hipoteca') {
+    const t = tramosHipoteca(d);
+    const tramo = t.mesesA > 0 ? { meses: t.mesesA, tinPct: t.tinA, cuota: t.cuotaA, plazoMeses: t.n } : undefined;
+    return calendario(d.hipoteca.importe, t.tinB, t.cuotaB, d.cuotas.hipoteca, tramo);
+  }
+  return calendario(d.familiar.importe, d.familiar.tinPct, d.familiar.cuota, d.cuotas.familiar);
 }
 
 /* ───────────── Recuperación de la inversión ───────────── */
@@ -335,7 +432,7 @@ export function lineaTiempo(d: AppData): Hito[] {
 /* ───────────── Avisos ───────────── */
 
 export type Nivel = 'alerta' | 'aviso' | 'info';
-export type SectionId = 'resumen' | 'compra' | 'gastos' | 'reforma' | 'meses' | 'hipoteca' | 'familiar' | 'notas' | 'copia';
+export type SectionId = 'resumen' | 'compra' | 'gastos' | 'reforma' | 'meses' | 'hipoteca' | 'seguros' | 'familiar' | 'notas' | 'copia';
 
 export interface Aviso {
   id: string;
@@ -437,6 +534,27 @@ export function avisos(d: AppData): Aviso[] {
       detalle: d.hipoteca.notas || 'Las condiciones de la hipoteca son provisionales hasta recibir la FEIN.', ir: 'compra',
     });
   }
+  // Plazos de la FEIN: 10 días de reflexión desde que se entrega y fecha de caducidad de la oferta
+  const fein = d.hipoteca.fein;
+  if (fein.fechaEmision && d.hitos.escrituraFecha) {
+    const desde = addDays(fein.fechaEmision, 10);
+    if (d.hitos.escrituraFecha < desde) {
+      out.push({ id: 'fein-reflexion', nivel: 'aviso', titulo: `La firma no puede ser antes del ${fmtDia(desde)}`, detalle: 'Hay 10 días de reflexión desde la entrega de la FEIN.', ir: 'compra' });
+    }
+  }
+  if (fein.validaHasta && d.hitos.escrituraFecha && d.hitos.escrituraFecha > fein.validaHasta) {
+    out.push({
+      id: 'fein-caduca', nivel: 'alerta', titulo: `La FEIN caduca el ${fmtDia(fein.validaHasta)}, antes de la firma prevista`,
+      detalle: 'Firma antes de esa fecha o pide al banco que la renueve (las condiciones pueden cambiar).', ir: 'compra',
+    });
+  }
+  if (d.hipoteca.tramoAMeses > 0 && d.hipoteca.importe) {
+    out.push({
+      id: 'bonif-revision', nivel: 'info', titulo: 'El banco revisa la rebaja del interés cada año',
+      detalle: d.hipoteca.nominaBizum ? 'Mantén la nómina domiciliada y Bizum para no perderla.' : 'Sin rebaja se aplica el tipo completo del segundo tramo.', ir: 'hipoteca',
+    });
+  }
+
   // Reforma como un único importe
   if (d.reforma.partidas.length === 0 && d.gastos.reforma > 0) {
     out.push({
@@ -463,6 +581,13 @@ export function avisos(d: AppData): Aviso[] {
   const peso: Record<Nivel, number> = { alerta: 0, aviso: 1, info: 2 };
   return out.sort((a, b) => peso[a.nivel] - peso[b.nivel]);
 }
+
+function addDays(iso: string, n: number): string {
+  const t = new Date(`${iso}T12:00:00`);
+  t.setDate(t.getDate() + n);
+  return t.toISOString().slice(0, 10);
+}
+const fmtDia = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
 
 /* ───────────── Coste total y rentabilidad ───────────── */
 
@@ -516,8 +641,9 @@ function costePrestamo(d: AppData, kind: LoanKind): CostePrestamo {
     meses = 0;
     intereses = 0;
   } else if (kind === 'hipoteca') {
-    meses = cuota > 0 ? Math.round(d.hipoteca.plazoAnios * 12) : null;
-    intereses = meses === null ? null : Math.max(0, cuota * meses - p.importe);
+    const t = tramosHipoteca(d);
+    meses = cuota > 0 ? t.n : null;
+    intereses = meses === null ? null : Math.max(0, t.cuotaA * t.mesesA + t.cuotaB * (t.n - t.mesesA) - p.importe);
   } else {
     const sim = simular(p.importe, p.tinPct, cuota);
     meses = sim?.meses ?? null;
@@ -529,7 +655,8 @@ function costePrestamo(d: AppData, kind: LoanKind): CostePrestamo {
     return { ...base, meses, total, intereses, interesesConAmort: intereses, mesesConAmort: meses, ahorro: intereses === null ? null : 0, mesesAhorro: meses === null ? null : 0 };
   }
   // Con amortizaciones: lo ya pagado + lo que queda desde el capital pendiente actual, misma cuota (se acorta el plazo)
-  const fut = simular(cal.pendiente, p.tinPct, cuota);
+  const tin = kind === 'hipoteca' ? tramosHipoteca(d).tinB : p.tinPct;
+  const fut = simular(cal.pendiente, tin, cuota);
   const pagadas = cal.filas.filter((f) => !f.liquidado).length;
   const interesesConAmort = fut === null ? null : cal.totalIntereses + fut.intereses;
   const mesesConAmort = fut === null ? null : pagadas + fut.meses;
@@ -592,7 +719,7 @@ export function rentabilidad(d: AppData): Rentabilidad {
 
   const r = d.recurrentes;
   const alquilerAnual = r.alquiler * 12;
-  const gastosRecurrentesAnuales = r.ibiAnual + r.seguroHogarAnual + r.seguroVidaAnual + r.edificioAnual + r.mantenimientoMensual * 12;
+  const gastosRecurrentesAnuales = r.ibiAnual + segurosAnuales(d) + r.edificioAnual + r.mantenimientoMensual * 12;
   const inversionActivo = g.total;
   const pct = (num: number, den: number) => (den > 0 ? (num / den) * 100 : null);
 
@@ -640,7 +767,13 @@ export function rentabilidad(d: AppData): Rentabilidad {
 
 export interface Fase {
   id: 'espera' | 'devolviendo' | 'libre';
+  /** Único: una etapa puede partirse en varios tramos de hipoteca */
+  key: string;
   titulo: string;
+  /** Tramo de la hipoteca, si la hipoteca tiene tramos */
+  subtitulo: string | null;
+  /** Meses que dura (null = sin fechas o indefinida) */
+  meses: number | null;
   /** Resultado mensual previsto (céntimos): ingresos − cuotas − fijos */
   resultado: number;
   /** Parte de capital de las cuotas (deuda que dejas de deber: ahorro, no gasto) */
@@ -656,7 +789,7 @@ export interface Fase {
 /** Gastos fijos del piso prorrateados al mes (IBI, edificio, seguros) + mantenimiento. */
 export function fijosMensuales(d: AppData): number {
   const r = d.recurrentes;
-  return Math.round((r.edificioAnual + r.ibiAnual + r.seguroHogarAnual + r.seguroVidaAnual) / 12) + r.mantenimientoMensual;
+  return Math.round((r.edificioAnual + r.ibiAnual + segurosAnuales(d)) / 12) + r.mantenimientoMensual;
 }
 
 /** Mes de la primera cuota de la hipoteca: el siguiente a la escritura. null = sin escritura. */
@@ -686,48 +819,91 @@ export function finPrestamoFamiliar(d: AppData): string | null {
   return ini ? addMonths(ini, restantes - 1) : null;
 }
 
+const TITULO_FASE: Record<Fase['id'], string> = {
+  espera: 'Antes de alquilar',
+  devolviendo: 'Alquilado y devolviendo el préstamo familiar',
+  libre: 'Alquilado sin cuota del préstamo familiar',
+};
+
+const pctTxt = (n: number) => `${n.toLocaleString('es-ES', { maximumFractionDigits: 2 })} %`;
+
 /**
- * Las tres fases del resultado mensual previsto: antes de alquilar, alquilado devolviendo
- * a la familia y alquilado sin esa cuota. Con los datos previstos de «Compra y financiación».
+ * Etapas del resultado mensual previsto: antes de alquilar, alquilado devolviendo a la familia y
+ * alquilado sin esa cuota. Con fechas, cada etapa se parte además por tramo de la hipoteca (la
+ * cuota cambia); sin fechas, son las tres etapas con la cuota principal.
  */
 export function fasesResultado(d: AppData): Fase[] {
-  const hip = cuotaHipotecaPrevista(d);
-  const fam = d.familiar.importe > 0 ? d.familiar.cuota : 0;
+  const prev = previsionMensual(d);
+  const t = tramosHipoteca(d);
   const fijos = fijosMensuales(d);
   const alq = d.recurrentes.alquiler;
-  const ini = inicioAlquilerMes(d);
-  const fin = finPrestamoFamiliar(d);
   const l = (concepto: string, importe: number) => ({ concepto, importe });
-  const base = [l('Cuota hipoteca', -hip), l('Gastos fijos', -fijos)];
-  // Capital de la cuota familiar: toda la cuota si no hay interés
-  const capFam = fam ? Math.max(0, fam - Math.round(d.familiar.importe * (d.familiar.tinPct / 100 / 12))) : 0;
-  const fase = (f: Omit<Fase, 'capital' | 'economico'>, mesRef: string | null, conFam: boolean): Fase => {
-    const capital = capitalHipotecaMes(d, mesRef) + (conFam ? capFam : 0);
-    return { ...f, capital, economico: f.resultado + capital };
+  const capFam = (fam: number) => (fam ? Math.max(0, fam - Math.round(d.familiar.importe * (d.familiar.tinPct / 100 / 12))) : 0);
+  const crear = (
+    id: Fase['id'], key: string, hip: number, fam: number, desde: string | null, hasta: string | null,
+    meses: number | null, tramo: 'A' | 'B' | null, mesRef: string | null,
+  ): Fase => {
+    const conAlq = id !== 'espera';
+    const resultado = (conAlq ? alq : 0) - hip - fam - fijos;
+    const capital = capitalHipotecaMes(d, mesRef) + capFam(fam);
+    return {
+      id, key, titulo: TITULO_FASE[id],
+      subtitulo: [
+        fam > 0 && fam < d.familiar.cuota ? `Última cuota a tus padres: ${fmtEur(fam)}` : null,
+        tramo ? `Hipoteca al ${pctTxt(tramo === 'A' ? t.tinA : t.tinB)}${tramo === 'A' ? ` (${t.mesesA} primeros meses)` : ''}` : null,
+      ].filter(Boolean).join(' · ') || null,
+      resultado, capital, economico: resultado + capital, desde, hasta, meses,
+      lineas: [
+        ...(conAlq ? [l('Alquiler', alq)] : []),
+        l('Cuota hipoteca', -hip), l('Gastos fijos', -fijos), ...(fam ? [l('Cuota préstamo familiar', -fam)] : []),
+      ],
+    };
   };
-  return [
-    fase({
-      id: 'espera', titulo: 'Antes de alquilar', resultado: -(hip + fam + fijos), desde: null, hasta: ini,
-      lineas: [...base, ...(fam ? [l('Cuota préstamo familiar', -fam)] : [])],
-    }, inicioHipotecaMes(d), true),
-    fase({
-      id: 'devolviendo', titulo: 'Alquilado y devolviendo el préstamo familiar', resultado: alq - hip - fam - fijos,
-      desde: ini, hasta: fin, lineas: [l('Alquiler', alq), ...base, l('Cuota préstamo familiar', -fam)],
-    }, ini, true),
-    fase({
-      id: 'libre', titulo: 'Alquilado sin cuota del préstamo familiar', resultado: alq - hip - fijos,
-      desde: fin ? addMonths(fin, 1) : null, hasta: null, lineas: [l('Alquiler', alq), ...base],
-    }, fin ? addMonths(fin, 1) : null, false),
-  ];
+
+  if (!prev) {
+    const fam = d.familiar.importe > 0 ? d.familiar.cuota : 0;
+    const ini = inicioAlquilerMes(d);
+    const fin = finPrestamoFamiliar(d);
+    return [
+      crear('espera', 'espera', t.cuotaA, fam, null, ini ? addMonths(ini, -1) : null, null, null, inicioHipotecaMes(d)),
+      crear('devolviendo', 'devolviendo', t.cuotaB, fam, ini, fin, null, null, ini),
+      crear('libre', 'libre', t.cuotaB, 0, fin ? addMonths(fin, 1) : null, null, null, null, fin ? addMonths(fin, 1) : null),
+    ];
+  }
+
+  // Meses consecutivos de la previsión con la misma etapa, el mismo tramo de hipoteca y el mismo resultado
+  const grupos: { fase: Fase['id']; tramo: 'A' | 'B' | null; meses: PrevisionMes[] }[] = [];
+  for (const m of prev) {
+    const g = grupos[grupos.length - 1];
+    // Mismo resultado: la última cuota familiar (más pequeña) queda como etapa propia
+    if (g && g.fase === m.fase && g.tramo === m.tramo && g.meses[0].resultado === m.resultado) g.meses.push(m);
+    else grupos.push({ fase: m.fase, tramo: m.tramo, meses: [m] });
+  }
+  // La etapa libre solo hasta su primer tramo (sigue indefinidamente)
+  const hastaLibre = grupos.findIndex((g) => g.fase === 'libre');
+  const usados = hastaLibre >= 0 ? grupos.slice(0, hastaLibre + 1) : grupos;
+  return usados.map((g, i) => {
+    const primero = g.meses[0];
+    const ultimo = g.meses[g.meses.length - 1];
+    const libre = g.fase === 'libre';
+    // Cuotas típicas del tramo (la del primer mes; la última familiar puede ser menor)
+    return crear(
+      g.fase, `${g.fase}-${g.tramo ?? 'u'}-${i}`, primero.hipoteca, primero.familiar, primero.key, libre ? null : ultimo.key,
+      libre ? null : g.meses.length, g.tramo, primero.key,
+    );
+  });
 }
 
 /* ───────────── Lo que pones tú ───────────── */
 
 export interface EtapaSueldo {
   id: Fase['id'];
+  key: string;
+  titulo: string;
+  subtitulo: string | null;
   /** Lo que sale (o entra, si es positivo) cada mes */
   resultado: number;
-  /** Meses que dura la etapa (null = sin fechas) */
+  /** Meses que dura la etapa (null = sin fechas o indefinida) */
   meses: number | null;
 }
 
@@ -739,11 +915,11 @@ export function aportacion(d: AppData) {
   const g = totalesGastos(d);
   const entrada = Math.max(0, g.total - d.hipoteca.importe - d.familiar.importe);
   const pagado = Math.min(dineroPropio(d).propio, entrada);
-  const fases = fasesResultado(d);
   const prev = previsionMensual(d);
-  const meses = (id: Fase['id']) => (prev ? prev.filter((m) => m.fase === id).length : null);
-  const etapas: EtapaSueldo[] = fases.map((f) => ({ id: f.id, resultado: f.resultado, meses: f.id === 'libre' ? null : meses(f.id) }));
-  // Total del sueldo: los meses en negativo de la previsión (etapas 1 y 2)
+  const etapas: EtapaSueldo[] = fasesResultado(d).map((f) => ({
+    id: f.id, key: f.key, titulo: f.titulo, subtitulo: f.subtitulo, resultado: f.resultado, meses: f.meses,
+  }));
+  // Total del sueldo: los meses en negativo de la previsión (con la última cuota familiar exacta)
   const sueldoTotal = prev ? -prev.filter((m) => m.resultado < 0).reduce((a, m) => a + m.resultado, 0) : null;
   return { total: g.total, prestamos: d.hipoteca.importe + d.familiar.importe, entrada, pagado, quedan: entrada - pagado, etapas, sueldoTotal };
 }
@@ -751,20 +927,20 @@ export function aportacion(d: AppData) {
 export interface PrevisionMes {
   key: string;
   fase: Fase['id'];
+  tramo: 'A' | 'B' | null;
+  hipoteca: number;
+  familiar: number;
   resultado: number;
 }
 
 /** Resultado previsto de un mes concreto según qué cuotas y qué ingresos tocan ese mes. */
 function resultadoPrevistoMes(d: AppData, key: string): PrevisionMes {
   const ini = inicioAlquilerMes(d);
-  const iniHip = inicioHipotecaMes(d);
-  const iniFam = inicioFamiliarMes(d);
-  const finFam = finPrestamoFamiliar(d);
   const alquila = !!ini && key >= ini;
-  const hip = iniHip && key >= iniHip ? cuotaHipotecaPrevista(d) : 0;
-  const fam = d.familiar.importe > 0 && iniFam && key >= iniFam && (!finFam || key <= finFam) ? d.familiar.cuota : 0;
-  const resultado = (alquila ? d.recurrentes.alquiler : 0) - hip - fam - fijosMensuales(d);
-  return { key, fase: !alquila ? 'espera' : fam ? 'devolviendo' : 'libre', resultado };
+  const hipoteca = cuotaHipotecaMes(d, key);
+  const familiar = cuotaFamiliarMes(d, key);
+  const resultado = (alquila ? d.recurrentes.alquiler : 0) - hipoteca - familiar - fijosMensuales(d);
+  return { key, fase: !alquila ? 'espera' : familiar ? 'devolviendo' : 'libre', tramo: tramoMes(d, key), hipoteca, familiar, resultado };
 }
 
 /**
@@ -788,6 +964,8 @@ export function previsionMensual(d: AppData): PrevisionMes[] | null {
 export interface RecuperacionPrevista {
   /** Dinero propio de la compra (total − préstamos) + saldo de los meses antes de alquilar */
   invertido: number;
+  /** Todo lo que sale de tu bolsillo: la entrada + los meses en negativo hasta recuperarlo */
+  bolsillo: number;
   mes: string | null;
   /** Meses desde el inicio del alquiler hasta recuperarlo */
   mesesDesdeAlquiler: number | null;
@@ -802,34 +980,80 @@ export function recuperacionPrevista(d: AppData): RecuperacionPrevista | null {
   const desde = inicioHipotecaMes(d);
   if (!ini || !desde) return null;
   const g = totalesGastos(d);
-  let invertido = Math.max(0, g.total - d.hipoteca.importe - d.familiar.importe);
-  for (let k = desde; k < ini; k = addMonths(k, 1)) invertido -= resultadoPrevistoMes(d, k).resultado;
+  const entrada = Math.max(0, g.total - d.hipoteca.importe - d.familiar.importe);
+  let invertido = entrada;
+  let bolsillo = entrada;
+  for (let k = desde; k < ini; k = addMonths(k, 1)) {
+    const r = resultadoPrevistoMes(d, k).resultado;
+    invertido -= r;
+    if (r < 0) bolsillo -= r;
+  }
   let acumulado = 0;
   let n = 0;
   for (let k = ini; n < 600; k = addMonths(k, 1), n++) {
-    acumulado += resultadoPrevistoMes(d, k).resultado;
-    if (acumulado >= invertido) return { invertido, mes: k, mesesDesdeAlquiler: n + 1 };
+    const r = resultadoPrevistoMes(d, k).resultado;
+    acumulado += r;
+    if (r < 0) bolsillo -= r;
+    if (acumulado >= invertido) return { invertido, bolsillo, mes: k, mesesDesdeAlquiler: n + 1 };
   }
-  return { invertido, mes: null, mesesDesdeAlquiler: null };
+  return { invertido, bolsillo, mes: null, mesesDesdeAlquiler: null };
+}
+
+/* ───────────── El día de la firma ───────────── */
+
+/**
+ * Qué se paga el día de la escritura y de dónde sale: la hipoteca, después tus ahorros y, lo
+ * que falte, el préstamo familiar. Sin la reforma (va aparte, después de la firma).
+ */
+export function diaFirma(d: AppData) {
+  const filas = filasGastos(d).filter((f) => !f.reforma && f.key !== 'reforma');
+  const total = filas.reduce((a, f) => a + f.importe, 0);
+  const yaPagado = filas.filter((f) => f.estado === 'pagado').reduce((a, f) => a + f.importe, 0);
+  const pendiente = total - yaPagado;
+  const hipoteca = d.hipoteca.importe;
+  const trasHipoteca = Math.max(0, pendiente - hipoteca);
+  const ahorros = Math.min(d.ahorros.firma, trasHipoteca);
+  const familiarNecesario = Math.max(0, trasHipoteca - d.ahorros.firma);
+  const falta = Math.max(0, trasHipoteca - ahorros - d.familiar.importe);
+  const sobraFamiliar = Math.max(0, d.familiar.importe - familiarNecesario);
+  const pendientes = filas.filter((f) => f.estado === 'pendiente' && f.importe > 0);
+  return { filas: pendientes, total, yaPagado, pendiente, hipoteca, ahorros, familiarNecesario, falta, sobraFamiliar };
+}
+
+/** Copia de los datos sin la reforma (para ver la compra y la hipoteca por separado). */
+export function sinReforma(d: AppData): AppData {
+  return { ...d, gastos: { ...d.gastos, reforma: 0 }, reforma: { partidas: [] } };
+}
+
+/* ───────────── De tu bolsillo (real) ───────────── */
+
+/**
+ * Lo que de verdad ha salido de tu bolsillo: lo pagado de la compra con tu dinero y cada mes en
+ * negativo. Los meses en positivo te lo van devolviendo; cuando llegue a 0, empiezas a ganar.
+ */
+export function bolsilloReal(d: AppData) {
+  const { propio } = dineroPropio(d);
+  const meses = mesesOrdenados(d).map((k) => totalesMes(d.meses[k]).beneficio);
+  const mesesNegativos = -meses.filter((b) => b < 0).reduce((a, b) => a + b, 0);
+  const devuelto = meses.filter((b) => b > 0).reduce((a, b) => a + b, 0);
+  const aportado = propio + mesesNegativos;
+  return { compra: propio, mesesNegativos, aportado, devuelto, falta: Math.max(0, aportado - devuelto), ganancia: Math.max(0, devuelto - aportado) };
 }
 
 /* ───────────── Resultado económico: el capital devuelto es ahorro ───────────── */
 
 /** Capital de la cuota de la hipoteca en un mes (YYYY-MM) del cuadro previsto, sin amortizaciones. */
 export function capitalHipotecaMes(d: AppData, key: string | null): number {
-  const c = cuotaHipotecaPrevista(d);
+  const t = tramosHipoteca(d);
   const iniHip = inicioHipotecaMes(d);
-  if (!c) return 0;
-  const r = d.hipoteca.tinPct / 100 / 12;
-  let k = 0;
-  if (key && iniHip && key > iniHip) {
-    const [y1, m1] = iniHip.split('-').map(Number);
-    const [y2, m2] = key.split('-').map(Number);
-    k = (y2 - y1) * 12 + (m2 - m1);
-  }
-  const P = d.hipoteca.importe;
-  const saldo = r === 0 ? P - c * k : P * Math.pow(1 + r, k) - (c * (Math.pow(1 + r, k) - 1)) / r;
-  return Math.max(0, Math.min(c, c - Math.round(Math.max(0, saldo) * r)));
+  if (!t.cuotaB) return 0;
+  const k = key && iniHip && key > iniHip ? mesesEntre(iniHip, key) : 0;
+  const enA = k < t.mesesA;
+  const saldoA = saldoTras(d.hipoteca.importe, t.tinA, t.cuotaA, Math.min(k, t.mesesA));
+  const saldo = enA ? saldoA : saldoTras(saldoA, t.tinB, t.cuotaB, k - t.mesesA);
+  const c = enA ? t.cuotaA : t.cuotaB;
+  const r = (enA ? t.tinA : t.tinB) / 100 / 12;
+  return Math.max(0, Math.min(c, c - Math.round(saldo * r)));
 }
 
 /** Capital ya devuelto de los préstamos según las cuotas registradas (sin anticipadas: esas salen de tus ahorros). */

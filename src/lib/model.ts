@@ -28,6 +28,10 @@ export interface GastoBaseEstado {
   nota: string;
   /** Fecha específica; si está vacía se usa la fecha derivada (señal, arras, escritura…). */
   fecha: string;
+  /** Importe provisional (provisión de fondos): la cifra final llega con la liquidación */
+  provision: boolean;
+  /** Importe final de la liquidación; null = aún sin liquidar (se usa el provisional) */
+  liquidacion: number | null;
 }
 
 export interface GastoExtra {
@@ -96,6 +100,26 @@ export interface Fein {
   comisionAmortPct: number;
 }
 
+export type TipoSeguro = 'hogar' | 'vida' | 'proteccion' | 'otro';
+
+/**
+ * Un seguro (contratado o presupuesto). Los elegidos cuentan en los gastos fijos del piso y,
+ * si dan rebaja en la hipoteca (`bonifPct`), en el interés del tramo bonificable.
+ * De cada tipo (salvo «otro») solo se elige uno: los demás son alternativas para comparar.
+ */
+export interface Seguro {
+  id: string;
+  tipo: TipoSeguro;
+  nombre: string;
+  aseguradora: string;
+  primaAnual: number;
+  /** Puntos que rebaja el interés de la hipoteca (0 si no cumple el mínimo de la FEIN) */
+  bonifPct: number;
+  elegido: boolean;
+  contratado: boolean;
+  nota: string;
+}
+
 export interface Nota {
   id: string;
   fecha: string;
@@ -132,7 +156,16 @@ export interface AppData {
     viabilidadFecha: string;
     importe: number;
     plazoAnios: number;
+    /** TIN del tramo principal (o único) ANTES de rebajas */
     tinPct: number;
+    /** Tramo inicial a tipo distinto (p. ej. 6 meses al 3,29 %). 0 meses = un solo tramo */
+    tramoAMeses: number;
+    tramoATinPct: number;
+    /** Rebaja por domiciliar nómina (+ Bizum o tarjeta), en puntos */
+    bonifNominaPct: number;
+    nominaBizum: boolean;
+    /** Rebaja máxima total que admite la FEIN, en puntos */
+    bonifMaxPct: number;
     notas: string;
     /** El banco ya ha entregado el dinero (en la escritura) */
     recibida: boolean;
@@ -155,10 +188,14 @@ export interface AppData {
     alquiler: number;
     edificioAnual: number;
     ibiAnual: number;
+    /** Obsoletos: los seguros van en `seguros` (se migran al cargar) */
     seguroHogarAnual: number;
     seguroVidaAnual: number;
     mantenimientoMensual: number;
   };
+  /** Dinero tuyo para pagar en la firma, además de lo ya pagado: se usa antes que el préstamo familiar */
+  ahorros: { firma: number };
+  seguros: Seguro[];
   gastosBase: Record<BaseKey, GastoBaseEstado>;
   gastosExtra: GastoExtra[];
   /** Si tiene partidas, sustituye al importe único «reforma» de los gastos de compra */
@@ -185,7 +222,7 @@ export function uid(): string {
 
 export function emptyData(): AppData {
   const gastosBase = Object.fromEntries(
-    BASE_KEYS.map((k) => [k, { estado: 'pendiente', nota: '', fecha: '' } satisfies GastoBaseEstado]),
+    BASE_KEYS.map((k) => [k, { estado: 'pendiente', nota: '', fecha: '', provision: false, liquidacion: null } satisfies GastoBaseEstado]),
   ) as Record<BaseKey, GastoBaseEstado>;
   return {
     schemaVersion: SCHEMA_VERSION,
@@ -194,6 +231,7 @@ export function emptyData(): AppData {
     gastos: { comision: 0, reforma: 0, notaria: 0, registro: 0, gestoria: 0, tasacion: 0, tasacionFecha: '' },
     hipoteca: {
       banco: '', viabilidadFecha: '', importe: 0, plazoAnios: 25, tinPct: 0, notas: '', recibida: false, provisional: false,
+      tramoAMeses: 0, tramoATinPct: 0, bonifNominaPct: 0, nominaBizum: false, bonifMaxPct: 0,
       fein: { taePct: null, vinculaciones: '', fechaEmision: '', validaHasta: '', comisionAmortPct: 0 },
     },
     familiar: { importe: 0, cuota: 0, tinPct: 0, notas: '', recibido: false, primeraCuota: '' },
@@ -206,6 +244,8 @@ export function emptyData(): AppData {
       seguroVidaAnual: 0,
       mantenimientoMensual: 0,
     },
+    ahorros: { firma: 0 },
+    seguros: [],
     gastosBase,
     gastosExtra: [],
     reforma: { partidas: [] },

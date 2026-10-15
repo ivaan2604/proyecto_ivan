@@ -8,9 +8,10 @@ export const SECTIONS: { id: SectionId; folio: string; label: string; short: str
   { id: 'reforma', folio: '04', label: 'Reforma', short: 'Reforma' },
   { id: 'meses', folio: '05', label: 'Meses e ingresos', short: 'Meses' },
   { id: 'hipoteca', folio: '06', label: 'Hipoteca', short: 'Hipoteca' },
-  { id: 'familiar', folio: '07', label: 'Préstamo familiar', short: 'Familiar' },
-  { id: 'notas', folio: '08', label: 'Notas', short: 'Notas' },
-  { id: 'copia', folio: '09', label: 'Copia y ajustes', short: 'Ajustes' },
+  { id: 'seguros', folio: '07', label: 'Seguros', short: 'Seguros' },
+  { id: 'familiar', folio: '08', label: 'Préstamo familiar', short: 'Familiar' },
+  { id: 'notas', folio: '09', label: 'Notas', short: 'Notas' },
+  { id: 'copia', folio: '10', label: 'Copia y ajustes', short: 'Ajustes' },
 ];
 
 const ids = new Set(SECTIONS.map((s) => s.id));

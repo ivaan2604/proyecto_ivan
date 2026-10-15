@@ -11,13 +11,14 @@ import { Notas } from './sections/Notas';
 import { Prestamo } from './sections/Prestamo';
 import { Reforma } from './sections/Reforma';
 import { Resumen } from './sections/Resumen';
+import { Seguros } from './sections/Seguros';
 import { useEngine } from './store';
 import { engine } from './sync/engine';
 import { cloudEnabled } from './sync/remote';
 import { useTheme } from './theme';
 import { DialogProvider, useDialogs } from './ui/dialogs';
 import { AzaharMark, IconBank, IconCalendar, IconHome, IconMore, IconReceipt } from './ui/icons';
-import { ConflictModal, SignInForm, SyncPill } from './ui/sync';
+import { ConflictModal, SandboxBar, SignInForm, SyncPill } from './ui/sync';
 
 export default function App() {
   return (
@@ -64,6 +65,7 @@ function Shell() {
       case 'reforma': return <Reforma />;
       case 'meses': return <Meses />;
       case 'hipoteca': return <Prestamo kind="hipoteca" key="h" />;
+      case 'seguros': return <Seguros />;
       case 'familiar': return <Prestamo kind="familiar" key="f" />;
       case 'notas': return <Notas />;
       case 'copia': return <Copia theme={theme} setTheme={setTheme} />;
@@ -117,6 +119,7 @@ function Shell() {
       </header>
 
       <main className="main" id="main">
+        <SandboxBar />
         {page}
       </main>
 

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BASE_KEYS, SCHEMA_VERSION, emptyData, type AppData } from './model';
+import { BASE_KEYS, SCHEMA_VERSION, emptyData, uid, type AppData, type Seguro } from './model';
 
 const cents = z.number().int();
 const fecha = z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/, 'Fecha con formato YYYY-MM-DD');
@@ -16,6 +16,8 @@ const cuota = z.object({
   anticipada: cents.min(0),
 });
 
+const gastoBase = z.object({ estado, nota: z.string(), fecha, provision: z.boolean(), liquidacion: cents.nullable() });
+
 export const appDataSchema = z.object({
   schemaVersion: z.literal(SCHEMA_VERSION),
   piso: z.object({ precio: cents, tipoVivienda: z.string(), comunidadAutonoma: z.string(), itpPct: z.number() }),
@@ -28,6 +30,8 @@ export const appDataSchema = z.object({
   hipoteca: z.object({
     banco: z.string(), viabilidadFecha: fecha, importe: cents, plazoAnios: z.number().min(0),
     tinPct: z.number(), notas: z.string(), recibida: z.boolean(), provisional: z.boolean(),
+    tramoAMeses: z.number().int().min(0), tramoATinPct: z.number(), bonifNominaPct: z.number().min(0),
+    nominaBizum: z.boolean(), bonifMaxPct: z.number().min(0),
     fein: z.object({
       taePct: z.number().nullable(), vinculaciones: z.string(), fechaEmision: fecha, validaHasta: fecha,
       comisionAmortPct: z.number().min(0),
@@ -40,11 +44,15 @@ export const appDataSchema = z.object({
     inicioAlquiler: fecha, alquiler: cents, edificioAnual: cents, ibiAnual: cents, seguroHogarAnual: cents,
     seguroVidaAnual: cents, mantenimientoMensual: cents,
   }),
+  ahorros: z.object({ firma: cents.min(0) }),
+  seguros: z.array(
+    z.object({
+      id: z.string(), tipo: z.enum(['hogar', 'vida', 'proteccion', 'otro']), nombre: z.string(), aseguradora: z.string(),
+      primaAnual: cents.min(0), bonifPct: z.number().min(0), elegido: z.boolean(), contratado: z.boolean(), nota: z.string(),
+    }),
+  ),
   gastosBase: z.object(
-    Object.fromEntries(BASE_KEYS.map((k) => [k, z.object({ estado, nota: z.string(), fecha })])) as Record<
-      (typeof BASE_KEYS)[number],
-      z.ZodObject<{ estado: typeof estado; nota: z.ZodString; fecha: typeof fecha }>
-    >,
+    Object.fromEntries(BASE_KEYS.map((k) => [k, gastoBase])) as Record<(typeof BASE_KEYS)[number], typeof gastoBase>,
   ),
   gastosExtra: z.array(
     z.object({ id: z.string(), concepto: z.string(), fecha, importe: cents, estado, nota: z.string() }),
@@ -99,15 +107,30 @@ export function validateAppData(input: unknown): AppData {
       fein: { ...base.hipoteca.fein, ...obj.hipoteca?.fein },
     },
     familiar: { ...base.familiar, recibido: restoPagado, ...obj.familiar },
-    recurrentes: { ...base.recurrentes, ...obj.recurrentes },
+    // Los importes de seguro antiguos pasan a la lista de seguros (y aquí quedan a 0)
+    recurrentes: { ...base.recurrentes, ...obj.recurrentes, ...(obj.seguros ? {} : { seguroHogarAnual: 0, seguroVidaAnual: 0 }) },
     gastosBase: Object.fromEntries(
       BASE_KEYS.map((k) => [k, { ...base.gastosBase[k], ...(obj.gastosBase?.[k] ?? {}) }]),
     ),
+    ahorros: { ...base.ahorros, ...obj.ahorros },
+    seguros: obj.seguros ?? segurosAntiguos(obj),
     reforma: { ...base.reforma, ...obj.reforma },
     cuotas: { ...base.cuotas, ...obj.cuotas },
     meta: { ...base.meta, ...obj.meta },
   };
   return appDataSchema.parse(merged) as AppData;
+}
+
+/** Datos anteriores a la lista de seguros: los importes anuales de hogar y vida pasan a ser seguros elegidos. */
+function segurosAntiguos(obj: Partial<AppData>): Seguro[] {
+  const r = obj.recurrentes;
+  const s = (tipo: Seguro['tipo'], nombre: string, prima: number): Seguro => ({
+    id: uid(), tipo, nombre, aseguradora: '', primaAnual: prima, bonifPct: 0, elegido: true, contratado: false, nota: '',
+  });
+  const out: Seguro[] = [];
+  if (r?.seguroHogarAnual) out.push(s('hogar', 'Seguro de hogar', r.seguroHogarAnual));
+  if (r?.seguroVidaAnual) out.push(s('vida', 'Seguro de vida', r.seguroVidaAnual));
+  return out;
 }
 
 export function describeZodError(e: unknown): string {

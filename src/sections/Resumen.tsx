@@ -1,11 +1,13 @@
 import { useMemo, useState, type CSSProperties } from 'react';
 import { eurRow, LineChart, ProfitBars } from '../charts/charts';
 import {
-  aportacion, avisos, capitalDevuelto, enReforma, lineaTiempo, recuperacionPrevista, rentabilidad, seguimientoGlobal,
-  totalesGastos, totalesMes,
+  aportacion, avisos, bolsilloReal, capitalDevuelto, enReforma, lineaTiempo, recuperacionPrevista, rentabilidad, seguimientoGlobal,
+  sinReforma, totalesGastos, totalesMes,
 } from '../lib/derive';
 import { daysBetween, fmtDate, fmtEur, fmtInt, fmtMonthKey, todayISO } from '../lib/format';
 import { useData } from '../store';
+import { engine } from '../sync/engine';
+import { Segmented } from '../ui/fields';
 import { AzaharMark, IconArrow, IconTrendDown, IconTrendUp } from '../ui/icons';
 import { PageHead } from '../ui/layout';
 import { Counter, InView, useChangeFlash, useCountUp } from '../ui/motion';
@@ -37,11 +39,36 @@ function Sparkline({ values }: { values: number[] }) {
   );
 }
 
+/** Preferencia de este dispositivo: ver el Resumen con o sin la reforma. */
+function useConReforma(): [boolean, (v: boolean) => void] {
+  const [v, setV] = useState(() => {
+    try {
+      return localStorage.getItem('resumen-reforma') === 'con';
+    } catch {
+      return false;
+    }
+  });
+  return [
+    v,
+    (x: boolean) => {
+      setV(x);
+      try {
+        localStorage.setItem('resumen-reforma', x ? 'con' : 'sin');
+      } catch {
+        /* sin almacenamiento: solo para esta visita */
+      }
+    },
+  ];
+}
+
 /** La entrada completa (barras que se llenan, flor, mini gráfica) solo la primera vez por sesión. */
 let primeraVisita = true;
 
 export function Resumen() {
-  const d = useData();
+  const real = useData();
+  const [conReforma, setConReforma] = useConReforma();
+  const hayReforma = real.gastos.reforma > 0 || real.reforma.partidas.length > 0;
+  const d = useMemo(() => (conReforma || !hayReforma ? real : sinReforma(real)), [real, conReforma, hayReforma]);
   const [intro] = useState(() => {
     const v = primeraVisita;
     primeraVisita = false;
@@ -63,14 +90,16 @@ export function Resumen() {
   const ap = useMemo(() => aportacion(d), [d]);
   const recPrev = useMemo(() => recuperacionPrevista(d), [d]);
   const capDevuelto = useMemo(() => capitalDevuelto(d), [d]);
+  const bol = useMemo(() => bolsilloReal(d), [d]);
   const fein = d.hipoteca.fein;
   const diasFein = fein.validaHasta ? daysBetween(todayISO(), fein.validaHasta) : null;
 
   // Cifra principal: cuenta hasta el valor y se parte en euros y céntimos
-  const propioAnim = Math.round(useCountUp(seg.propio, 1100, 'propio'));
+  const propioAnim = Math.round(useCountUp(bol.aportado, 1100, 'propio'));
   const euros = Math.trunc(propioAnim / 100);
   const cents = String(Math.abs(propioAnim % 100)).padStart(2, '0');
-  const flashPropio = useChangeFlash(seg.propio, 'propio');
+  const flashPropio = useChangeFlash(bol.aportado, 'propio');
+  const pctDevuelto = bol.aportado ? Math.min(1, bol.devuelto / bol.aportado) : 0;
   const flashBeneficio = useChangeFlash(seg.beneficio, 'beneficio');
   const flashRecup = useChangeFlash(seg.pctRecuperado, 'recup');
 
@@ -92,39 +121,63 @@ export function Resumen() {
 
   return (
     <div className="page resumen">
-      <PageHead folio="01" title="Resumen" subtitle={d.piso.tipoVivienda || 'Seguimiento de la compra y el alquiler'} />
+      <PageHead
+        folio="01"
+        title="Resumen"
+        subtitle={d.piso.tipoVivienda || 'Seguimiento de la compra y el alquiler'}
+        actions={
+          <div className="resumen-acciones no-print">
+            {hayReforma && (
+              <Segmented
+                value={conReforma ? 'con' : 'sin'}
+                options={[{ value: 'sin', label: 'Sin reforma' }, { value: 'con', label: 'Con reforma' }]}
+                onChange={(v) => setConReforma(v === 'con')}
+                ariaLabel="Ver con o sin la reforma"
+              />
+            )}
+            <button className="btn" onClick={() => engine.enterSandbox()} title="Prueba cambios sin tocar tus datos reales">
+              Probar un supuesto
+            </button>
+          </div>
+        }
+      />
+      {hayReforma && !conReforma && (
+        <p className="muted resumen-nota">Viendo la compra y la hipoteca sin la reforma, que va aparte.</p>
+      )}
 
       {/* ───── Cifras protagonistas ───── */}
       <section className={`kpis${intro ? ' intro' : ''}`} aria-label="Cifras principales">
         <article className={`kpi kpi-hero${flashPropio ? ` flash-${flashPropio}` : ''}`} aria-labelledby="h-aportado">
           <AzaharMark className="hero-blossom" size={260} />
           <div className="kpi-label" id="h-aportado">Aportado de tu bolsillo</div>
-          <div className="hero-figure" aria-label={fmtEur(seg.propio)}>
+          <div className="hero-figure" aria-label={fmtEur(bol.aportado)}>
             <span aria-hidden>
               {fmtInt(euros)}
               <span className="cents">,{cents} €</span>
             </span>
           </div>
           <div className="hero-sub">
-            {recibido > 0
-              ? `Pagado ${fmtEur(g.pagado)} − ${fmtEur(recibido)} con dinero prestado`
-              : 'Gastos de compra pagados (aún no has marcado ningún préstamo como recibido)'}
+            {bol.mesesNegativos > 0
+              ? `Compra ${fmtEur(bol.compra)} + meses en negativo ${fmtEur(bol.mesesNegativos)}`
+              : recibido > 0
+                ? `Pagado ${fmtEur(g.pagado)} − ${fmtEur(recibido)} con dinero prestado`
+                : 'Lo pagado de la compra con tu dinero. Cada mes en negativo se sumará aquí.'}
           </div>
-          <div className="meter tejas" role="progressbar" aria-label="Compra pagada" aria-valuenow={Math.round(pct * 100)} aria-valuemin={0} aria-valuemax={100}>
-            <span style={{ '--p': pct } as CSSProperties} />
+          <div className="meter tejas" role="progressbar" aria-label="Recuperado" aria-valuenow={Math.round(pctDevuelto * 100)} aria-valuemin={0} aria-valuemax={100}>
+            <span style={{ '--p': pctDevuelto } as CSSProperties} />
           </div>
           <div className="meter-legend">
-            <span>Pagado el {Math.round(pct * 100)} % de la compra</span>
-            <span className="num">{fmtEur(g.total)}</span>
+            <span>Te ha devuelto el piso {fmtEur(bol.devuelto)}</span>
+            <span className="num">{bol.ganancia > 0 ? `ya ganas ${fmtEur(bol.ganancia)}` : `te falta ${fmtEur(bol.falta)}`}</span>
           </div>
           <dl className="hero-foot">
             <div>
-              <dt>Pendiente</dt>
-              <dd className="num">{fmtEur(g.pendiente)}</dd>
+              <dt>Compra pagada</dt>
+              <dd className="num">{Math.round(pct * 100)} %</dd>
             </div>
             <div>
-              <dt>Precio</dt>
-              <dd className="num">{fmtEur(d.piso.precio)}</dd>
+              <dt>Pendiente</dt>
+              <dd className="num">{fmtEur(g.pendiente)}</dd>
             </div>
             {financiado > 0 && (
               <div>
@@ -209,10 +262,11 @@ export function Resumen() {
             <div className="kpi-label">Después, de tu sueldo</div>
             <ul>
               {ap.etapas.map((e, i) => (
-                <li key={e.id} className={`etapa-${e.id}`}>
+                <li key={e.key} className={`etapa-${e.id}`}>
                   <span className="pones-etapa">Etapa {i + 1}</span>
                   <span className="pones-que">
                     {e.id === 'espera' ? 'Antes de alquilar' : e.id === 'devolviendo' ? 'Alquilado, devolviendo a tus padres' : 'El piso se paga solo'}
+                    {e.subtitulo && <small className="pones-sub">{e.subtitulo}</small>}
                   </span>
                   <b className={`num ${e.resultado < 0 ? 'neg' : 'pos'}`}>
                     {e.resultado < 0 ? `${fmtEur(-e.resultado)}/mes` : `+${fmtEur(e.resultado)}/mes`}
@@ -224,6 +278,17 @@ export function Resumen() {
             {ap.sueldoTotal !== null ? (
               <p className="pones-total">
                 En total, <b className="num">{fmtEur(ap.sueldoTotal)}</b> de tu sueldo hasta que el piso se paga solo.
+                {recPrev && (
+                  <>
+                    {' '}De tu bolsillo, con la entrada: <b className="num">{fmtEur(ap.entrada + ap.sueldoTotal)}</b>
+                    {recPrev.mes && (
+                      <>
+                        {' '}· lo recuperas todo en <b>{fmtMonthKey(recPrev.mes)}</b>
+                      </>
+                    )}
+                    .
+                  </>
+                )}
               </p>
             ) : (
               <p className="pones-total muted">
@@ -249,7 +314,6 @@ export function Resumen() {
             <div className="kpi-sub">
               Válida hasta {fmtDate(fein.validaHasta)}
               {fein.taePct !== null && ` · TAE ${fein.taePct.toLocaleString('es-ES')} %`}
-              {fein.vinculaciones && ` · ${fein.vinculaciones}`}
             </div>
           </article>
         )}

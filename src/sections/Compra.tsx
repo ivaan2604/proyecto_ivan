@@ -1,4 +1,7 @@
-import { aportacion, cuotaHipotecaPrevista, fijosMensuales, importeBase, totalesReforma } from '../lib/derive';
+import {
+  aportacion, bonificacionHipoteca, costesPrestamos, diaFirma, sinReforma, fijosMensuales, importeBase, segurosAnuales, segurosElegidos,
+  totalesReforma, tramosHipoteca,
+} from '../lib/derive';
 import { fmtEur } from '../lib/format';
 import type { AppData } from '../lib/model';
 import { update, useData } from '../store';
@@ -6,7 +9,7 @@ import { DateInput, Field, MoneyInput, NumberInput, Segmented, TextArea, TextInp
 import { go } from '../router';
 import { PageHead } from '../ui/layout';
 
-type Sec = keyof Pick<AppData, 'piso' | 'hitos' | 'gastos' | 'hipoteca' | 'familiar' | 'recurrentes'>;
+type Sec = keyof Pick<AppData, 'piso' | 'hitos' | 'gastos' | 'hipoteca' | 'familiar' | 'recurrentes' | 'ahorros'>;
 
 /** Setter tipado para un campo de una subsección */
 function set<S extends Sec, K extends keyof AppData[S]>(sec: S, key: K) {
@@ -18,8 +21,13 @@ function set<S extends Sec, K extends keyof AppData[S]>(sec: S, key: K) {
 
 export function Compra() {
   const d = useData();
-  const cuota = cuotaHipotecaPrevista(d);
-  const totalPagarHip = cuota * Math.round(d.hipoteca.plazoAnios * 12);
+  const t = tramosHipoteca(d);
+  const cuota = t.cuotaB;
+  const bonif = bonificacionHipoteca(d);
+  const costeHip = costesPrestamos(d)[0];
+  const firma = diaFirma(d);
+  const reformaTotal = d.reforma.partidas.length ? totalesReforma(d).previsto : d.gastos.reforma;
+  const pct = (n: number) => `${n.toLocaleString('es-ES', { maximumFractionDigits: 2 })} %`;
   const r = d.recurrentes;
   const conPartidas = d.reforma.partidas.length > 0;
   const recibido = (v: boolean, on: (x: boolean) => void, quien: string) => (
@@ -33,7 +41,8 @@ export function Compra() {
     </Field>
   );
   const mensualFijos = fijosMensuales(d);
-  const ap = aportacion(d);
+  // La entrada del día de la firma, sin la reforma (va aparte)
+  const ap = aportacion(sinReforma(d));
   const fein = d.hipoteca.fein;
   const setFein = <K extends keyof typeof fein>(key: K) => (v: (typeof fein)[K]) =>
     update((x) => {
@@ -118,11 +127,42 @@ export function Compra() {
               <Field label="Viabilidad concedida"><DateInput value={d.hipoteca.viabilidadFecha} onChange={set('hipoteca', 'viabilidadFecha')} /></Field>
               <Field label="Importe"><MoneyInput value={d.hipoteca.importe} onChange={set('hipoteca', 'importe')} /></Field>
               <Field label="Plazo"><NumberInput value={d.hipoteca.plazoAnios} onChange={set('hipoteca', 'plazoAnios')} suffix="años" /></Field>
-              <Field label="TIN anual"><NumberInput value={d.hipoteca.tinPct} onChange={set('hipoteca', 'tinPct')} suffix="%" /></Field>
+              <Field label={d.hipoteca.tramoAMeses > 0 ? 'TIN del resto (sin rebaja)' : 'TIN anual (sin rebaja)'}>
+                <NumberInput value={d.hipoteca.tinPct} onChange={set('hipoteca', 'tinPct')} suffix="%" />
+              </Field>
+              <Field label="Tramo inicial a otro tipo" hint="Meses al principio con otro interés. 0 = un solo tipo">
+                <NumberInput value={d.hipoteca.tramoAMeses} onChange={(v) => set('hipoteca', 'tramoAMeses')(Math.max(0, Math.round(v)))} suffix="meses" />
+              </Field>
+              {d.hipoteca.tramoAMeses > 0 && (
+                <Field label="TIN del tramo inicial">
+                  <NumberInput value={d.hipoteca.tramoATinPct} onChange={set('hipoteca', 'tramoATinPct')} suffix="%" />
+                </Field>
+              )}
+              <Field label="Rebaja por nómina + Bizum" hint={d.hipoteca.nominaBizum ? `−${pct(d.hipoteca.bonifNominaPct)} en el ${d.hipoteca.tramoAMeses > 0 ? 'resto' : 'interés'}` : 'Sin domiciliar la nómina'}>
+                <Segmented
+                  value={d.hipoteca.nominaBizum ? 'si' : 'no'}
+                  options={[{ value: 'no', label: 'No' }, { value: 'si', label: 'Sí, la cojo' }]}
+                  onChange={(v) => set('hipoteca', 'nominaBizum')(v === 'si')}
+                  ariaLabel="Rebaja por nómina y Bizum"
+                />
+              </Field>
+              <Field label="Puntos de rebaja por nómina"><NumberInput value={d.hipoteca.bonifNominaPct} onChange={set('hipoteca', 'bonifNominaPct')} suffix="%" /></Field>
+              <Field label="Rebaja máxima (FEIN)" hint="Tope total de rebajas. 0 = sin tope">
+                <NumberInput value={d.hipoteca.bonifMaxPct} onChange={set('hipoteca', 'bonifMaxPct')} suffix="%" />
+              </Field>
               {recibido(d.hipoteca.recibida, set('hipoteca', 'recibida'), 'el banco lo entregue en la escritura')}
+              {t.mesesA > 0 && (
+                <div className="field">
+                  <span>Cuota los {t.mesesA} primeros meses</span>
+                  <div className="computed"><span>al {pct(t.tinA)}</span><b>{fmtEur(t.cuotaA)}</b></div>
+                </div>
+              )}
               <div className="field">
-                <span>Cuota mensual (PMT)</span>
-                <div className="computed"><span>calculada</span><b>{fmtEur(cuota)}</b></div>
+                <span>{t.mesesA > 0 ? 'Cuota después' : 'Cuota mensual'}</span>
+                <div className="computed">
+                  <span>al {pct(t.tinB)}{bonif.total > 0 ? ` (−${pct(bonif.total)})` : ''}</span>
+                  <b>{fmtEur(cuota)}</b>
+                </div>
               </div>
               <Field label="Notas / estado" wide>
                 <TextArea value={d.hipoteca.notas} onChange={set('hipoteca', 'notas')} placeholder="Condiciones, vinculaciones, estado del expediente…" />
@@ -148,10 +188,12 @@ export function Compra() {
                 <TextArea value={fein.vinculaciones} onChange={setFein('vinculaciones')} placeholder="Nómina, seguros de vida y hogar, tarjeta…" />
               </Field>
             </div>
-            {cuota > 0 && (
+            {cuota > 0 && costeHip.intereses !== null && (
               <p className="muted" style={{ fontSize: 13, marginBottom: 0 }}>
-                {Math.round(d.hipoteca.plazoAnios * 12)} cuotas · total a pagar {fmtEur(totalPagarHip)} · intereses
-                totales previstos {fmtEur(totalPagarHip - d.hipoteca.importe)}
+                {t.n} cuotas · total a devolver {fmtEur(d.hipoteca.importe + costeHip.intereses)} · intereses previstos{' '}
+                {fmtEur(costeHip.intereses)}
+                {bonif.seguros > 0 && ` · incluye −${pct(bonif.seguros)} de rebaja por seguros`}. Los seguros se eligen en{' '}
+                <a href="#/seguros" onClick={(e) => (e.preventDefault(), go('seguros'))}>Seguros</a>.
               </p>
             )}
           </section>
@@ -181,19 +223,62 @@ export function Compra() {
           </section>
         </div>
 
-        <section className="card" aria-labelledby="h-pones">
+        <section className="card" aria-labelledby="h-firma">
           <div className="card-head">
-            <h2 id="h-pones">Lo que pones tú al principio</h2>
-            <span className="hint">la entrada: lo que no cubren los préstamos</span>
+            <h2 id="h-firma">El día de la firma</h2>
+            <span className="hint">qué se paga y de dónde sale · sin la reforma</span>
           </div>
-          <p className="sobra-line">
-            Total de la compra <b className="num">{fmtEur(ap.total)}</b> − hipoteca <b className="num">{fmtEur(d.hipoteca.importe)}</b> − préstamo
-            familiar <b className="num">{fmtEur(d.familiar.importe)}</b> = <b className="num">{fmtEur(ap.entrada)}</b> de tu bolsillo.
-          </p>
-          <p className="muted" style={{ fontSize: 13, marginBottom: 0 }}>
-            Ya has pagado {fmtEur(ap.pagado)}; te quedan {fmtEur(ap.quedan)} hasta la escritura. Después, lo que salga cada mes lo
-            pones de tu sueldo (lo ves por etapas en el Resumen).
-          </p>
+          <div className="firma-grid">
+            <div>
+              <div className="subhead">Lo que falta por pagar</div>
+              <ul className="firma-list">
+                {firma.filas.map((f) => (
+                  <li key={f.key}>
+                    <span>{f.concepto}</span>
+                    <b className="num">{fmtEur(f.importe)}</b>
+                  </li>
+                ))}
+                <li className="firma-total">
+                  <span>Total</span>
+                  <b className="num">{fmtEur(firma.pendiente)}</b>
+                </li>
+              </ul>
+              <small className="muted">Ya pagado antes: {fmtEur(firma.yaPagado)} (de {fmtEur(firma.total)} de la compra)</small>
+            </div>
+            <div>
+              <div className="subhead">De dónde sale</div>
+              <ul className="firma-list">
+                <li>
+                  <span>Hipoteca</span>
+                  <b className="num">{fmtEur(Math.min(firma.hipoteca, firma.pendiente))}</b>
+                </li>
+                <li className="firma-input">
+                  <span>Tus ahorros (antes que tus padres)</span>
+                  <MoneyInput value={d.ahorros.firma} onChange={set('ahorros', 'firma')} ariaLabel="Tus ahorros para la firma" />
+                </li>
+                <li>
+                  <span>Préstamo familiar necesario</span>
+                  <b className="num">{fmtEur(firma.familiarNecesario)}</b>
+                </li>
+              </ul>
+              {firma.pendiente > 0 && firma.familiarNecesario !== d.familiar.importe && (
+                <div className="firma-ajuste">
+                  <span>
+                    Ahora tienes un préstamo familiar de <b className="num">{fmtEur(d.familiar.importe)}</b>
+                    {firma.falta > 0 ? `: faltan ${fmtEur(firma.falta)}.` : `: sobran ${fmtEur(firma.sobraFamiliar)}.`}
+                  </span>
+                  <button className="btn sm" onClick={() => set('familiar', 'importe')(firma.familiarNecesario)}>
+                    Pedir {fmtEur(firma.familiarNecesario)} a tus padres
+                  </button>
+                </div>
+              )}
+              <p className="muted" style={{ fontSize: 13, marginBottom: 0 }}>
+                Lo que pones tú en total (entrada): <b className="num">{fmtEur(ap.entrada)}</b> = compra {fmtEur(ap.total, { compact: true })} −
+                préstamos {fmtEur(ap.prestamos, { compact: true })}.
+                {reformaTotal > 0 && ` La reforma (${fmtEur(reformaTotal)}) va aparte, después de la firma.`}
+              </p>
+            </div>
+          </div>
         </section>
 
         <section className="card">
@@ -214,12 +299,15 @@ export function Compra() {
             <Field label="IBI anual" hint={`${fmtEur(Math.round(r.ibiAnual / 12))}/mes`}>
               <MoneyInput value={r.ibiAnual} onChange={set('recurrentes', 'ibiAnual')} />
             </Field>
-            <Field label="Seguro de hogar anual" hint={`${fmtEur(Math.round(r.seguroHogarAnual / 12))}/mes`}>
-              <MoneyInput value={r.seguroHogarAnual} onChange={set('recurrentes', 'seguroHogarAnual')} />
-            </Field>
-            <Field label="Seguro de vida anual" hint={`${fmtEur(Math.round(r.seguroVidaAnual / 12))}/mes`}>
-              <MoneyInput value={r.seguroVidaAnual} onChange={set('recurrentes', 'seguroVidaAnual')} />
-            </Field>
+            <div className="field">
+              <span>Seguros elegidos</span>
+              <div className="computed">
+                <a href="#/seguros" onClick={(e) => (e.preventDefault(), go('seguros'))}>
+                  {segurosElegidos(d).length ? segurosElegidos(d).map((x) => x.nombre).join(' + ') : 'elegir en «Seguros»'}
+                </a>
+                <b>{fmtEur(segurosAnuales(d))}/año</b>
+              </div>
+            </div>
             <Field label="Mantenimiento mensual"><MoneyInput value={r.mantenimientoMensual} onChange={set('recurrentes', 'mantenimientoMensual')} /></Field>
           </div>
           <p className="muted" style={{ fontSize: 13, marginBottom: 0 }}>

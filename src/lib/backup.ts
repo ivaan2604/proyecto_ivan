@@ -126,6 +126,7 @@ export function fromPrototype(p: Any): AppData {
     registro: eur(dg.registro), gestoria: eur(dg.gestoria), tasacion: eur(dg.tasacion), tasacionFecha: fecha(dg.tasacionFecha),
   };
   d.hipoteca = {
+    ...d.hipoteca,
     banco: str(dg.banco), viabilidadFecha: fecha(dg.hipotecaViabilidadFecha), importe: eur(dg.hipotecaImporte),
     plazoAnios: Number(dg.hipotecaPlazo) || 0, tinPct: pct(dg.hipotecaTin), notas: str(dg.hipotecaEstado), recibida: false,
     provisional: false, fein: d.hipoteca.fein,
@@ -136,13 +137,20 @@ export function fromPrototype(p: Any): AppData {
   d.recurrentes = {
     inicioAlquiler: '',
     alquiler: eur(dg.alquiler), edificioAnual: eur(dg.cuotaEdificioAnual), ibiAnual: eur(dg.ibiAnual),
-    seguroHogarAnual: eur(dg.seguroHogarAnual), seguroVidaAnual: eur(dg.seguroVidaAnual),
+    seguroHogarAnual: 0, seguroVidaAnual: 0,
     mantenimientoMensual: eur(dg.mantenimientoMensual),
   };
+  const seguro = (tipo: 'hogar' | 'vida', nombre: string, prima: number) => ({
+    id: uid(), tipo, nombre, aseguradora: '', primaAnual: prima, bonifPct: 0, elegido: true, contratado: false, nota: '',
+  });
+  d.seguros = [
+    ...(eur(dg.seguroHogarAnual) ? [seguro('hogar', 'Seguro de hogar', eur(dg.seguroHogarAnual))] : []),
+    ...(eur(dg.seguroVidaAnual) ? [seguro('vida', 'Seguro de vida', eur(dg.seguroVidaAnual))] : []),
+  ];
   const gbe = (p.gastosBaseEstado ?? {}) as Record<string, Any>;
   for (const k of BASE_KEYS) {
     const s = gbe[k];
-    if (s) d.gastosBase[k] = { estado: est(s.estado), nota: str(pick(s, 'nota', 'notas')), fecha: fecha(s.fecha) };
+    if (s) d.gastosBase[k] = { ...d.gastosBase[k], estado: est(s.estado), nota: str(pick(s, 'nota', 'notas')), fecha: fecha(s.fecha) };
   }
   // El prototipo no distingue si los préstamos se recibieron: se deduce del resto del precio pagado
   d.hipoteca.recibida = d.familiar.recibido = d.gastosBase.restoPrecio.estado === 'pagado';
