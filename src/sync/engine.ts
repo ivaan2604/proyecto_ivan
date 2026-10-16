@@ -339,6 +339,13 @@ class SyncEngine {
     if (error) throw error;
   }
 
+  /** Cambia la contraseña de la cuenta (con la sesión iniciada). */
+  async changePassword(password: string) {
+    if (!supabase) throw new Error('Nube no configurada');
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) throw error;
+  }
+
   async signOut() {
     if (!supabase) return;
     if (this.state.dirty) await this.push();
