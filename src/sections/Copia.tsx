@@ -15,6 +15,62 @@ import { IconDownload, IconUpload } from '../ui/icons';
 import { PageHead } from '../ui/layout';
 import { SignInForm, statusText } from '../ui/sync';
 
+/** Cambiar la contraseña de la cuenta desde la propia app. */
+function CambiarClave() {
+  const { toast } = useDialogs();
+  const [abierto, setAbierto] = useState(false);
+  const [a, setA] = useState('');
+  const [b, setB] = useState('');
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  if (!abierto) {
+    return (
+      <button className="btn ghost sm" style={{ marginTop: 12 }} onClick={() => setAbierto(true)}>
+        Cambiar contraseña
+      </button>
+    );
+  }
+  return (
+    <form
+      className="form clave-form"
+      style={{ marginTop: 14 }}
+      onSubmit={async (e) => {
+        e.preventDefault();
+        setErr(null);
+        if (a.length < 8) return setErr('Mínimo 8 caracteres.');
+        if (a !== b) return setErr('Las dos contraseñas no coinciden.');
+        setBusy(true);
+        try {
+          await engine.changePassword(a);
+          setAbierto(false);
+          setA('');
+          setB('');
+          toast('Contraseña cambiada. Úsala la próxima vez que entres en otro dispositivo.');
+        } catch (e2) {
+          const m = (e2 as Error).message;
+          setErr(/different|same/i.test(m) ? 'Tiene que ser distinta de la actual.' : /weak|short/i.test(m) ? 'Es demasiado débil: usa más caracteres.' : m);
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      <label className="field">
+        <span>Nueva contraseña</span>
+        <input className="input" type="password" autoComplete="new-password" value={a} onChange={(e) => setA(e.target.value)} required />
+      </label>
+      <label className="field">
+        <span>Repítela</span>
+        <input className="input" type="password" autoComplete="new-password" value={b} onChange={(e) => setB(e.target.value)} required />
+      </label>
+      {err && <p className="neg" style={{ margin: 0, fontSize: 13 }}>{err}</p>}
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button className="btn primary" disabled={busy}>{busy ? 'Guardando…' : 'Guardar contraseña'}</button>
+        <button type="button" className="btn ghost" onClick={() => setAbierto(false)}>Cancelar</button>
+      </div>
+    </form>
+  );
+}
+
 export function Copia({ theme, setTheme }: { theme: Theme; setTheme: (t: Theme) => void }) {
   const d = useData();
   const st = useEngine();
@@ -149,6 +205,7 @@ export function Copia({ theme, setTheme }: { theme: Theme; setTheme: (t: Theme) 
                   Cerrar sesión
                 </button>
               </div>
+              <CambiarClave />
             </>
           )}
         </section>
