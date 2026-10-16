@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   aportacion, avisos, bolsilloReal, bonificacionHipoteca, calendarioDe, costesPrestamos, cuotaFamiliarMes, cuotaHipotecaMes,
   diaFirma, fasesResultado, fijosMensuales, interesesHipotecaAnio, irpfAlquiler, mesPrevision, patrimonio, previsionMensual,
-  recuperacionPrevista, sinReforma, totalesGastos,
+  recuperacionPrevista, simularAmortizacion, sinReforma, totalesGastos,
   tramosHipoteca,
 } from '../derive';
 import { uid, type Seguro } from '../model';
@@ -193,5 +193,26 @@ describe('patrimonio e IRPF', () => {
     expect(r.ingresos).toBe(840000);
     expect(r.cuota).toBeGreaterThanOrEqual(0);
     expect(r.base).toBe(r.neto - r.reduccion);
+  });
+});
+
+describe('simulador de amortización', () => {
+  const d = conFein();
+  d.hipoteca.tinPct = 3.79;
+  d.hipoteca.nominaBizum = false;
+  it('sin amortizar: 300 cuotas e intereses ≈ 29.372 €', () => {
+    const s = simularAmortizacion(d, { importe: 0, trasCuota: 1, cadaAnio: false, modo: 'plazo' });
+    expect(s.meses).toBe(300);
+    expect(Math.abs(s.intereses - costesPrestamos(d)[0].intereses!)).toBeLessThan(2000);
+  });
+  it('3.000 € en el año 2: reducir plazo ahorra más que reducir cuota', () => {
+    const o = { importe: 300000, trasCuota: 24, cadaAnio: false };
+    const sin = simularAmortizacion(d, { ...o, importe: 0, modo: 'plazo' });
+    const p = simularAmortizacion(d, { ...o, modo: 'plazo' });
+    const c = simularAmortizacion(d, { ...o, modo: 'cuota' });
+    expect(p.meses).toBeLessThan(300);
+    expect(c.meses).toBe(300);
+    expect(c.cuotaFinal).toBeLessThan(27752);
+    expect(sin.intereses - p.intereses).toBeGreaterThan(sin.intereses - c.intereses);
   });
 });

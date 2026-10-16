@@ -1173,3 +1173,68 @@ export function irpfAlquiler(d: AppData) {
   const cuota = base > 0 ? Math.round((base * ir.tipoMarginalPct) / 100) : 0;
   return { ingresos, gastos, totalGastos, neto, reduccion, base, cuota, mensual: Math.round(cuota / 12), desde };
 }
+
+/* ───────────── Simulador de amortización anticipada ───────────── */
+
+export interface OpcionesAmortizacion {
+  /** Importe de cada amortización (céntimos) */
+  importe: number;
+  /** Se amortiza justo después de esta cuota (1 = tras la primera) */
+  trasCuota: number;
+  /** Repetir la misma amortización cada 12 cuotas hasta acabar */
+  cadaAnio: boolean;
+  modo: 'plazo' | 'cuota';
+}
+
+export interface ResultadoAmortizacion {
+  meses: number;
+  intereses: number;
+  amortizado: number;
+  comision: number;
+  /** Cuota al final (si se reduce la cuota, la última que queda) */
+  cuotaFinal: number;
+  fin: string | null;
+}
+
+/**
+ * Hipoteca prevista mes a mes con amortizaciones anticipadas (sin las cuotas registradas: parte
+ * del principio). Reducir plazo mantiene la cuota; reducir cuota mantiene el plazo y recalcula.
+ * Al empezar el segundo tramo, la cuota se recalcula con lo pendiente, como hace el banco.
+ */
+export function simularAmortizacion(d: AppData, o: OpcionesAmortizacion): ResultadoAmortizacion {
+  const t = tramosHipoteca(d);
+  const comisionPct = d.hipoteca.fein.comisionAmortPct;
+  let saldo = d.hipoteca.importe;
+  let cuota = t.cuotaA;
+  let plazo = t.n;
+  let intereses = 0;
+  let amortizado = 0;
+  let i = 0;
+  for (; saldo > 0 && i < 600; i++) {
+    const tin = i < t.mesesA ? t.tinA : t.tinB;
+    if (t.mesesA > 0 && i === t.mesesA) cuota = pmtMeses(saldo, tin, plazo);
+    const r = tin / 100 / 12;
+    const int = Math.round(saldo * r);
+    // La última cuota del plazo liquida lo que quede (los redondeos dejan unos céntimos)
+    const pago = plazo <= 1 ? saldo + int : Math.min(cuota, saldo + int);
+    intereses += int;
+    saldo -= pago - int;
+    plazo--;
+    const n = i + 1;
+    const toca = o.importe > 0 && n >= o.trasCuota && (o.cadaAnio ? (n - o.trasCuota) % 12 === 0 : n === o.trasCuota);
+    if (toca && saldo > 0) {
+      const x = Math.min(o.importe, saldo);
+      saldo -= x;
+      amortizado += x;
+      if (saldo > 0) {
+        if (o.modo === 'cuota') cuota = pmtMeses(saldo, n < t.mesesA ? t.tinA : t.tinB, plazo);
+        else plazo = mesesRestantes(saldo, n < t.mesesA ? t.tinA : t.tinB, cuota) ?? plazo;
+      }
+    }
+  }
+  const ini = inicioHipotecaMes(d);
+  return {
+    meses: i, intereses, amortizado, comision: Math.round((amortizado * comisionPct) / 100), cuotaFinal: cuota,
+    fin: ini ? addMonths(ini, i - 1) : null,
+  };
+}
