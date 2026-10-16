@@ -113,6 +113,7 @@ export function fromPrototype(p: Any): AppData {
   const d = emptyData();
   d.piso = {
     precio: eur(dg.precio),
+    valor: 0,
     tipoVivienda: str(dg.tipoVivienda),
     comunidadAutonoma: str(dg.comunidadAutonoma) || d.piso.comunidadAutonoma,
     itpPct: pct(dg.itpPct),

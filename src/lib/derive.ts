@@ -432,7 +432,7 @@ export function lineaTiempo(d: AppData): Hito[] {
 /* ───────────── Avisos ───────────── */
 
 export type Nivel = 'alerta' | 'aviso' | 'info';
-export type SectionId = 'resumen' | 'compra' | 'gastos' | 'reforma' | 'meses' | 'hipoteca' | 'familiar' | 'notas' | 'copia';
+export type SectionId = 'resumen' | 'compra' | 'gastos' | 'reforma' | 'meses' | 'hipoteca' | 'familiar' | 'irpf' | 'notas' | 'copia';
 
 export interface Aviso {
   id: string;
@@ -1053,4 +1053,123 @@ export function capitalHipotecaMes(d: AppData, key: string | null): number {
 /** Capital ya devuelto de los préstamos según las cuotas registradas (sin anticipadas: esas salen de tus ahorros). */
 export function capitalDevuelto(d: AppData): number {
   return calendarioDe(d, 'hipoteca').totalCapital + calendarioDe(d, 'familiar').totalCapital;
+}
+
+/* ───────────── Deuda pendiente y patrimonio ───────────── */
+
+/** Capital pendiente de la hipoteca tras `k` cuotas, según el cuadro previsto (sin amortizaciones). */
+export function saldoHipotecaTras(d: AppData, k: number): number {
+  const t = tramosHipoteca(d);
+  if (k >= t.n) return 0;
+  const kA = Math.min(k, t.mesesA);
+  const sA = saldoTras(d.hipoteca.importe, t.tinA, t.cuotaA, kA);
+  if (k <= t.mesesA) return sA;
+  return saldoTras(sA, t.tinB, t.cuotaB, Math.min(k, t.n) - t.mesesA);
+}
+
+/** Lo que queda por devolver del préstamo familiar tras `k` cuotas. */
+export function saldoFamiliarTras(d: AppData, k: number): number {
+  const f = d.familiar;
+  if (f.importe <= 0 || f.cuota <= 0) return Math.max(0, f.importe);
+  return saldoTras(f.importe, f.tinPct, f.cuota, k);
+}
+
+/** Intereses de la hipoteca en 12 cuotas seguidas a partir de la cuota nº `desde + 1`. */
+export function interesesHipotecaAnio(d: AppData, desde: number): number {
+  const t = tramosHipoteca(d);
+  let total = 0;
+  for (let i = desde; i < desde + 12 && i < t.n; i++) {
+    const tin = i < t.mesesA ? t.tinA : t.tinB;
+    total += Math.round(saldoHipotecaTras(d, i) * (tin / 100 / 12));
+  }
+  return total;
+}
+
+export interface PuntoPatrimonio {
+  titulo: string;
+  /** Mes (YYYY-MM) si hay fecha de escritura */
+  mes: string | null;
+  deuda: number;
+  neto: number;
+}
+
+/**
+ * Tu patrimonio en el piso: lo que vale menos lo que aún debes. Cada cuota que pagas lo aumenta
+ * (es deuda que dejas de deber). Sin revalorización: el valor del piso se mantiene fijo.
+ */
+export function patrimonio(d: AppData) {
+  const valor = d.piso.valor || d.piso.precio;
+  const t = tramosHipoteca(d);
+  const ini = inicioHipotecaMes(d);
+  const famMeses = d.familiar.importe > 0 && d.familiar.cuota > 0 ? mesesRestantes(d.familiar.importe, d.familiar.tinPct, d.familiar.cuota) : null;
+  const punto = (titulo: string, k: number): PuntoPatrimonio => {
+    const deuda = saldoHipotecaTras(d, k) + saldoFamiliarTras(d, k);
+    return { titulo, mes: ini && k > 0 ? addMonths(ini, k - 1) : null, deuda, neto: valor - deuda };
+  };
+  const puntos = [
+    punto('Al firmar', 0),
+    ...(famMeses ? [punto('Al acabar con tus padres', famMeses)] : []),
+    punto('A los 5 años', 60),
+    punto('A los 10 años', 120),
+    punto('A los 15 años', 180),
+    punto('Al acabar la hipoteca', t.n),
+  ].filter((p, i, arr) => arr.findIndex((q) => q.deuda === p.deuda) === i);
+  // Ahora: con las cuotas ya registradas (solo cuando el piso ya es tuyo)
+  const tuyo = d.hipoteca.recibida || (!!d.hitos.escrituraFecha && d.hitos.escrituraFecha <= todayISO());
+  const actual = tuyo ? valor - calendarioDe(d, 'hipoteca').pendiente - calendarioDe(d, 'familiar').pendiente : null;
+  return { valor, puntos, actual, estimado: !d.piso.valor };
+}
+
+/* ───────────── IRPF del alquiler (estimación) ───────────── */
+
+export interface LineaIrpf {
+  concepto: string;
+  importe: number;
+  nota?: string;
+}
+
+/**
+ * Estimación del IRPF de un año completo de alquiler (rendimiento del capital inmobiliario):
+ * ingresos − gastos deducibles − amortización; reducción por alquiler de vivienda; el resultado
+ * se suma a tu base general y tributa a tu tipo marginal. Orientativo: confírmalo con un gestor.
+ */
+export function irpfAlquiler(d: AppData) {
+  const ir = d.irpf;
+  const r = d.recurrentes;
+  const ingresos = r.alquiler * 12;
+  // Año de referencia: los 12 primeros meses de alquiler (o de hipoteca si aún no hay fechas)
+  const iniHip = inicioHipotecaMes(d);
+  const iniAlq = inicioAlquilerMes(d);
+  const desde = iniHip && iniAlq && iniAlq > iniHip ? mesesEntre(iniHip, iniAlq) : 0;
+  const intereses = interesesHipotecaAnio(d, desde);
+  // Intereses + reparaciones no pueden pasar de los ingresos; el exceso se aplica los 4 años siguientes
+  const interesesDeducibles = Math.min(intereses, ingresos);
+  const hogar = d.seguros.filter((x) => x.elegido && x.tipo === 'hogar').reduce((a, x) => a + x.primaAnual, 0);
+  // Amortización: 3 % de la parte de construcción del mayor entre lo que te costó y el valor catastral
+  const adquisicion = totalesGastos(sinReforma(d)).total;
+  const pct = ir.pctConstruccion / 100;
+  const baseAdq = Math.round(adquisicion * pct);
+  const baseCat = Math.round(ir.valorCatastral * pct);
+  const conPartidas = d.reforma.partidas.length > 0;
+  const mejoras = conPartidas ? totalesReforma(d).mejora : d.gastos.reforma;
+  const amortInmueble = Math.round((Math.max(baseAdq, baseCat) + mejoras) * 0.03);
+  const amortMuebles = Math.round(ir.muebles * 0.1);
+  const gastos: LineaIrpf[] = [
+    { concepto: 'Intereses de la hipoteca', importe: interesesDeducibles, nota: intereses > ingresos ? `${fmtEur(intereses - ingresos)} pasan a los 4 años siguientes` : `año ${Math.floor(desde / 12) + 1} de la hipoteca` },
+    { concepto: 'IBI', importe: r.ibiAnual },
+    { concepto: 'Comunidad', importe: r.edificioAnual },
+    { concepto: 'Seguro de hogar', importe: hogar, nota: 'el de vida no se deduce' },
+    ...(r.mantenimientoMensual ? [{ concepto: 'Mantenimiento y reparaciones', importe: r.mantenimientoMensual * 12 }] : []),
+    {
+      concepto: 'Amortización del piso (3 %)', importe: amortInmueble,
+      nota: `${ir.pctConstruccion} % de construcción sobre ${fmtEur(Math.max(baseAdq, baseCat) / pct || 0)}${mejoras ? ` + ${fmtEur(mejoras)} de mejoras${conPartidas ? '' : ' (toda la reforma como mejora)'}` : ''}`,
+    },
+    ...(amortMuebles ? [{ concepto: 'Amortización de muebles (10 %)', importe: amortMuebles }] : []),
+  ];
+  const totalGastos = gastos.reduce((a, g) => a + g.importe, 0);
+  const neto = ingresos - totalGastos;
+  const reduccion = neto > 0 ? Math.round((neto * ir.reduccionPct) / 100) : 0;
+  const base = neto - reduccion;
+  const cuota = base > 0 ? Math.round((base * ir.tipoMarginalPct) / 100) : 0;
+  return { ingresos, gastos, totalGastos, neto, reduccion, base, cuota, mensual: Math.round(cuota / 12), desde };
 }

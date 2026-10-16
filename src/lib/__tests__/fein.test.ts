@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   aportacion, avisos, bolsilloReal, bonificacionHipoteca, calendarioDe, costesPrestamos, cuotaFamiliarMes, cuotaHipotecaMes,
-  diaFirma, fasesResultado, fijosMensuales, mesPrevision, previsionMensual, recuperacionPrevista, sinReforma, totalesGastos,
+  diaFirma, fasesResultado, fijosMensuales, interesesHipotecaAnio, irpfAlquiler, mesPrevision, patrimonio, previsionMensual,
+  recuperacionPrevista, sinReforma, totalesGastos,
   tramosHipoteca,
 } from '../derive';
 import { uid, type Seguro } from '../model';
@@ -170,5 +171,27 @@ describe('compatibilidad entre versiones', () => {
     const d = validateAppData({ schemaVersion: 1, campoFuturo: { a: 1 }, hipoteca: { otroFuturo: true } } as unknown);
     expect((d as unknown as Record<string, unknown>).campoFuturo).toEqual({ a: 1 });
     expect((d.hipoteca as unknown as Record<string, unknown>).otroFuturo).toBe(true);
+  });
+});
+
+describe('patrimonio e IRPF', () => {
+  it('al firmar: valor − hipoteca − préstamo familiar; al acabar la hipoteca, todo el valor', () => {
+    const d = conFein();
+    d.piso.valor = 7685634;
+    const p = patrimonio(d);
+    expect(p.puntos[0].neto).toBe(7685634 - 5379900 - 1487900);
+    expect(p.puntos[p.puntos.length - 1].neto).toBe(7685634);
+    expect(p.puntos[1].titulo).toBe('Al acabar con tus padres');
+  });
+  it('intereses del primer año de hipoteca ≈ 1.890 € y la cuota no negativa', () => {
+    const d = conFein();
+    d.hipoteca.tinPct = 3.79;
+    d.hipoteca.nominaBizum = false;
+    const i = interesesHipotecaAnio(d, 0);
+    expect(Math.round(i / 10000)).toBe(19);
+    const r = irpfAlquiler(d);
+    expect(r.ingresos).toBe(840000);
+    expect(r.cuota).toBeGreaterThanOrEqual(0);
+    expect(r.base).toBe(r.neto - r.reduccion);
   });
 });

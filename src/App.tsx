@@ -10,6 +10,7 @@ import { Meses } from './sections/Meses';
 import { Notas } from './sections/Notas';
 import { Prestamo } from './sections/Prestamo';
 import { Reforma } from './sections/Reforma';
+import { Irpf } from './sections/Irpf';
 import { Resumen } from './sections/Resumen';
 import { useEngine } from './store';
 import { engine } from './sync/engine';
@@ -65,6 +66,7 @@ function Shell() {
       case 'meses': return <Meses />;
       case 'hipoteca': return <Prestamo kind="hipoteca" key="h" />;
       case 'familiar': return <Prestamo kind="familiar" key="f" />;
+      case 'irpf': return <Irpf />;
       case 'notas': return <Notas />;
       case 'copia': return <Copia theme={theme} setTheme={setTheme} />;
     }

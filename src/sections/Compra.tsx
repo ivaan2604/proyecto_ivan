@@ -72,6 +72,9 @@ export function Compra() {
             <Field label="Tipo de vivienda" wide={false}>
               <TextInput value={d.piso.tipoVivienda} onChange={set('piso', 'tipoVivienda')} placeholder="Ej.: 2ª mano, 1965" />
             </Field>
+            <Field label="Valor estimado del piso" hint="Para tu patrimonio. Por defecto, la tasación">
+              <MoneyInput value={d.piso.valor} onChange={set('piso', 'valor')} />
+            </Field>
             <Field label="Comunidad autónoma">
               <TextInput value={d.piso.comunidadAutonoma} onChange={set('piso', 'comunidadAutonoma')} />
             </Field>
