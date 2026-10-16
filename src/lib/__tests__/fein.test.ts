@@ -164,3 +164,11 @@ describe('de tu bolsillo (real)', () => {
     expect(b.falta).toBe(837225);
   });
 });
+
+describe('compatibilidad entre versiones', () => {
+  it('los campos que esta versión no conoce se conservan al validar', () => {
+    const d = validateAppData({ schemaVersion: 1, campoFuturo: { a: 1 }, hipoteca: { otroFuturo: true } } as unknown);
+    expect((d as unknown as Record<string, unknown>).campoFuturo).toEqual({ a: 1 });
+    expect((d.hipoteca as unknown as Record<string, unknown>).otroFuturo).toBe(true);
+  });
+});

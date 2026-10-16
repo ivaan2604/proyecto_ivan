@@ -118,7 +118,24 @@ export function validateAppData(input: unknown): AppData {
     cuotas: { ...base.cuotas, ...obj.cuotas },
     meta: { ...base.meta, ...obj.meta },
   };
-  return appDataSchema.parse(merged) as AppData;
+  // Lo que esta versión no conoce (campos de una versión más nueva) se conserva tal cual:
+  // así abrir la app con una versión antigua nunca borra datos al volver a guardar.
+  return conservarDesconocidos(merged, appDataSchema.parse(merged)) as AppData;
+}
+
+const esObjeto = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
+
+/** Copia sobre `limpio` las claves de `original` que la validación ha quitado (a cualquier nivel). */
+function conservarDesconocidos(original: unknown, limpio: unknown): unknown {
+  if (Array.isArray(original) && Array.isArray(limpio)) {
+    return limpio.map((x, i) => (i < original.length ? conservarDesconocidos(original[i], x) : x));
+  }
+  if (!esObjeto(original) || !esObjeto(limpio)) return limpio;
+  const out: Record<string, unknown> = { ...limpio };
+  for (const [k, v] of Object.entries(original)) {
+    out[k] = k in limpio ? conservarDesconocidos(v, limpio[k]) : v;
+  }
+  return out;
 }
 
 /** Datos anteriores a la lista de seguros: los importes anuales de hogar y vida pasan a ser seguros elegidos. */
