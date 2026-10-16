@@ -83,6 +83,8 @@ export function Resumen() {
   // Gráfica mes a mes: todos los meses; recuperación: solo los de alquiler (seg.serie)
   const keys = Object.keys(d.meses).sort();
   const keysAlquiler = seg.serie.map((p) => p.key);
+  // Hasta el primer mes de alquiler, los bloques de beneficio, rentabilidad y recuperación estarían vacíos
+  const alquilando = keysAlquiler.length > 0;
   const pct = g.total ? g.pagado / g.total : 0;
   const financiado = d.hipoteca.importe + d.familiar.importe;
   const recibido = g.pagado - seg.propio;
@@ -147,7 +149,7 @@ export function Resumen() {
       )}
 
       {/* ───── Cifras protagonistas ───── */}
-      <section className={`kpis${intro ? ' intro' : ''}`} aria-label="Cifras principales">
+      <section className={`kpis${intro ? ' intro' : ''}${alquilando ? '' : ' previo'}`} aria-label="Cifras principales">
         <article className={`kpi kpi-hero${flashPropio ? ` flash-${flashPropio}` : ''}`} aria-labelledby="h-aportado">
           <AzaharMark className="hero-blossom" size={260} />
           <div className="kpi-label" id="h-aportado">Aportado de tu bolsillo</div>
@@ -189,6 +191,8 @@ export function Resumen() {
           </dl>
         </article>
 
+        {alquilando && (
+          <>
         <article className={`kpi kpi-tile${flashBeneficio ? ` flash-${flashBeneficio}` : ''}`} aria-labelledby="h-benef">
           <div className="kpi-label" id="h-benef">Beneficio acumulado</div>
           <div className={`kpi-figure ${seg.beneficio > 0 ? 'pos' : seg.beneficio < 0 ? 'neg' : ''}`}>
@@ -240,6 +244,8 @@ export function Resumen() {
             </span>
           </div>
         </article>
+          </>
+        )}
 
         <article className="kpi kpi-pones" aria-labelledby="h-pones">
           <div className="pones-entrada">
@@ -347,6 +353,7 @@ export function Resumen() {
           </article>
         )}
 
+        {alquilando && (
         <article className={`kpi kpi-recovery${flashRecup ? ` flash-${flashRecup}` : ''}`} aria-labelledby="h-recup">
           <div className="recovery-head">
             <div>
@@ -390,6 +397,8 @@ export function Resumen() {
             </div>
           </dl>
         </article>
+        )}
+        {!alquilando && recupPrevTexto && <p className="kpi kpi-luego muted">{recupPrevTexto}</p>}
       </section>
 
       <div className="resumen-fases">
@@ -456,6 +465,8 @@ export function Resumen() {
         </section>
       </div>
 
+      {alquilando && (
+        <>
       {/* ───── Gráficas ───── */}
       <InView className={intro ? 'reveal' : 'settled'}>
         <section className="card" aria-labelledby="h-pyg">
@@ -568,6 +579,8 @@ export function Resumen() {
       <InView className={intro ? 'reveal' : 'settled'}>
         <PanelRentabilidad d={d} />
       </InView>
+        </>
+      )}
     </div>
   );
 }
