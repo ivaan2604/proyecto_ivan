@@ -2403,3 +2403,56 @@ td.seg-combo {
     order: 3;
   }
 }
+.simulador {
+  margin-bottom: 18px;
+}
+.sim-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.sim-col {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.sim-col.destaca {
+  border-color: var(--pos);
+  box-shadow: inset 0 0 0 1px var(--pos);
+}
+.sim-title {
+  font-weight: 800;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.sim-col dl {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+.sim-col dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13.5px;
+}
+.sim-col dt {
+  color: var(--muted);
+}
+.sim-col dd {
+  margin: 0;
+  font-weight: 700;
+  text-align: right;
+}
+.sim-col dd small {
+  display: block;
+  font-weight: 500;
+  font-size: 11.5px;
+  color: var(--pos);
+}
+@media (max-width: 860px) {
+  .sim-grid {
+    grid-template-columns: 1fr;
+  }
+}

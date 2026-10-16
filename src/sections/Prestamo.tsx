@@ -11,6 +11,7 @@ import { IconPlus, IconTrash } from '../ui/icons';
 import { PageHead } from '../ui/layout';
 import { Counter, InView } from '../ui/motion';
 import { go } from '../router';
+import { SimuladorAmortizacion } from './Simulador';
 
 export function Prestamo({ kind }: { kind: LoanKind }) {
   const d = useData();
@@ -21,7 +22,11 @@ export function Prestamo({ kind }: { kind: LoanKind }) {
   const cuotas = d.cuotas[kind];
   const t = tramosHipoteca(d);
   const tin = kind === 'hipoteca' ? t.tinB : p.tinPct;
-  const restantes = mesesRestantes(cal.pendiente, tin, pactada);
+  // Hipoteca sin amortizaciones: el plazo pactado menos lo pagado (con tramos, la fórmula de una sola cuota se desvía un mes)
+  const restantes =
+    kind === 'hipoteca' && cal.totalAnticipado === 0
+      ? Math.max(0, t.n - cal.filas.filter((f) => !f.liquidado).length)
+      : mesesRestantes(cal.pendiente, tin, pactada);
   const plazoOriginal = kind === 'hipoteca' ? Math.round(d.hipoteca.plazoAnios * 12) : pactada ? Math.ceil(p.importe / pactada) : 0;
   const cuotasPagadas = cal.filas.filter((f) => !f.liquidado).length;
   const ahorroMeses = restantes !== null && plazoOriginal ? plazoOriginal - cuotasPagadas - restantes : 0;
@@ -132,6 +137,8 @@ export function Prestamo({ kind }: { kind: LoanKind }) {
           </span>
         </div>
       )}
+
+      {kind === 'hipoteca' && p.importe > 0 && <SimuladorAmortizacion d={d} />}
 
       {!p.importe ? (
         <div className="empty">
