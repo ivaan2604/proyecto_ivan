@@ -11,7 +11,6 @@ import { Notas } from './sections/Notas';
 import { Prestamo } from './sections/Prestamo';
 import { Reforma } from './sections/Reforma';
 import { Resumen } from './sections/Resumen';
-import { Seguros } from './sections/Seguros';
 import { useEngine } from './store';
 import { engine } from './sync/engine';
 import { cloudEnabled } from './sync/remote';
@@ -65,7 +64,6 @@ function Shell() {
       case 'reforma': return <Reforma />;
       case 'meses': return <Meses />;
       case 'hipoteca': return <Prestamo kind="hipoteca" key="h" />;
-      case 'seguros': return <Seguros />;
       case 'familiar': return <Prestamo kind="familiar" key="f" />;
       case 'notas': return <Notas />;
       case 'copia': return <Copia theme={theme} setTheme={setTheme} />;

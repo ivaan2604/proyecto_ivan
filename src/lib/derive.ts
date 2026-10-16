@@ -432,7 +432,7 @@ export function lineaTiempo(d: AppData): Hito[] {
 /* ───────────── Avisos ───────────── */
 
 export type Nivel = 'alerta' | 'aviso' | 'info';
-export type SectionId = 'resumen' | 'compra' | 'gastos' | 'reforma' | 'meses' | 'hipoteca' | 'seguros' | 'familiar' | 'notas' | 'copia';
+export type SectionId = 'resumen' | 'compra' | 'gastos' | 'reforma' | 'meses' | 'hipoteca' | 'familiar' | 'notas' | 'copia';
 
 export interface Aviso {
   id: string;
@@ -546,12 +546,6 @@ export function avisos(d: AppData): Aviso[] {
     out.push({
       id: 'fein-caduca', nivel: 'alerta', titulo: `La FEIN caduca el ${fmtDia(fein.validaHasta)}, antes de la firma prevista`,
       detalle: 'Firma antes de esa fecha o pide al banco que la renueve (las condiciones pueden cambiar).', ir: 'compra',
-    });
-  }
-  if (d.hipoteca.tramoAMeses > 0 && d.hipoteca.importe) {
-    out.push({
-      id: 'bonif-revision', nivel: 'info', titulo: 'El banco revisa la rebaja del interés cada año',
-      detalle: d.hipoteca.nominaBizum ? 'Mantén la nómina domiciliada y Bizum para no perderla.' : 'Sin rebaja se aplica el tipo completo del segundo tramo.', ir: 'hipoteca',
     });
   }
 

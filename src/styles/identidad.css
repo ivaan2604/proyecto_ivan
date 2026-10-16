@@ -2315,3 +2315,14 @@ td.seg-combo {
   font-size: 13.5px;
   line-height: 1.45;
 }
+.seguro-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.seguro-head .input {
+  font-weight: 700;
+  font-size: 13px;
+  padding: 4px 8px;
+  min-height: 0;
+}

@@ -1,9 +1,10 @@
 import {
-  aportacion, bonificacionHipoteca, costesPrestamos, diaFirma, sinReforma, fijosMensuales, importeBase, segurosAnuales, segurosElegidos,
+  aportacion, costesPrestamos, diaFirma, sinReforma, fijosMensuales, importeBase, segurosAnuales,
   totalesReforma, tramosHipoteca,
 } from '../lib/derive';
 import { fmtEur } from '../lib/format';
-import type { AppData } from '../lib/model';
+import { uid, type AppData } from '../lib/model';
+import { IconPlus, IconTrash } from '../ui/icons';
 import { update, useData } from '../store';
 import { DateInput, Field, MoneyInput, NumberInput, Segmented, TextArea, TextInput } from '../ui/fields';
 import { go } from '../router';
@@ -23,10 +24,16 @@ export function Compra() {
   const d = useData();
   const t = tramosHipoteca(d);
   const cuota = t.cuotaB;
-  const bonif = bonificacionHipoteca(d);
   const costeHip = costesPrestamos(d)[0];
   const firma = diaFirma(d);
   const reformaTotal = d.reforma.partidas.length ? totalesReforma(d).previsto : d.gastos.reforma;
+  const setSeguro = (id: string, patch: { nombre?: string; primaAnual?: number }) =>
+    update((x) => void Object.assign(x.seguros.find((s) => s.id === id)!, patch));
+  const quitarSeguro = (id: string) => update((x) => void (x.seguros = x.seguros.filter((s) => s.id !== id)));
+  const addSeguro = () =>
+    update((x) => {
+      x.seguros.push({ id: uid(), tipo: 'otro', nombre: 'Seguro', aseguradora: '', primaAnual: 0, bonifPct: 0, elegido: true, contratado: false, nota: '' });
+    });
   const pct = (n: number) => `${n.toLocaleString('es-ES', { maximumFractionDigits: 2 })} %`;
   const r = d.recurrentes;
   const conPartidas = d.reforma.partidas.length > 0;
@@ -127,28 +134,16 @@ export function Compra() {
               <Field label="Viabilidad concedida"><DateInput value={d.hipoteca.viabilidadFecha} onChange={set('hipoteca', 'viabilidadFecha')} /></Field>
               <Field label="Importe"><MoneyInput value={d.hipoteca.importe} onChange={set('hipoteca', 'importe')} /></Field>
               <Field label="Plazo"><NumberInput value={d.hipoteca.plazoAnios} onChange={set('hipoteca', 'plazoAnios')} suffix="años" /></Field>
-              <Field label={d.hipoteca.tramoAMeses > 0 ? 'TIN del resto (sin rebaja)' : 'TIN anual (sin rebaja)'}>
-                <NumberInput value={d.hipoteca.tinPct} onChange={set('hipoteca', 'tinPct')} suffix="%" />
-              </Field>
-              <Field label="Tramo inicial a otro tipo" hint="Meses al principio con otro interés. 0 = un solo tipo">
+              <Field label="Primer tramo" hint="Meses al principio con otro interés. 0 = un solo tipo">
                 <NumberInput value={d.hipoteca.tramoAMeses} onChange={(v) => set('hipoteca', 'tramoAMeses')(Math.max(0, Math.round(v)))} suffix="meses" />
               </Field>
               {d.hipoteca.tramoAMeses > 0 && (
-                <Field label="TIN del tramo inicial">
+                <Field label="TIN del primer tramo">
                   <NumberInput value={d.hipoteca.tramoATinPct} onChange={set('hipoteca', 'tramoATinPct')} suffix="%" />
                 </Field>
               )}
-              <Field label="Rebaja por nómina + Bizum" hint={d.hipoteca.nominaBizum ? `−${pct(d.hipoteca.bonifNominaPct)} en el ${d.hipoteca.tramoAMeses > 0 ? 'resto' : 'interés'}` : 'Sin domiciliar la nómina'}>
-                <Segmented
-                  value={d.hipoteca.nominaBizum ? 'si' : 'no'}
-                  options={[{ value: 'no', label: 'No' }, { value: 'si', label: 'Sí, la cojo' }]}
-                  onChange={(v) => set('hipoteca', 'nominaBizum')(v === 'si')}
-                  ariaLabel="Rebaja por nómina y Bizum"
-                />
-              </Field>
-              <Field label="Puntos de rebaja por nómina"><NumberInput value={d.hipoteca.bonifNominaPct} onChange={set('hipoteca', 'bonifNominaPct')} suffix="%" /></Field>
-              <Field label="Rebaja máxima (FEIN)" hint="Tope total de rebajas. 0 = sin tope">
-                <NumberInput value={d.hipoteca.bonifMaxPct} onChange={set('hipoteca', 'bonifMaxPct')} suffix="%" />
+              <Field label={d.hipoteca.tramoAMeses > 0 ? 'TIN del resto' : 'TIN anual'}>
+                <NumberInput value={d.hipoteca.tinPct} onChange={set('hipoteca', 'tinPct')} suffix="%" />
               </Field>
               {recibido(d.hipoteca.recibida, set('hipoteca', 'recibida'), 'el banco lo entregue en la escritura')}
               {t.mesesA > 0 && (
@@ -160,7 +155,7 @@ export function Compra() {
               <div className="field">
                 <span>{t.mesesA > 0 ? 'Cuota después' : 'Cuota mensual'}</span>
                 <div className="computed">
-                  <span>al {pct(t.tinB)}{bonif.total > 0 ? ` (−${pct(bonif.total)})` : ''}</span>
+                  <span>al {pct(t.tinB)}</span>
                   <b>{fmtEur(cuota)}</b>
                 </div>
               </div>
@@ -191,9 +186,7 @@ export function Compra() {
             {cuota > 0 && costeHip.intereses !== null && (
               <p className="muted" style={{ fontSize: 13, marginBottom: 0 }}>
                 {t.n} cuotas · total a devolver {fmtEur(d.hipoteca.importe + costeHip.intereses)} · intereses previstos{' '}
-                {fmtEur(costeHip.intereses)}
-                {bonif.seguros > 0 && ` · incluye −${pct(bonif.seguros)} de rebaja por seguros`}. Los seguros se eligen en{' '}
-                <a href="#/seguros" onClick={(e) => (e.preventDefault(), go('seguros'))}>Seguros</a>.
+                {fmtEur(costeHip.intereses)}.
               </p>
             )}
           </section>
@@ -299,14 +292,24 @@ export function Compra() {
             <Field label="IBI anual" hint={`${fmtEur(Math.round(r.ibiAnual / 12))}/mes`}>
               <MoneyInput value={r.ibiAnual} onChange={set('recurrentes', 'ibiAnual')} />
             </Field>
-            <div className="field">
-              <span>Seguros elegidos</span>
-              <div className="computed">
-                <a href="#/seguros" onClick={(e) => (e.preventDefault(), go('seguros'))}>
-                  {segurosElegidos(d).length ? segurosElegidos(d).map((x) => x.nombre).join(' + ') : 'elegir en «Seguros»'}
-                </a>
-                <b>{fmtEur(segurosAnuales(d))}/año</b>
+            {d.seguros.map((x) => (
+              <div className="field seguro-row" key={x.id}>
+                <span className="seguro-head">
+                  <TextInput value={x.nombre} onChange={(v) => setSeguro(x.id, { nombre: v })} ariaLabel="Nombre del seguro" />
+                  <button className="icon-btn" aria-label={`Quitar ${x.nombre}`} onClick={() => quitarSeguro(x.id)}>
+                    <IconTrash />
+                  </button>
+                </span>
+                <MoneyInput value={x.primaAnual} onChange={(v) => setSeguro(x.id, { primaAnual: v })} ariaLabel={`${x.nombre}: coste anual`} />
+                <small className="hint">{fmtEur(Math.round(x.primaAnual / 12))}/mes</small>
               </div>
+            ))}
+            <div className="field">
+              <span>Seguros</span>
+              <button className="btn sm" onClick={addSeguro}>
+                <IconPlus /> Añadir seguro
+              </button>
+              <small className="hint">Total {fmtEur(segurosAnuales(d))}/año</small>
             </div>
             <Field label="Mantenimiento mensual"><MoneyInput value={r.mantenimientoMensual} onChange={set('recurrentes', 'mantenimientoMensual')} /></Field>
           </div>

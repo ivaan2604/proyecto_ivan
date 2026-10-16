@@ -61,7 +61,7 @@ export function Prestamo({ kind }: { kind: LoanKind }) {
   return (
     <div className="page">
       <PageHead
-        folio={kind === 'hipoteca' ? '06' : '08'}
+        folio={kind === 'hipoteca' ? '06' : '07'}
         title={kind === 'hipoteca' ? `Hipoteca${d.hipoteca.banco ? ` · ${d.hipoteca.banco}` : ''}` : 'Préstamo familiar'}
         badge={kind === 'hipoteca' && d.hipoteca.provisional ? 'Provisional · pendiente de FEIN' : undefined}
         subtitle={
