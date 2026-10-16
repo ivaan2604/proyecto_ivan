@@ -20,7 +20,7 @@ const gastoBase = z.object({ estado, nota: z.string(), fecha, provision: z.boole
 
 export const appDataSchema = z.object({
   schemaVersion: z.literal(SCHEMA_VERSION),
-  piso: z.object({ precio: cents, tipoVivienda: z.string(), comunidadAutonoma: z.string(), itpPct: z.number() }),
+  piso: z.object({ precio: cents, valor: cents.min(0), tipoVivienda: z.string(), comunidadAutonoma: z.string(), itpPct: z.number() }),
   hitos: z.object({
     senalFecha: fecha, senal: cents, contratoFecha: fecha, arrasFecha: fecha, arras: cents, escrituraFecha: fecha,
   }),
@@ -45,6 +45,10 @@ export const appDataSchema = z.object({
     seguroVidaAnual: cents, mantenimientoMensual: cents,
   }),
   ahorros: z.object({ firma: cents.min(0) }),
+  irpf: z.object({
+    valorCatastral: cents.min(0), pctConstruccion: z.number().min(0).max(100), reduccionPct: z.number().min(0).max(100),
+    tipoMarginalPct: z.number().min(0).max(100), muebles: cents.min(0),
+  }),
   seguros: z.array(
     z.object({
       id: z.string(), tipo: z.enum(['hogar', 'vida', 'proteccion', 'otro']), nombre: z.string(), aseguradora: z.string(),
@@ -113,6 +117,7 @@ export function validateAppData(input: unknown): AppData {
       BASE_KEYS.map((k) => [k, { ...base.gastosBase[k], ...(obj.gastosBase?.[k] ?? {}) }]),
     ),
     ahorros: { ...base.ahorros, ...obj.ahorros },
+    irpf: { ...base.irpf, ...obj.irpf },
     seguros: obj.seguros ?? segurosAntiguos(obj),
     reforma: { ...base.reforma, ...obj.reforma },
     cuotas: { ...base.cuotas, ...obj.cuotas },

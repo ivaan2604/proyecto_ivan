@@ -9,8 +9,9 @@ export const SECTIONS: { id: SectionId; folio: string; label: string; short: str
   { id: 'meses', folio: '05', label: 'Meses e ingresos', short: 'Meses' },
   { id: 'hipoteca', folio: '06', label: 'Hipoteca', short: 'Hipoteca' },
   { id: 'familiar', folio: '07', label: 'Préstamo familiar', short: 'Familiar' },
-  { id: 'notas', folio: '08', label: 'Notas', short: 'Notas' },
-  { id: 'copia', folio: '09', label: 'Copia y ajustes', short: 'Ajustes' },
+  { id: 'irpf', folio: '08', label: 'Hacienda (IRPF)', short: 'IRPF' },
+  { id: 'notas', folio: '09', label: 'Notas', short: 'Notas' },
+  { id: 'copia', folio: '10', label: 'Copia y ajustes', short: 'Ajustes' },
 ];
 
 const ids = new Set(SECTIONS.map((s) => s.id));

@@ -1,7 +1,7 @@
 import { useMemo, useState, type CSSProperties } from 'react';
 import { eurRow, LineChart, ProfitBars } from '../charts/charts';
 import {
-  aportacion, avisos, bolsilloReal, capitalDevuelto, enReforma, lineaTiempo, recuperacionPrevista, rentabilidad, seguimientoGlobal,
+  aportacion, avisos, bolsilloReal, patrimonio, capitalDevuelto, enReforma, lineaTiempo, recuperacionPrevista, rentabilidad, seguimientoGlobal,
   sinReforma, totalesGastos, totalesMes,
 } from '../lib/derive';
 import { daysBetween, fmtDate, fmtEur, fmtInt, fmtMonthKey, todayISO } from '../lib/format';
@@ -91,6 +91,7 @@ export function Resumen() {
   const recPrev = useMemo(() => recuperacionPrevista(d), [d]);
   const capDevuelto = useMemo(() => capitalDevuelto(d), [d]);
   const bol = useMemo(() => bolsilloReal(d), [d]);
+  const pat = useMemo(() => patrimonio(d), [d]);
   const fein = d.hipoteca.fein;
   const diasFein = fein.validaHasta ? daysBetween(todayISO(), fein.validaHasta) : null;
 
@@ -297,6 +298,34 @@ export function Resumen() {
               </p>
             )}
           </div>
+        </article>
+
+        <article className="kpi kpi-patrimonio" aria-labelledby="h-patrimonio">
+          <div className="kpi-label" id="h-patrimonio">Tu patrimonio en el piso</div>
+          <div className="kpi-sub">
+            Lo que vale ({fmtEur(pat.valor, { compact: true })}{pat.estimado ? ', precio de compra' : ''}) menos lo que aún debes. Cada cuota lo
+            hace crecer: es dinero que pasa a ser tuyo. Sin contar que el piso suba de valor.
+          </div>
+          {pat.actual !== null && (
+            <div className="pones-figure">
+              <Counter id="patrimonio" value={pat.actual} format={(v) => fmtEur(v)} />
+              <small> hoy</small>
+            </div>
+          )}
+          <ul className="patrimonio-list">
+            {pat.puntos.map((p) => (
+              <li key={p.titulo}>
+                <span>
+                  {p.titulo}
+                  {p.mes && <small>{fmtMonthKey(p.mes)}</small>}
+                </span>
+                <span className="patrimonio-bar" aria-hidden>
+                  <i style={{ width: `${Math.max(0, Math.min(100, (p.neto / pat.valor) * 100))}%` }} />
+                </span>
+                <b className="num">{fmtEur(p.neto, { compact: true })}</b>
+              </li>
+            ))}
+          </ul>
         </article>
 
         {fein.validaHasta && diasFein !== null && (

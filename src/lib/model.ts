@@ -130,6 +130,8 @@ export interface AppData {
   schemaVersion: typeof SCHEMA_VERSION;
   piso: {
     precio: number;
+    /** Valor de mercado estimado (p. ej. la tasación), para el patrimonio */
+    valor: number;
     tipoVivienda: string;
     comunidadAutonoma: string;
     itpPct: number;
@@ -193,6 +195,19 @@ export interface AppData {
     seguroVidaAnual: number;
     mantenimientoMensual: number;
   };
+  /** Datos para estimar el IRPF del alquiler */
+  irpf: {
+    /** Valor catastral total (recibo del IBI) */
+    valorCatastral: number;
+    /** % del valor catastral que es construcción (el resto es suelo, que no se amortiza) */
+    pctConstruccion: number;
+    /** Reducción por alquiler de vivienda: 50 % general; 60, 70 o 90 % en casos concretos */
+    reduccionPct: number;
+    /** Tipo marginal aproximado de tu IRPF (al que tributa cada euro más) */
+    tipoMarginalPct: number;
+    /** Muebles y electrodomésticos del piso alquilado (se amortizan al 10 % anual) */
+    muebles: number;
+  };
   /** Dinero tuyo para pagar en la firma, además de lo ya pagado: se usa antes que el préstamo familiar */
   ahorros: { firma: number };
   seguros: Seguro[];
@@ -226,7 +241,7 @@ export function emptyData(): AppData {
   ) as Record<BaseKey, GastoBaseEstado>;
   return {
     schemaVersion: SCHEMA_VERSION,
-    piso: { precio: 0, tipoVivienda: '', comunidadAutonoma: 'Comunidad Valenciana', itpPct: 9 },
+    piso: { precio: 0, valor: 0, tipoVivienda: '', comunidadAutonoma: 'Comunidad Valenciana', itpPct: 9 },
     hitos: { senalFecha: '', senal: 0, contratoFecha: '', arrasFecha: '', arras: 0, escrituraFecha: '' },
     gastos: { comision: 0, reforma: 0, notaria: 0, registro: 0, gestoria: 0, tasacion: 0, tasacionFecha: '' },
     hipoteca: {
@@ -245,6 +260,7 @@ export function emptyData(): AppData {
       mantenimientoMensual: 0,
     },
     ahorros: { firma: 0 },
+    irpf: { valorCatastral: 0, pctConstruccion: 60, reduccionPct: 50, tipoMarginalPct: 30, muebles: 0 },
     seguros: [],
     gastosBase,
     gastosExtra: [],
