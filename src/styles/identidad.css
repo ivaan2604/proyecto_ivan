@@ -2456,3 +2456,14 @@ td.seg-combo {
     grid-template-columns: 1fr;
   }
 }
+
+/* Resumen antes del alquiler: solo lo que importa ahora */
+.kpis.previo {
+  grid-template-areas: 'hero';
+  grid-template-columns: minmax(0, 1fr);
+}
+.kpi-luego {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 14px;
+}
