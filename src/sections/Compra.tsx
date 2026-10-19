@@ -178,6 +178,7 @@ export function Compra() {
                 <NumberInput value={fein.taePct ?? 0} onChange={(v) => setFein('taePct')(v || null)} suffix="%" />
               </Field>
               <Field label="Fecha de emisión"><DateInput value={fein.fechaEmision} onChange={setFein('fechaEmision')} /></Field>
+              <Field label="Firmada el" hint="El día que aceptaste la FEIN"><DateInput value={fein.firmadaFecha} onChange={setFein('firmadaFecha')} /></Field>
               <Field label="Oferta válida hasta"><DateInput value={fein.validaHasta} onChange={setFein('validaHasta')} /></Field>
               <Field label="Comisión por amortizar antes" hint="Parcial o total. 0 % confirmado de palabra por el banco">
                 <NumberInput value={fein.comisionAmortPct} onChange={setFein('comisionAmortPct')} suffix="%" />

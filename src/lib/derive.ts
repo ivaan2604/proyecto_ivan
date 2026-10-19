@@ -416,6 +416,7 @@ export function lineaTiempo(d: AppData): Hito[] {
     { id: 'arras', titulo: 'Arras', fecha: d.hitos.arrasFecha, importe: d.hitos.arras || undefined },
     { id: 'viabilidad', titulo: 'Viabilidad de la hipoteca', fecha: d.hipoteca.viabilidadFecha, detalle: d.hipoteca.banco || undefined },
     { id: 'tasacion', titulo: 'Tasación', fecha: d.gastos.tasacionFecha, importe: d.gastos.tasacion || undefined },
+    { id: 'fein', titulo: 'FEIN firmada', fecha: d.hipoteca.fein.firmadaFecha, detalle: d.hipoteca.fein.validaHasta ? `válida hasta ${fmtDia(d.hipoteca.fein.validaHasta)}` : undefined },
     { id: 'escritura', titulo: 'Escritura', fecha: d.hitos.escrituraFecha },
     { id: 'alquiler', titulo: 'Inicio del alquiler', fecha: d.recurrentes.inicioAlquiler, importe: d.recurrentes.alquiler || undefined },
   ];
