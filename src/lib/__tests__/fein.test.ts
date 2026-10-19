@@ -23,7 +23,7 @@ function conFein() {
     hipoteca: {
       banco: 'Santander', notas: '', tinPct: 4.29, tramoAMeses: 6, tramoATinPct: 3.29, bonifNominaPct: 0.5, nominaBizum: true, bonifMaxPct: 1,
       importe: 5379900, recibida: false, plazoAnios: 25, viabilidadFecha: '2026-09-28', provisional: false,
-      fein: { taePct: 4.55, vinculaciones: '', fechaEmision: '2026-10-15', validaHasta: '2026-11-14', comisionAmortPct: 0 },
+      fein: { taePct: 4.55, vinculaciones: '', fechaEmision: '2026-10-15', firmadaFecha: '', validaHasta: '2026-11-14', comisionAmortPct: 0 },
     },
     ahorros: { firma: 1300000 },
     seguros: [

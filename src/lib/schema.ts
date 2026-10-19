@@ -33,7 +33,7 @@ export const appDataSchema = z.object({
     tramoAMeses: z.number().int().min(0), tramoATinPct: z.number(), bonifNominaPct: z.number().min(0),
     nominaBizum: z.boolean(), bonifMaxPct: z.number().min(0),
     fein: z.object({
-      taePct: z.number().nullable(), vinculaciones: z.string(), fechaEmision: fecha, validaHasta: fecha,
+      taePct: z.number().nullable(), vinculaciones: z.string(), fechaEmision: fecha, firmadaFecha: fecha, validaHasta: fecha,
       comisionAmortPct: z.number().min(0),
     }),
   }),

@@ -94,6 +94,8 @@ export interface Fein {
   taePct: number | null;
   vinculaciones: string;
   fechaEmision: string;
+  /** Día en que firmaste (aceptaste) la FEIN */
+  firmadaFecha: string;
   /** Fecha hasta la que la oferta es vinculante */
   validaHasta: string;
   /** Comisión por amortización anticipada (parcial o total), en % del importe amortizado */
@@ -247,7 +249,7 @@ export function emptyData(): AppData {
     hipoteca: {
       banco: '', viabilidadFecha: '', importe: 0, plazoAnios: 25, tinPct: 0, notas: '', recibida: false, provisional: false,
       tramoAMeses: 0, tramoATinPct: 0, bonifNominaPct: 0, nominaBizum: false, bonifMaxPct: 0,
-      fein: { taePct: null, vinculaciones: '', fechaEmision: '', validaHasta: '', comisionAmortPct: 0 },
+      fein: { taePct: null, vinculaciones: '', fechaEmision: '', firmadaFecha: '', validaHasta: '', comisionAmortPct: 0 },
     },
     familiar: { importe: 0, cuota: 0, tinPct: 0, notas: '', recibido: false, primeraCuota: '' },
     recurrentes: {
