@@ -120,7 +120,7 @@ export function fromPrototype(p: Any): AppData {
   };
   d.hitos = {
     senalFecha: fecha(dg.fechaSenal), senal: eur(dg.senal), contratoFecha: fecha(dg.fechaContratoCV),
-    arrasFecha: fecha(dg.fechaArras), arras: eur(dg.importeArras ?? dg.arras), escrituraFecha: fecha(dg.fechaEscritura),
+    arrasFecha: fecha(dg.fechaArras), arras: eur(dg.importeArras ?? dg.arras), actaFecha: '', escrituraFecha: fecha(dg.fechaEscritura),
   };
   d.gastos = {
     comision: eur(dg.comisionInmobiliaria), reforma: eur(dg.presupuestoReforma), notaria: eur(dg.notaria),

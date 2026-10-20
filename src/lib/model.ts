@@ -144,6 +144,8 @@ export interface AppData {
     contratoFecha: string;
     arrasFecha: string;
     arras: number;
+    /** Acta previa de transparencia de la hipoteca ante el notario */
+    actaFecha: string;
     escrituraFecha: string;
   };
   gastos: {
@@ -244,7 +246,7 @@ export function emptyData(): AppData {
   return {
     schemaVersion: SCHEMA_VERSION,
     piso: { precio: 0, valor: 0, tipoVivienda: '', comunidadAutonoma: 'Comunidad Valenciana', itpPct: 9 },
-    hitos: { senalFecha: '', senal: 0, contratoFecha: '', arrasFecha: '', arras: 0, escrituraFecha: '' },
+    hitos: { senalFecha: '', senal: 0, contratoFecha: '', arrasFecha: '', arras: 0, actaFecha: '', escrituraFecha: '' },
     gastos: { comision: 0, reforma: 0, notaria: 0, registro: 0, gestoria: 0, tasacion: 0, tasacionFecha: '' },
     hipoteca: {
       banco: '', viabilidadFecha: '', importe: 0, plazoAnios: 25, tinPct: 0, notas: '', recibida: false, provisional: false,

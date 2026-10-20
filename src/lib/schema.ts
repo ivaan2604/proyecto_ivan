@@ -22,7 +22,7 @@ export const appDataSchema = z.object({
   schemaVersion: z.literal(SCHEMA_VERSION),
   piso: z.object({ precio: cents, valor: cents.min(0), tipoVivienda: z.string(), comunidadAutonoma: z.string(), itpPct: z.number() }),
   hitos: z.object({
-    senalFecha: fecha, senal: cents, contratoFecha: fecha, arrasFecha: fecha, arras: cents, escrituraFecha: fecha,
+    senalFecha: fecha, senal: cents, contratoFecha: fecha, arrasFecha: fecha, arras: cents, actaFecha: fecha, escrituraFecha: fecha,
   }),
   gastos: z.object({
     comision: cents, reforma: cents, notaria: cents, registro: cents, gestoria: cents, tasacion: cents, tasacionFecha: fecha,
