@@ -45,4 +45,6 @@ Se añade una norma: **registrar el 100 % de las sesiones** en Hevy.
 ## 2026-10-20 — Vuelta tras 13 días sin entrenar (conjuntivitis)
 - Último entreno: 07-oct. No se hicieron las sesiones previstas del 15 y 16-oct.
 - El bloque 1 se desplaza: 19-oct → 29-nov, descarga del 30-nov al 6-dic.
-- Semana de vuelta (20–25 oct): pesos ~5–10 % por debajo de lo último, RIR 3 y algo menos de volumen. Martes 20 pierna, jueves Torso A, viernes Torso B.
+- Semana de vuelta (20–25 oct): pesos ~5–10 % por debajo de lo último, RIR 3 y algo menos de volumen.
+- A petición de Iván: martes 20 Torso B con prioridad de espalda, miércoles 21 pierna, viernes 23 Torso A. Partido el domingo 25 a las 12:15.
+- El sábado 17 jugó un partido completo de fútbol 7.
