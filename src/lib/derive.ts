@@ -417,6 +417,7 @@ export function lineaTiempo(d: AppData): Hito[] {
     { id: 'viabilidad', titulo: 'Viabilidad de la hipoteca', fecha: d.hipoteca.viabilidadFecha, detalle: d.hipoteca.banco || undefined },
     { id: 'tasacion', titulo: 'Tasación', fecha: d.gastos.tasacionFecha, importe: d.gastos.tasacion || undefined },
     { id: 'fein', titulo: 'FEIN firmada', fecha: d.hipoteca.fein.firmadaFecha, detalle: d.hipoteca.fein.validaHasta ? `válida hasta ${fmtDia(d.hipoteca.fein.validaHasta)}` : undefined },
+    { id: 'acta', titulo: 'Acta de transparencia', fecha: d.hitos.actaFecha, detalle: 'Firma previa de la hipoteca ante el notario' },
     { id: 'escritura', titulo: 'Escritura', fecha: d.hitos.escrituraFecha },
     { id: 'alquiler', titulo: 'Inicio del alquiler', fecha: d.recurrentes.inicioAlquiler, importe: d.recurrentes.alquiler || undefined },
   ];
@@ -455,6 +456,14 @@ export function avisos(d: AppData): Aviso[] {
   } else if (d.hitos.escrituraFecha > hoy) {
     const dias = daysBetween(hoy, d.hitos.escrituraFecha);
     out.push({ id: 'escritura', nivel: dias <= 14 ? 'aviso' : 'info', titulo: `Escritura en ${dias} ${dias === 1 ? 'día' : 'días'}`, ir: 'compra' });
+  }
+
+  // El acta de transparencia tiene que firmarse como tarde el día antes de la escritura
+  if (d.hitos.actaFecha && d.hitos.escrituraFecha && d.hitos.actaFecha >= d.hitos.escrituraFecha) {
+    out.push({ id: 'acta', nivel: 'alerta', titulo: 'El acta tiene que ser antes de la escritura', detalle: 'El acta de transparencia de la hipoteca se firma como tarde el día anterior a la escritura.', ir: 'compra' });
+  } else if (d.hitos.actaFecha && d.hitos.actaFecha > hoy) {
+    const dias = daysBetween(hoy, d.hitos.actaFecha);
+    out.push({ id: 'acta-proxima', nivel: dias <= 7 ? 'aviso' : 'info', titulo: `Acta de transparencia en ${dias} ${dias === 1 ? 'día' : 'días'}`, detalle: `El ${fmtDia(d.hitos.actaFecha)} ante el notario. Lleva el DNI.`, ir: 'compra' });
   }
 
   // Gastos de compra pendientes

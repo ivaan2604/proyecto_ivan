@@ -17,7 +17,7 @@ function conFein() {
   return validateAppData({
     schemaVersion: 1,
     piso: { itpPct: 9, precio: 7500000, tipoVivienda: 'Vivienda de 1965', comunidadAutonoma: 'Comunidad Valenciana' },
-    hitos: { arras: 450000, senal: 300000, arrasFecha: '2026-09-25', senalFecha: '2026-09-08', contratoFecha: '2026-09-14', escrituraFecha: '2026-11-20' },
+    hitos: { arras: 450000, senal: 300000, arrasFecha: '2026-09-25', senalFecha: '2026-09-08', contratoFecha: '2026-09-14', actaFecha: '', escrituraFecha: '2026-11-20' },
     gastos: { notaria: 150045, reforma: 1000000, comision: 400000, gestoria: 42955, registro: 140090, tasacion: 27225, tasacionFecha: '2026-09-28' },
     familiar: { cuota: 80000, notas: '', tinPct: 0, importe: 1487900, recibido: false },
     hipoteca: {

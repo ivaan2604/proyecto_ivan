@@ -95,6 +95,9 @@ export function Compra() {
             <Field label="Firma del contrato de compraventa"><DateInput value={d.hitos.contratoFecha} onChange={set('hitos', 'contratoFecha')} /></Field>
             <Field label="Fecha de las arras"><DateInput value={d.hitos.arrasFecha} onChange={set('hitos', 'arrasFecha')} /></Field>
             <Field label="Importe de las arras"><MoneyInput value={d.hitos.arras} onChange={set('hitos', 'arras')} /></Field>
+            <Field label="Acta previa de la hipoteca" hint={d.hitos.actaFecha ? 'Acta de transparencia ante el notario' : 'Pendiente de fijar'}>
+              <DateInput value={d.hitos.actaFecha} onChange={set('hitos', 'actaFecha')} />
+            </Field>
             <Field label="Fecha de escritura" hint={d.hitos.escrituraFecha ? undefined : 'Pendiente de fijar'}>
               <DateInput value={d.hitos.escrituraFecha} onChange={set('hitos', 'escrituraFecha')} />
             </Field>
