@@ -41,3 +41,8 @@ Se añade una norma: **registrar el 100 % de las sesiones** en Hevy.
 - Jueves 15: Torso A sin press con mancuernas, más 2 ejercicios ligeros de pierna (abductores y extensión a RIR 3) para no pasar casi 2 semanas sin estímulo, con pocas agujetas.
 - Viernes 16: Torso B sin curl femoral (víspera del partido), sin fallo.
 - La pierna completa pasa a la semana siguiente (lunes 19 o martes 20).
+
+## 2026-10-20 — Vuelta tras 13 días sin entrenar (conjuntivitis)
+- Último entreno: 07-oct. No se hicieron las sesiones previstas del 15 y 16-oct.
+- El bloque 1 se desplaza: 19-oct → 29-nov, descarga del 30-nov al 6-dic.
+- Semana de vuelta (20–25 oct): pesos ~5–10 % por debajo de lo último, RIR 3 y algo menos de volumen. Martes 20 pierna, jueves Torso A, viernes Torso B.

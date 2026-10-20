@@ -1,6 +1,7 @@
 # Plan actual — Bloque 1 (definición + recuperar base)
 
-- **Fechas:** del lunes 12-oct-2026 al domingo 22-nov-2026 (6 semanas). **Descarga:** semana del 23 al 29-nov.
+- **Fechas:** del lunes 19-oct-2026 al domingo 29-nov-2026 (6 semanas). **Descarga:** semana del 30-nov al 6-dic.
+  (Inicio retrasado una semana: del 08 al 19-oct no entrenó por conjuntivitis.)
 - **Objetivos del bloque:**
   - ≥ 3 sesiones todas las semanas (18 sesiones como mínimo en el bloque).
   - Recuperar las marcas de marzo en el torso (press inclinado en máquina ≥ 90×8, jalón ≥ 90×8).
