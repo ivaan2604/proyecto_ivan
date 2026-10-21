@@ -30,6 +30,7 @@
 ## Lesiones y limitaciones
 - **Síndrome de dolor femoropatelar en la rodilla derecha** (confirmado por resonancia). Le pautaron ejercicio. Le molesta un poco después de los partidos.
 - No sabe qué ejercicios le molestan → vigilar en cada sesión de pierna. Semáforo de dolor 0–3 / 4–5 / >5.
+- Evolución: 07-oct pierna 0–3/10 (se pasó enseguida). 17-oct partido completo de fútbol 7 **sin dolor después** 🟢.
 - Sin otras lesiones.
 
 ## Equipamiento
