@@ -187,6 +187,8 @@ export interface AppData {
     recibido: boolean;
     /** Fecha prevista o real de la primera cuota; vacía = el mes siguiente a la escritura */
     primeraCuota: string;
+    /** Parte del préstamo que es para la reforma (no paga la compra); se descuenta al ver «sin reforma» */
+    paraReforma: number;
   };
   recurrentes: {
     /** Fecha prevista o real del primer alquiler; antes de ella el piso está «en reforma» */
@@ -253,7 +255,7 @@ export function emptyData(): AppData {
       tramoAMeses: 0, tramoATinPct: 0, bonifNominaPct: 0, nominaBizum: false, bonifMaxPct: 0,
       fein: { taePct: null, vinculaciones: '', fechaEmision: '', firmadaFecha: '', validaHasta: '', comisionAmortPct: 0 },
     },
-    familiar: { importe: 0, cuota: 0, tinPct: 0, notas: '', recibido: false, primeraCuota: '' },
+    familiar: { importe: 0, cuota: 0, tinPct: 0, notas: '', recibido: false, primeraCuota: '', paraReforma: 0 },
     recurrentes: {
       inicioAlquiler: '',
       alquiler: 0,

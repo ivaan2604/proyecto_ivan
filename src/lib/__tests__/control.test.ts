@@ -13,7 +13,7 @@ function real() {
     piso: { itpPct: 9, precio: 7500000, tipoVivienda: 'Vivienda de 1965', comunidadAutonoma: 'Comunidad Valenciana' },
     hitos: { arras: 450000, senal: 300000, arrasFecha: '2026-09-25', senalFecha: '2026-09-08', contratoFecha: '2026-09-14', actaFecha: '', escrituraFecha: '' },
     gastos: { notaria: 70000, reforma: 1000000, comision: 400000, gestoria: 30000, registro: 40000, tasacion: 27225, tasacionFecha: '2026-09-28' },
-    familiar: { cuota: 80000, notas: '', tinPct: 0, importe: 2400000, recibido: false },
+    familiar: { cuota: 80000, notas: '', tinPct: 0, importe: 2400000, recibido: false, primeraCuota: '', paraReforma: 0 },
     hipoteca: {
       banco: 'Santander', notas: 'Provisional, pendiente de FEIN. Importe sujeto a la tasación de 76.500 €', tinPct: 3.09,
       importe: 5379900, recibida: false, plazoAnios: 25, viabilidadFecha: '2026-09-28', provisional: true,

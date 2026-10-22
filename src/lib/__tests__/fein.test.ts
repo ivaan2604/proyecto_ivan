@@ -19,7 +19,7 @@ function conFein() {
     piso: { itpPct: 9, precio: 7500000, tipoVivienda: 'Vivienda de 1965', comunidadAutonoma: 'Comunidad Valenciana' },
     hitos: { arras: 450000, senal: 300000, arrasFecha: '2026-09-25', senalFecha: '2026-09-08', contratoFecha: '2026-09-14', actaFecha: '', escrituraFecha: '2026-11-20' },
     gastos: { notaria: 150045, reforma: 1000000, comision: 400000, gestoria: 42955, registro: 140090, tasacion: 27225, tasacionFecha: '2026-09-28' },
-    familiar: { cuota: 80000, notas: '', tinPct: 0, importe: 1487900, recibido: false },
+    familiar: { cuota: 80000, notas: '', tinPct: 0, importe: 1487900, recibido: false, primeraCuota: '', paraReforma: 0 },
     hipoteca: {
       banco: 'Santander', notas: '', tinPct: 4.29, tramoAMeses: 6, tramoATinPct: 3.29, bonifNominaPct: 0.5, nominaBizum: true, bonifMaxPct: 1,
       importe: 5379900, recibida: false, plazoAnios: 25, viabilidadFecha: '2026-09-28', provisional: false,
@@ -214,5 +214,16 @@ describe('simulador de amortización', () => {
     expect(c.meses).toBe(300);
     expect(c.cuotaFinal).toBeLessThan(27752);
     expect(sin.intereses - p.intereses).toBeGreaterThan(sin.intereses - c.intereses);
+  });
+});
+
+describe('préstamo familiar con parte para la reforma', () => {
+  it('«sin reforma» descuenta esa parte y la entrada vuelve a ser tu dinero real', () => {
+    const d = conFein();
+    d.familiar.importe = 2400000;
+    d.familiar.paraReforma = 912100;
+    const s = sinReforma(d);
+    expect(s.familiar.importe).toBe(1487900);
+    expect(aportacion(s).entrada).toBe(aportacion(sinReforma(conFein())).entrada);
   });
 });

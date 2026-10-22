@@ -88,7 +88,6 @@ export function Resumen() {
   const pct = g.total ? g.pagado / g.total : 0;
   const financiado = d.hipoteca.importe + d.familiar.importe;
   const recibido = g.pagado - seg.propio;
-  const falta = Math.max(0, seg.invertido - seg.beneficio);
   const ap = useMemo(() => aportacion(d), [d]);
   const recPrev = useMemo(() => recuperacionPrevista(d), [d]);
   const capDevuelto = useMemo(() => capitalDevuelto(d), [d]);
@@ -104,23 +103,29 @@ export function Resumen() {
   const flashPropio = useChangeFlash(bol.aportado, 'propio');
   const pctDevuelto = bol.aportado ? Math.min(1, bol.devuelto / bol.aportado) : 0;
   const flashBeneficio = useChangeFlash(seg.beneficio, 'beneficio');
-  const flashRecup = useChangeFlash(seg.pctRecuperado, 'recup');
+  // Recuperación: el mismo criterio que «Aportado de tu bolsillo» (lo puesto frente a lo que te devuelve el piso)
+  const flashRecup = useChangeFlash(pctDevuelto, 'recup');
 
   const recupPrevTexto =
     !keysAlquiler.length && recPrev?.mes && recPrev.mesesDesdeAlquiler
       ? `Previsión: recuperas lo invertido en ≈ ${(recPrev.mesesDesdeAlquiler / 12).toLocaleString('es-ES', { maximumFractionDigits: 1 })} años de alquiler · ${fmtMonthKey(recPrev.mes)}`
       : null;
-  const recupTexto = recupPrevTexto ?? (seg.recuperadoEn
-    ? `Recuperado en ${fmtMonthKey(seg.recuperadoEn)}`
-    : seg.proyeccionKey
-      ? `Al ritmo actual, en ≈ ${seg.proyeccionMeses} meses · ${fmtMonthKey(seg.proyeccionKey)}`
-      : seg.invertido > 0
-        ? keysAlquiler.length
-          ? 'Sin beneficio medio positivo todavía'
-          : reforma
-            ? `En reforma: empieza a contar con el primer alquiler (${fmtDate(d.recurrentes.inicioAlquiler)})`
-            : 'Empezará a contar con el primer mes de alquiler'
-        : 'Aún no hay nada aportado');
+  // Con pocos meses reales (o mientras devuelves a tus padres) la media no sirve: manda la previsión por etapas
+  const previsionRecup = recPrev?.mes ? `Previsión: lo recuperas todo en ${fmtMonthKey(recPrev.mes)}` : null;
+  const recupTexto = recupPrevTexto ?? (bol.aportado > 0 && bol.falta === 0
+    ? 'Ya has recuperado todo lo que pusiste'
+    : seg.recuperadoEn
+      ? `Recuperado en ${fmtMonthKey(seg.recuperadoEn)}`
+      : previsionRecup
+        ?? (seg.proyeccionKey
+          ? `Al ritmo actual, en ≈ ${seg.proyeccionMeses} meses · ${fmtMonthKey(seg.proyeccionKey)}`
+          : bol.aportado > 0
+            ? keysAlquiler.length
+              ? 'Sin beneficio medio positivo todavía'
+              : reforma
+                ? `En reforma: empieza a contar con el primer alquiler (${fmtDate(d.recurrentes.inicioAlquiler)})`
+                : 'Empezará a contar con el primer mes de alquiler'
+            : 'Aún no hay nada aportado'));
 
   return (
     <div className="page resumen">
@@ -359,7 +364,7 @@ export function Resumen() {
             <div>
               <div className="kpi-label" id="h-recup">Recuperación de la inversión</div>
               <div className="recovery-figure">
-                <Counter id="recup" value={Math.round(seg.pctRecuperado * 1000)} format={(v) => `${Math.round(v / 10)} %`} />
+                <Counter id="recup" value={Math.round(pctDevuelto * 1000)} format={(v) => `${Math.round(v / 10)} %`} />
               </div>
             </div>
             <p className="recovery-text">{recupTexto}</p>
@@ -368,32 +373,32 @@ export function Resumen() {
             className="meter recovery-meter"
             role="progressbar"
             aria-label="Inversión recuperada"
-            aria-valuenow={Math.round(seg.pctRecuperado * 100)}
+            aria-valuenow={Math.round(pctDevuelto * 100)}
             aria-valuemin={0}
             aria-valuemax={100}
           >
-            <span style={{ '--p': seg.pctRecuperado } as CSSProperties} />
+            <span style={{ '--p': pctDevuelto } as CSSProperties} />
             <i style={{ left: '25%' }} />
             <i style={{ left: '50%' }} />
             <i style={{ left: '75%' }} />
           </div>
           <dl className="recovery-foot">
             <div>
-              <dt>Invertido</dt>
-              <dd className="num">{fmtEur(seg.invertido)}</dd>
-              {seg.costeEspera !== 0 && (
+              <dt>Aportado</dt>
+              <dd className="num">{fmtEur(bol.aportado)}</dd>
+              {bol.mesesNegativos !== 0 && (
                 <small>
-                  {eur0(seg.propio)} propio + {eur0(seg.costeEspera)} espera
+                  {eur0(bol.compra)} compra + {eur0(bol.mesesNegativos)} meses
                 </small>
               )}
             </div>
             <div>
-              <dt>Recuperado</dt>
-              <dd className={`num ${seg.beneficio > 0 ? 'pos' : seg.beneficio < 0 ? 'neg' : ''}`}>{fmtEur(seg.beneficio, { sign: true })}</dd>
+              <dt>Te ha devuelto</dt>
+              <dd className={`num ${bol.devuelto > 0 ? 'pos' : ''}`}>{fmtEur(bol.devuelto)}</dd>
             </div>
             <div>
               <dt>Falta</dt>
-              <dd className="num">{fmtEur(falta)}</dd>
+              <dd className="num">{fmtEur(bol.falta)}</dd>
             </div>
           </dl>
         </article>
@@ -511,10 +516,10 @@ export function Resumen() {
           )}
           <div className="stats" style={{ marginBottom: 18 }}>
             <div className="stat">
-              <div className="k">Invertido</div>
-              <div className="v">{eur0(seg.invertido)}</div>
+              <div className="k">Aportado</div>
+              <div className="v">{eur0(bol.aportado)}</div>
               <div className="d">
-                {seg.costeEspera ? `${eur0(seg.propio)} propio + ${eur0(seg.costeEspera)} espera` : 'dinero propio'}
+                {bol.mesesNegativos ? `${eur0(bol.compra)} compra + ${eur0(bol.mesesNegativos)} meses en negativo` : 'de tu bolsillo'}
               </div>
             </div>
             <div className="stat">
