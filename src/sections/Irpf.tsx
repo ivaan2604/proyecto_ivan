@@ -28,7 +28,7 @@ export function Irpf() {
   return (
     <div className="page">
       <PageHead
-        folio="08"
+        folio="09"
         title="Hacienda (IRPF)"
         subtitle="Cuánto pagarías al año por el alquiler en la declaración de la renta. Es una estimación orientativa: confírmala con un gestor."
       />

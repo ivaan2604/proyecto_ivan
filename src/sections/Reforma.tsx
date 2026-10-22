@@ -80,7 +80,7 @@ export function Reforma() {
   return (
     <div className="page">
       <PageHead
-        folio="04"
+        folio="05"
         title="Reforma"
         subtitle="Presupuesto por partidas y cada pago con su fecha. Todo cuenta como inversión en el piso, no como gasto del mes."
         actions={

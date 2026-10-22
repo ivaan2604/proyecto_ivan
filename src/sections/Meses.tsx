@@ -119,7 +119,7 @@ export function Meses() {
   return (
     <div className="page">
       <PageHead
-        folio="05"
+        folio="06"
         title="Meses e ingresos"
         subtitle="Tú decides cuándo crear cada mes. Los conceptos se rellenan al crearlo y luego son totalmente libres."
       />

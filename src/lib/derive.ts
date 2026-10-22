@@ -434,7 +434,7 @@ export function lineaTiempo(d: AppData): Hito[] {
 /* ───────────── Avisos ───────────── */
 
 export type Nivel = 'alerta' | 'aviso' | 'info';
-export type SectionId = 'resumen' | 'compra' | 'gastos' | 'reforma' | 'meses' | 'hipoteca' | 'familiar' | 'irpf' | 'notas' | 'copia';
+export type SectionId = 'resumen' | 'analisis' | 'compra' | 'gastos' | 'reforma' | 'meses' | 'hipoteca' | 'familiar' | 'irpf' | 'notas' | 'copia';
 
 export interface Aviso {
   id: string;

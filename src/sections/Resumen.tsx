@@ -1,64 +1,24 @@
 import { useMemo, useState, type CSSProperties } from 'react';
-import { eurRow, LineChart, ProfitBars } from '../charts/charts';
 import {
-  aportacion, avisos, bolsilloReal, patrimonio, capitalDevuelto, enReforma, lineaTiempo, recuperacionPrevista, rentabilidad, seguimientoGlobal,
-  sinReforma, totalesGastos, totalesMes,
+  aportacion, avisos, bolsilloReal, dineroPropio, fasesResultado, lineaTiempo, patrimonio, recuperacionPrevista, sinReforma, totalesGastos,
 } from '../lib/derive';
 import { daysBetween, fmtDate, fmtEur, fmtInt, fmtMonthKey, todayISO } from '../lib/format';
 import { useData } from '../store';
 import { engine } from '../sync/engine';
 import { Segmented } from '../ui/fields';
-import { AzaharMark, IconArrow, IconTrendDown, IconTrendUp } from '../ui/icons';
+import { AzaharMark, IconArrow } from '../ui/icons';
 import { PageHead } from '../ui/layout';
-import { Counter, InView, useChangeFlash, useCountUp } from '../ui/motion';
+import { Counter, useChangeFlash, useCountUp } from '../ui/motion';
 import { go } from '../router';
-import { PanelRentabilidad } from './Rentabilidad';
-import { PanelFases } from './Fases';
+import type { Fase } from '../lib/derive';
+import { useConReforma } from './useConReforma';
 
-const eur0 = (c: number) => fmtEur(c, { compact: true });
-const pct2 = (hundredths: number) =>
-  `${(hundredths / 100).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %`;
-
-/** Mini gráfica del beneficio acumulado para la tarjeta (sin ejes: solo la forma). */
-function Sparkline({ values }: { values: number[] }) {
-  if (values.length < 2) return null;
-  const w = 120;
-  const h = 36;
-  const lo = Math.min(0, ...values);
-  const hi = Math.max(0, ...values);
-  const x = (i: number) => (i / (values.length - 1)) * w;
-  const y = (v: number) => h - 2 - ((v - lo) / (hi - lo || 1)) * (h - 4);
-  const line = values.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
-  const last = values[values.length - 1];
-  return (
-    <svg className="spark" viewBox={`0 0 ${w} ${h}`} width={w} height={h} aria-hidden>
-      <line className="spark-zero" x1="0" x2={w} y1={y(0)} y2={y(0)} />
-      <path className="spark-line" pathLength={1} d={line} />
-      <circle className={`spark-dot ${last >= 0 ? 'up' : 'down'}`} cx={x(values.length - 1)} cy={y(last)} r="3" />
-    </svg>
-  );
-}
-
-/** Preferencia de este dispositivo: ver el Resumen con o sin la reforma. */
-function useConReforma(): [boolean, (v: boolean) => void] {
-  const [v, setV] = useState(() => {
-    try {
-      return localStorage.getItem('resumen-reforma') === 'con';
-    } catch {
-      return false;
-    }
-  });
-  return [
-    v,
-    (x: boolean) => {
-      setV(x);
-      try {
-        localStorage.setItem('resumen-reforma', x ? 'con' : 'sin');
-      } catch {
-        /* sin almacenamiento: solo para esta visita */
-      }
-    },
-  ];
+/** «dic 2026 – ene 2027» o «desde ago 2029» */
+function periodoCorto(f: Fase): string {
+  if (!f.desde) return '';
+  const m = (k: string) => fmtMonthKey(k, true);
+  if (!f.hasta) return `desde ${m(f.desde)}`;
+  return f.desde === f.hasta ? m(f.desde) : `${m(f.desde)} – ${m(f.hasta)}`;
 }
 
 /** La entrada completa (barras que se llenan, flor, mini gráfica) solo la primera vez por sesión. */
@@ -77,20 +37,12 @@ export function Resumen() {
   const g = useMemo(() => totalesGastos(d), [d]);
   const av = useMemo(() => avisos(d), [d]);
   const hitos = useMemo(() => lineaTiempo(d), [d]);
-  const seg = useMemo(() => seguimientoGlobal(d), [d]);
-  const r = useMemo(() => rentabilidad(d), [d]);
-  const reforma = enReforma(d);
-  // Gráfica mes a mes: todos los meses; recuperación: solo los de alquiler (seg.serie)
-  const keys = Object.keys(d.meses).sort();
-  const keysAlquiler = seg.serie.map((p) => p.key);
-  // Hasta el primer mes de alquiler, los bloques de beneficio, rentabilidad y recuperación estarían vacíos
-  const alquilando = keysAlquiler.length > 0;
   const pct = g.total ? g.pagado / g.total : 0;
   const financiado = d.hipoteca.importe + d.familiar.importe;
-  const recibido = g.pagado - seg.propio;
+  const recibido = g.pagado - dineroPropio(d).propio;
   const ap = useMemo(() => aportacion(d), [d]);
+  const fases = useMemo(() => fasesResultado(d), [d]);
   const recPrev = useMemo(() => recuperacionPrevista(d), [d]);
-  const capDevuelto = useMemo(() => capitalDevuelto(d), [d]);
   const bol = useMemo(() => bolsilloReal(d), [d]);
   const pat = useMemo(() => patrimonio(d), [d]);
   const fein = d.hipoteca.fein;
@@ -102,30 +54,6 @@ export function Resumen() {
   const cents = String(Math.abs(propioAnim % 100)).padStart(2, '0');
   const flashPropio = useChangeFlash(bol.aportado, 'propio');
   const pctDevuelto = bol.aportado ? Math.min(1, bol.devuelto / bol.aportado) : 0;
-  const flashBeneficio = useChangeFlash(seg.beneficio, 'beneficio');
-  // Recuperación: el mismo criterio que «Aportado de tu bolsillo» (lo puesto frente a lo que te devuelve el piso)
-  const flashRecup = useChangeFlash(pctDevuelto, 'recup');
-
-  const recupPrevTexto =
-    !keysAlquiler.length && recPrev?.mes && recPrev.mesesDesdeAlquiler
-      ? `Previsión: recuperas lo invertido en ≈ ${(recPrev.mesesDesdeAlquiler / 12).toLocaleString('es-ES', { maximumFractionDigits: 1 })} años de alquiler · ${fmtMonthKey(recPrev.mes)}`
-      : null;
-  // Con pocos meses reales (o mientras devuelves a tus padres) la media no sirve: manda la previsión por etapas
-  const previsionRecup = recPrev?.mes ? `Previsión: lo recuperas todo en ${fmtMonthKey(recPrev.mes)}` : null;
-  const recupTexto = recupPrevTexto ?? (bol.aportado > 0 && bol.falta === 0
-    ? 'Ya has recuperado todo lo que pusiste'
-    : seg.recuperadoEn
-      ? `Recuperado en ${fmtMonthKey(seg.recuperadoEn)}`
-      : previsionRecup
-        ?? (seg.proyeccionKey
-          ? `Al ritmo actual, en ≈ ${seg.proyeccionMeses} meses · ${fmtMonthKey(seg.proyeccionKey)}`
-          : bol.aportado > 0
-            ? keysAlquiler.length
-              ? 'Sin beneficio medio positivo todavía'
-              : reforma
-                ? `En reforma: empieza a contar con el primer alquiler (${fmtDate(d.recurrentes.inicioAlquiler)})`
-                : 'Empezará a contar con el primer mes de alquiler'
-            : 'Aún no hay nada aportado'));
 
   return (
     <div className="page resumen">
@@ -154,7 +82,7 @@ export function Resumen() {
       )}
 
       {/* ───── Cifras protagonistas ───── */}
-      <section className={`kpis${intro ? ' intro' : ''}${alquilando ? '' : ' previo'}`} aria-label="Cifras principales">
+      <section className={`kpis previo${intro ? ' intro' : ''}`} aria-label="Cifras principales">
         <article className={`kpi kpi-hero${flashPropio ? ` flash-${flashPropio}` : ''}`} aria-labelledby="h-aportado">
           <AzaharMark className="hero-blossom" size={260} />
           <div className="kpi-label" id="h-aportado">Aportado de tu bolsillo</div>
@@ -194,122 +122,44 @@ export function Resumen() {
               </div>
             )}
           </dl>
-        </article>
-
-        {alquilando && (
-          <>
-        <article className={`kpi kpi-tile${flashBeneficio ? ` flash-${flashBeneficio}` : ''}`} aria-labelledby="h-benef">
-          <div className="kpi-label" id="h-benef">Beneficio acumulado</div>
-          <div className={`kpi-figure ${seg.beneficio > 0 ? 'pos' : seg.beneficio < 0 ? 'neg' : ''}`}>
-            {seg.beneficio !== 0 && (seg.beneficio > 0 ? <IconTrendUp className="trend" /> : <IconTrendDown className="trend" />)}
-            <Counter id="beneficio" value={seg.beneficio} format={(v) => fmtEur(v, { compact: true, sign: true })} />
-          </div>
-          <div className="kpi-row">
-            <div className="kpi-sub">
-              {keysAlquiler.length
-                ? `${keysAlquiler.length} ${keysAlquiler.length === 1 ? 'mes' : 'meses'} de alquiler · media ${fmtEur(Math.round(seg.media), { sign: true })}/mes`
-                : reforma
-                  ? 'En reforma: aún sin meses de alquiler'
-                  : 'Sin meses de alquiler registrados'}
-            </div>
-            <Sparkline values={seg.serie.map((p) => p.acumulado)} />
-          </div>
-          {capDevuelto > 0 && (
-            <div className="kpi-split">
-              <span>
-                Capital devuelto de los préstamos <b className="num pos">{fmtEur(capDevuelto)}</b> · es ahorro, no gasto
-              </span>
-            </div>
+          {(recPrev?.mes || ap.quedan > 0) && (
+            <p className="hero-prev">
+              {ap.quedan > 0 && <>Te quedan por poner <b className="num">{fmtEur(ap.quedan)}</b> hasta la escritura. </>}
+              {recPrev?.mes && bol.falta > 0 && <>Previsión: lo recuperas todo en <b>{fmtMonthKey(recPrev.mes)}</b>.</>}
+            </p>
           )}
         </article>
 
-        <article className="kpi kpi-tile" aria-labelledby="h-roi">
-          <div className="kpi-label" id="h-roi">Rentabilidad sobre tu dinero</div>
-          {r.cashOnCashPct === null ? (
-            <div className="kpi-figure muted-figure">—</div>
-          ) : (
-            <div className={`kpi-figure ${r.cashOnCashPct > 0 ? 'pos' : r.cashOnCashPct < 0 ? 'neg' : ''}`}>
-              <Counter id="roi" value={Math.round(r.cashOnCashPct * 100)} format={pct2} />
-              {r.proyectado && <span className="tag">proyección</span>}
-            </div>
-          )}
-          <div className="kpi-sub">
-            {r.cashOnCashPct === null
-              ? r.enReforma
-                ? 'Se calculará con el primer mes de alquiler'
-                : 'Necesita al menos un mes de alquiler'
-              : `${fmtEur(r.beneficioAnual ?? 0, { compact: true, sign: true })} al año sobre ${eur0(r.capitalPropio)}`}
-          </div>
-          <div className="kpi-split">
-            <span>
-              Bruta del piso <b className="num">{r.brutaPct === null ? '—' : pct2(Math.round(r.brutaPct * 100))}</b>
-            </span>
-            <span>
-              Neta <b className="num">{r.netaPct === null ? '—' : pct2(Math.round(r.netaPct * 100))}</b>
-            </span>
-          </div>
-        </article>
-          </>
-        )}
-
-        <article className="kpi kpi-pones" aria-labelledby="h-pones">
-          <div className="pones-entrada">
-            <div className="kpi-label" id="h-pones">Lo que pones tú · al principio</div>
-            <div className="pones-figure">
-              <Counter id="pones-quedan" value={ap.quedan} format={(v) => fmtEur(v)} />
-            </div>
-            <div className="kpi-sub">
-              {ap.quedan > 0 ? 'te quedan por poner hasta la escritura' : 'entrada completa'} · de {fmtEur(ap.entrada)} de entrada, ya
-              has pagado {fmtEur(ap.pagado)}
-            </div>
-            <div className="meter pones-meter" role="progressbar" aria-label="Entrada pagada" aria-valuenow={Math.round((ap.entrada ? ap.pagado / ap.entrada : 0) * 100)} aria-valuemin={0} aria-valuemax={100}>
-              <span style={{ '--p': ap.entrada ? ap.pagado / ap.entrada : 0 } as CSSProperties} />
-            </div>
-            <small className="pones-calc">
-              Compra {fmtEur(ap.total, { compact: true })} − préstamos {fmtEur(ap.prestamos, { compact: true })}
-              {d.hipoteca.provisional && <span className="chip provisional mini">hipoteca provisional</span>}
-            </small>
-          </div>
-          <div className="pones-sueldo">
-            <div className="kpi-label">Después, de tu sueldo</div>
-            <ul>
-              {ap.etapas.map((e, i) => (
-                <li key={e.key} className={`etapa-${e.id}`}>
-                  <span className="pones-etapa">Etapa {i + 1}</span>
-                  <span className="pones-que">
-                    {e.id === 'espera' ? 'Antes de alquilar' : e.id === 'devolviendo' ? 'Alquilado, devolviendo a tus padres' : 'El piso se paga solo'}
-                    {e.subtitulo && <small className="pones-sub">{e.subtitulo}</small>}
+        <article className="kpi kpi-mes" aria-labelledby="h-mes">
+          <div className="kpi-label" id="h-mes">Cada mes, de tu sueldo</div>
+          {fases.length && fases.some((f) => f.desde) ? (
+            <ul className="mes-list">
+              {fases.map((f) => (
+                <li key={f.key} className={`etapa-${f.id}`}>
+                  <span className="mes-cuando">{periodoCorto(f)}</span>
+                  <span className="mes-que">
+                    {f.id === 'espera' ? 'Antes de alquilar (reforma)' : f.id === 'devolviendo' ? 'Alquilado, pagando a tus padres' : 'El piso se paga solo'}
                   </span>
-                  <b className={`num ${e.resultado < 0 ? 'neg' : 'pos'}`}>
-                    {e.resultado < 0 ? `${fmtEur(-e.resultado)}/mes` : `+${fmtEur(e.resultado)}/mes`}
+                  <b className={`num ${f.resultado < 0 ? 'neg' : 'pos'}`}>
+                    {f.resultado < 0 ? `−${fmtEur(-f.resultado)}` : `+${fmtEur(f.resultado)}`}/mes
                   </b>
-                  <small>{e.id === 'libre' ? 'te deja' : e.meses !== null ? `${e.meses} ${e.meses === 1 ? 'mes' : 'meses'}` : 'sin fechas'}</small>
                 </li>
               ))}
             </ul>
-            {ap.sueldoTotal !== null ? (
-              <p className="pones-total">
-                En total, <b className="num">{fmtEur(ap.sueldoTotal)}</b> de tu sueldo hasta que el piso se paga solo.
-                {recPrev && (
-                  <>
-                    {' '}De tu bolsillo, con la entrada: <b className="num">{fmtEur(ap.entrada + ap.sueldoTotal)}</b>
-                    {recPrev.mes && (
-                      <>
-                        {' '}· lo recuperas todo en <b>{fmtMonthKey(recPrev.mes)}</b>
-                      </>
-                    )}
-                    .
-                  </>
-                )}
-              </p>
-            ) : (
-              <p className="pones-total muted">
-                Pon la fecha de escritura y la de inicio del alquiler para ver cuántos meses dura cada etapa y el total.{' '}
-                <a href="#/compra" onClick={(e) => (e.preventDefault(), go('compra'))}>Poner fechas</a>
-              </p>
-            )}
-          </div>
+          ) : (
+            <p className="muted" style={{ margin: '8px 0 0' }}>
+              Pon la fecha de escritura y la de inicio del alquiler para ver cuánto pones cada mes.{' '}
+              <a href="#/compra" onClick={(e) => (e.preventDefault(), go('compra'))}>Poner fechas</a>
+            </p>
+          )}
+          {ap.sueldoTotal !== null && (
+            <p className="mes-total">
+              En total, <b className="num">{fmtEur(ap.sueldoTotal)}</b> de tu sueldo hasta que el piso se paga solo.{' '}
+              <a href="#/analisis" onClick={(e) => (e.preventDefault(), go('analisis'))}>Ver el detalle</a>
+            </p>
+          )}
         </article>
+
 
         <article className="kpi kpi-patrimonio" aria-labelledby="h-patrimonio">
           <div className="kpi-label" id="h-patrimonio">Tu patrimonio en el piso</div>
@@ -357,58 +207,7 @@ export function Resumen() {
             </div>
           </article>
         )}
-
-        {alquilando && (
-        <article className={`kpi kpi-recovery${flashRecup ? ` flash-${flashRecup}` : ''}`} aria-labelledby="h-recup">
-          <div className="recovery-head">
-            <div>
-              <div className="kpi-label" id="h-recup">Recuperación de la inversión</div>
-              <div className="recovery-figure">
-                <Counter id="recup" value={Math.round(pctDevuelto * 1000)} format={(v) => `${Math.round(v / 10)} %`} />
-              </div>
-            </div>
-            <p className="recovery-text">{recupTexto}</p>
-          </div>
-          <div
-            className="meter recovery-meter"
-            role="progressbar"
-            aria-label="Inversión recuperada"
-            aria-valuenow={Math.round(pctDevuelto * 100)}
-            aria-valuemin={0}
-            aria-valuemax={100}
-          >
-            <span style={{ '--p': pctDevuelto } as CSSProperties} />
-            <i style={{ left: '25%' }} />
-            <i style={{ left: '50%' }} />
-            <i style={{ left: '75%' }} />
-          </div>
-          <dl className="recovery-foot">
-            <div>
-              <dt>Aportado</dt>
-              <dd className="num">{fmtEur(bol.aportado)}</dd>
-              {bol.mesesNegativos !== 0 && (
-                <small>
-                  {eur0(bol.compra)} compra + {eur0(bol.mesesNegativos)} meses
-                </small>
-              )}
-            </div>
-            <div>
-              <dt>Te ha devuelto</dt>
-              <dd className={`num ${bol.devuelto > 0 ? 'pos' : ''}`}>{fmtEur(bol.devuelto)}</dd>
-            </div>
-            <div>
-              <dt>Falta</dt>
-              <dd className="num">{fmtEur(bol.falta)}</dd>
-            </div>
-          </dl>
-        </article>
-        )}
-        {!alquilando && recupPrevTexto && <p className="kpi kpi-luego muted">{recupPrevTexto}</p>}
       </section>
-
-      <div className="resumen-fases">
-        <PanelFases d={d} />
-      </div>
 
       {/* ───── Avisos y proceso ───── */}
       <div className="grid g-2 duo">
@@ -469,123 +268,6 @@ export function Resumen() {
           </ol>
         </section>
       </div>
-
-      {alquilando && (
-        <>
-      {/* ───── Gráficas ───── */}
-      <InView className={intro ? 'reveal' : 'settled'}>
-        <section className="card" aria-labelledby="h-pyg">
-          <div className="card-head">
-            <h2 id="h-pyg">Beneficio mes a mes</h2>
-            <span className="hint">{keys.length ? `${keys.length} meses` : ''}</span>
-          </div>
-          {keys.length === 0 ? (
-            <div className="empty invite">
-              <b>Aún no hay meses</b>
-              <span>Crea el primero y la app lo rellena con la previsión: cuotas, gastos fijos y alquiler si ya ha empezado. Luego solo marcas lo pagado.</span>
-              <button className="btn primary" onClick={() => go('meses')}>Crear el primer mes</button>
-            </div>
-          ) : (
-            <ProfitBars
-              data={keys.map((k) => {
-                const t = totalesMes(d.meses[k]);
-                return {
-                  key: k,
-                  label: fmtMonthKey(k, true),
-                  title: fmtMonthKey(k),
-                  value: t.beneficio,
-                  rows: [eurRow('Ingresos', t.ingresos), eurRow('Gastos', t.gastos), eurRow('Resultado', t.beneficio, true)],
-                };
-              })}
-            />
-          )}
-        </section>
-      </InView>
-
-      <InView className={intro ? 'reveal' : 'settled'}>
-        <section className="card" aria-labelledby="h-global">
-          <div className="card-head">
-            <h2 id="h-global">Seguimiento global</h2>
-            <span className="hint">beneficio acumulado frente a lo invertido</span>
-          </div>
-          {reforma && (
-            <p className="rent-warn" style={{ marginBottom: 14 }}>
-              En reforma: la recuperación empezará a contar con el primer alquiler ({fmtDate(d.recurrentes.inicioAlquiler)}).
-              Mientras tanto, lo que pagas cada mes se suma a lo invertido como coste de la espera.
-            </p>
-          )}
-          <div className="stats" style={{ marginBottom: 18 }}>
-            <div className="stat">
-              <div className="k">Aportado</div>
-              <div className="v">{eur0(bol.aportado)}</div>
-              <div className="d">
-                {bol.mesesNegativos ? `${eur0(bol.compra)} compra + ${eur0(bol.mesesNegativos)} meses en negativo` : 'de tu bolsillo'}
-              </div>
-            </div>
-            <div className="stat">
-              <div className="k">Ingresado</div>
-              <div className="v">{eur0(seg.ingresado)}</div>
-              <div className="d">meses de alquiler</div>
-            </div>
-            <div className="stat">
-              <div className="k">Gastado</div>
-              <div className="v">{eur0(seg.gastado)}</div>
-              <div className="d">meses de alquiler</div>
-            </div>
-            <div className="stat">
-              <div className="k">Capital devuelto</div>
-              <div className="v pos">{eur0(capDevuelto)}</div>
-              <div className="d">de los préstamos: es ahorro, no gasto</div>
-            </div>
-          </div>
-          {keysAlquiler.length > 0 ? (
-            <LineChart
-              ariaLabel="Beneficio acumulado frente a lo invertido"
-              color="var(--data)"
-              data={seg.serie.map((p) => ({
-                label: fmtMonthKey(p.key, true),
-                title: fmtMonthKey(p.key),
-                value: p.acumulado,
-                rows: [eurRow('Mes', p.beneficio, true), eurRow('Acumulado', p.acumulado, true), eurRow('Invertido', seg.invertido)],
-              }))}
-              reference={{ value: seg.invertido, label: `Invertido · ${eur0(seg.invertido)}` }}
-              projection={
-                seg.proyeccionMeses && seg.proyeccionKey && seg.proyeccionMeses <= 360
-                  ? { steps: seg.proyeccionMeses, value: seg.invertido, label: `Proyección · ${fmtMonthKey(seg.proyeccionKey, true)}` }
-                  : undefined
-              }
-              legend={
-                <>
-                  <span><i className="line" style={{ background: 'var(--data)' }} />Beneficio acumulado</span>
-                  <span><i className="dash" />Nivel invertido</span>
-                  {seg.proyeccionKey && <span><i className="line" style={{ background: 'repeating-linear-gradient(90deg, var(--data) 0 2px, transparent 2px 6px)' }} />Proyección al ritmo medio</span>}
-                </>
-              }
-            />
-          ) : (
-            <div className="empty invite">
-              <b>La curva de recuperación empieza con el primer alquiler</b>
-              <span>
-                {d.recurrentes.inicioAlquiler
-                  ? `Desde ${fmtDate(d.recurrentes.inicioAlquiler)} verás aquí el beneficio acumulado acercándose a lo invertido.`
-                  : 'Pon la fecha prevista de inicio del alquiler para separar los meses de reforma de los de alquiler.'}
-              </span>
-              {!d.recurrentes.inicioAlquiler && <button className="btn" onClick={() => go('compra')}>Poner la fecha</button>}
-            </div>
-          )}
-          <p className="muted" style={{ fontSize: 12.5, margin: '12px 0 0' }}>
-            «Invertido» es tu dinero propio (gastos de compra pagados menos lo pagado con los préstamos) más el
-            coste de la espera: el saldo de los meses anteriores al inicio del alquiler. La proyección es lineal al
-            beneficio medio de los meses de alquiler.
-          </p>
-        </section>
-      </InView>
-
-      <InView className={intro ? 'reveal' : 'settled'}>
-        <PanelRentabilidad d={d} />
-      </InView>
-        </>
-      )}
     </div>
   );
 }
