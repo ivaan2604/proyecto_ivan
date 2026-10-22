@@ -1026,7 +1026,14 @@ export function diaFirma(d: AppData) {
 
 /** Copia de los datos sin la reforma (para ver la compra y la hipoteca por separado). */
 export function sinReforma(d: AppData): AppData {
-  return { ...d, gastos: { ...d.gastos, reforma: 0 }, reforma: { partidas: [] } };
+  // La parte del préstamo familiar que es para la reforma tampoco cuenta: no paga la compra
+  const importe = Math.max(0, d.familiar.importe - Math.min(d.familiar.paraReforma, d.familiar.importe));
+  return {
+    ...d,
+    gastos: { ...d.gastos, reforma: 0 },
+    reforma: { partidas: [] },
+    familiar: { ...d.familiar, importe, paraReforma: 0 },
+  };
 }
 
 /* ───────────── De tu bolsillo (real) ───────────── */

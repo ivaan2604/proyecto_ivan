@@ -202,6 +202,9 @@ export function Compra() {
             <div className="card-head"><h2>Préstamo familiar</h2></div>
             <div className="form">
               <Field label="Importe"><MoneyInput value={d.familiar.importe} onChange={set('familiar', 'importe')} /></Field>
+              <Field label="De esto, para la reforma" hint="No paga la compra. Al ver el Resumen «sin reforma» no se cuenta">
+                <MoneyInput value={d.familiar.paraReforma} onChange={set('familiar', 'paraReforma')} />
+              </Field>
               {recibido(d.familiar.recibido, set('familiar', 'recibido'), 'te lo hayan dado')}
               <Field label="Cuota mensual de devolución"><MoneyInput value={d.familiar.cuota} onChange={set('familiar', 'cuota')} /></Field>
               <Field label="Primera cuota" hint="Si la dejas vacía, el mes siguiente a la escritura">

@@ -133,7 +133,7 @@ export function fromPrototype(p: Any): AppData {
     provisional: false, fein: d.hipoteca.fein,
   };
   d.familiar = {
-    importe: eur(dg.prestamoPadresImporte), cuota: eur(dg.prestamoPadresCuota), tinPct: 0, notas: str(dg.prestamoPadresNotas), recibido: false, primeraCuota: '',
+    importe: eur(dg.prestamoPadresImporte), cuota: eur(dg.prestamoPadresCuota), tinPct: 0, notas: str(dg.prestamoPadresNotas), recibido: false, primeraCuota: '', paraReforma: 0,
   };
   d.recurrentes = {
     inicioAlquiler: '',
