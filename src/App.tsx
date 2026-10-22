@@ -12,6 +12,7 @@ import { Prestamo } from './sections/Prestamo';
 import { Reforma } from './sections/Reforma';
 import { Irpf } from './sections/Irpf';
 import { Resumen } from './sections/Resumen';
+import { Analisis } from './sections/Analisis';
 import { useEngine } from './store';
 import { engine } from './sync/engine';
 import { cloudEnabled } from './sync/remote';
@@ -60,6 +61,7 @@ function Shell() {
   const page = (() => {
     switch (route) {
       case 'resumen': return <Resumen />;
+      case 'analisis': return <Analisis />;
       case 'compra': return <Compra />;
       case 'gastos': return <Gastos />;
       case 'reforma': return <Reforma />;

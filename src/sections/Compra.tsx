@@ -59,7 +59,7 @@ export function Compra() {
   return (
     <div className="page">
       <PageHead
-        folio="02"
+        folio="03"
         title="Compra y financiación"
         subtitle="Datos generales del piso. Todo es editable y se recalcula al momento: la cuota de la hipoteca se usará por defecto al crear meses nuevos."
       />

@@ -62,7 +62,7 @@ export function Gastos() {
   return (
     <div className="page">
       <PageHead
-        folio="03"
+        folio="04"
         title="Gastos de compra"
         subtitle="Los conceptos base se calculan desde «Compra y financiación». Marca cada uno como pagado cuando salga de tu cuenta."
         actions={

@@ -2467,3 +2467,67 @@ td.seg-combo {
   margin: 0;
   font-size: 14px;
 }
+
+/* Análisis: las tarjetas de beneficio y rentabilidad en fila, la recuperación debajo */
+.kpis.analisis {
+  grid-template-areas: 'ben roi';
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+@media (max-width: 860px) {
+  .kpis.analisis {
+    grid-template-areas: 'ben' 'roi';
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Resumen: previsión bajo la cifra principal y «Cada mes, de tu sueldo» */
+.hero-prev {
+  margin: 14px 0 0;
+  font-size: 14px;
+  opacity: 0.92;
+}
+.kpi-mes {
+  grid-column: 1 / -1;
+}
+.mes-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.mes-list li {
+  display: grid;
+  grid-template-columns: minmax(130px, auto) 1fr auto;
+  align-items: baseline;
+  gap: 4px 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--etapa-espera);
+}
+.mes-list li.etapa-devolviendo {
+  background: var(--etapa-devolviendo);
+}
+.mes-list li.etapa-libre {
+  background: var(--etapa-libre);
+}
+.mes-cuando {
+  font-size: 13px;
+  color: var(--muted);
+  text-transform: capitalize;
+}
+.mes-que {
+  font-weight: 600;
+}
+.mes-total {
+  margin: 12px 0 0;
+  font-size: 14px;
+}
+@media (max-width: 560px) {
+  .mes-list li {
+    grid-template-columns: 1fr auto;
+  }
+  .mes-cuando {
+    grid-column: 1 / -1;
+  }
+}
