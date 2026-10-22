@@ -25,7 +25,7 @@
 ## Otras actividades y recuperación
 - Fútbol: liga local, partido los domingos por la tarde, ~60 min de defensa. Sin entrenamientos de equipo. **La liga empieza el domingo 18-oct-2026** (el 11-oct no hay partido).
 - Sueño: ~7 h entre semana. Estrés bajo por ahora.
-- Pasos diarios: pendiente de saber.
+- Pasos diarios: ~7.000 los días de oficina; **~3.000 los días de teletrabajo** (3 días/semana). Objetivo: 7.000+ también en casa.
 
 ## Lesiones y limitaciones
 - **Síndrome de dolor femoropatelar en la rodilla derecha** (confirmado por resonancia). Le pautaron ejercicio. Le molesta un poco después de los partidos.
