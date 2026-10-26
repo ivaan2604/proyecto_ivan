@@ -49,3 +49,8 @@ Se añade una norma: **registrar el 100 % de las sesiones** en Hevy.
 - A petición de Iván: martes 20 Torso B con prioridad de espalda, miércoles 21 pierna, viernes 23 Torso A. Partido el domingo 25 a las 12:15.
 - El sábado 17 jugó un partido completo de fútbol 7.
 - Cambio: Torso A (empuje) adelantado al jueves 22. Viernes 23: descanso o día opcional suave. Sábado descanso. Domingo partido.
+
+## 2026-10-26 — Semana 44 (26-oct a 1-nov)
+- Lunes 26: descanso tras el partido (agujetas en glúteo, lumbar y piernas). Opcional: pádel suave 60 min.
+- Sin partido el fin de semana (puente) → posible 4.º día.
+- Plan: martes espalda/bíceps, miércoles pecho/hombro/tríceps, jueves pierna, viernes o sábado torso ligero opcional (hombro lateral y posterior + brazos).
