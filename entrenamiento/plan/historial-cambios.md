@@ -54,3 +54,4 @@ Se añade una norma: **registrar el 100 % de las sesiones** en Hevy.
 - Lunes 26: descanso tras el partido (agujetas en glúteo, lumbar y piernas). Opcional: pádel suave 60 min.
 - Sin partido el fin de semana (puente) → posible 4.º día.
 - Plan: martes espalda/bíceps, miércoles pecho/hombro/tríceps, jueves pierna, viernes o sábado torso ligero opcional (hombro lateral y posterior + brazos).
+- 27-oct: no hay máquina de pájaro → deltoides posterior con Face Pull en polea (o la contractora usada al revés).

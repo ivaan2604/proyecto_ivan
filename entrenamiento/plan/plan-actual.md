@@ -92,7 +92,7 @@ Si falta tiempo, se quita primero el 8 (curl femoral) y después el 4 (press de 
 | 3 | Seated Incline Curl (Dumbbell) | 2 × 10–15 | 60 s |
 | 4 | Overhead Triceps Extension (Cable) | 2 × 10–15 | 60 s |
 | 5 | Lateral Raise (Machine) | 3 × 12–20 | 60 s |
-| 6 | Rear Delt Reverse Fly (Machine) | 2 × 12–15 | 60 s |
+| 6 | Face Pull (o contractora sentado al revés = Rear Delt Reverse Fly) | 2 × 12–15 | 60 s |
 | 7 | Crunch (Machine) o Leg Raise Parallel Bars | 3 × 10–15 | 60 s |
 
 ## Volumen semanal resultante (series directas + 0,5 × indirectas, aprox.)
