@@ -56,3 +56,4 @@ Se añade una norma: **registrar el 100 % de las sesiones** en Hevy.
 - Plan: martes espalda/bíceps, miércoles pecho/hombro/tríceps, jueves pierna, viernes o sábado torso ligero opcional (hombro lateral y posterior + brazos).
 - 27-oct: no hay máquina de pájaro → deltoides posterior con Face Pull en polea (o la contractora usada al revés).
 - 28-oct: cambio, pierna el miércoles y pecho/hombro/tríceps el jueves 29 (está recuperado de piernas y cargado de la espalda).
+- 29-oct: descanso (llegó tarde del trabajo). Pecho/hombro/tríceps pasa al viernes 30 o sábado 31 (no hay partido el fin de semana).
