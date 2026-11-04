@@ -4,12 +4,15 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 // BASE_PATH permite publicar en una subruta (p. ej. GitHub Pages: /proyecto_ivan/)
 const base = process.env.BASE_PATH ?? '/';
+// VITE_DEMO=1: versión de demostración (en /demo/), sin nube ni service worker
+const demo = process.env.VITE_DEMO === '1';
 
 export default defineConfig({
   base,
   plugins: [
     react(),
     VitePWA({
+      disable: demo,
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg', 'apple-touch-icon.png'],
       manifest: {
@@ -32,6 +35,8 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         navigateFallback: 'index.html',
+        // La demo vive en /demo/: el service worker de la app real no debe servir su página en esa ruta
+        navigateFallbackDenylist: [/\/demo\//],
         // Las llamadas a Supabase (otro dominio) no se cachean: los datos van siempre por el motor de sincronización
       },
     }),

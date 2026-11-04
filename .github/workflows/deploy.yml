@@ -34,6 +34,11 @@ jobs:
       - run: npm run build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
+      # Versión de demostración con datos ficticios en /demo/: sin nube, sin service worker y con su propio almacenamiento
+      - run: npx vite build --outDir dist/demo --emptyOutDir
+        env:
+          VITE_DEMO: '1'
+          BASE_PATH: /${{ github.event.repository.name }}/demo/
       - uses: actions/upload-pages-artifact@v3
         if: github.ref == 'refs/heads/main'
         with:

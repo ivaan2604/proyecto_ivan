@@ -1,6 +1,7 @@
 import type { Session } from '@supabase/supabase-js';
 import type { AppData } from '../lib/model';
 import { validateAppData } from '../lib/schema';
+import { DEMO, demoData } from '../demo';
 import { addSnapshot, deviceLabel, lastSnapshotAt, loadLocal, requestPersistence, sameData, saveLocal } from './local';
 import { cloudEnabled, fetchDoc, saveDoc, supabase } from './remote';
 
@@ -109,6 +110,11 @@ class SyncEngine {
         this.set({ error: `Los datos locales no son válidos: ${msg(e)}` });
         data = local.data;
       }
+    }
+    // La demo arranca directamente con el piso de ejemplo
+    if (!data && DEMO) {
+      data = demoData();
+      await saveLocal({ data, baseVersion: 0, dirty: false, updatedAt: new Date().toISOString() }).catch(() => undefined);
     }
     const last = await lastSnapshotAt().catch(() => null);
     this.lastSnapshot = last ? new Date(last).getTime() : 0;

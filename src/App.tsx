@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState, type ReactElement } from 'react';
+import { DEMO } from './demo';
 import { avisos, type SectionId } from './lib/derive';
 import { parseBackup } from './lib/backup';
 import { emptyData } from './lib/model';
@@ -44,7 +45,7 @@ function Brand({ compact }: { compact?: boolean }) {
         <AzaharMark size={compact ? 20 : 26} />
       </span>
       <div>
-        <div className="brand-title">Piso Castellón</div>
+        <div className="brand-title">{DEMO ? 'Piso (demo)' : 'Piso Castellón'}</div>
         {!compact && <div className="brand-sub">Compra · Alquiler · Cuentas</div>}
       </div>
     </div>

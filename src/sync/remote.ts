@@ -1,10 +1,12 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { AppData } from '../lib/model';
+import { DEMO } from '../demo';
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
-export const supabase: SupabaseClient | null = url && key ? createClient(url, key) : null;
+// La demo nunca se conecta a la nube: no puede leer ni tocar los datos reales
+export const supabase: SupabaseClient | null = !DEMO && url && key ? createClient(url, key) : null;
 export const cloudEnabled = !!supabase;
 
 export interface RemoteDoc {
