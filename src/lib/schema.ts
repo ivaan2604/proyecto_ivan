@@ -41,7 +41,7 @@ export const appDataSchema = z.object({
     importe: cents, cuota: cents, tinPct: z.number(), notas: z.string(), recibido: z.boolean(), primeraCuota: fecha, paraReforma: cents.min(0),
   }),
   recurrentes: z.object({
-    inicioAlquiler: fecha, alquiler: cents, edificioAnual: cents, ibiAnual: cents, seguroHogarAnual: cents,
+    inicioAlquiler: fecha, alquiler: cents, edificioAnual: cents, ibiAnual: cents, basuraAnual: cents, seguroHogarAnual: cents,
     seguroVidaAnual: cents, mantenimientoMensual: cents,
   }),
   ahorros: z.object({ firma: cents.min(0) }),

@@ -198,6 +198,8 @@ export interface AppData {
     alquiler: number;
     edificioAnual: number;
     ibiAnual: number;
+    /** Tasa municipal de basura (residuos), al año */
+    basuraAnual: number;
     /** Obsoletos: los seguros van en `seguros` (se migran al cargar) */
     seguroHogarAnual: number;
     seguroVidaAnual: number;
@@ -263,6 +265,7 @@ export function emptyData(): AppData {
       alquiler: 0,
       edificioAnual: 0,
       ibiAnual: 0,
+      basuraAnual: 0,
       seguroHogarAnual: 0,
       seguroVidaAnual: 0,
       mantenimientoMensual: 0,

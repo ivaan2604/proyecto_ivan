@@ -137,7 +137,7 @@ export function fromPrototype(p: Any): AppData {
   };
   d.recurrentes = {
     inicioAlquiler: '',
-    alquiler: eur(dg.alquiler), edificioAnual: eur(dg.cuotaEdificioAnual), ibiAnual: eur(dg.ibiAnual),
+    alquiler: eur(dg.alquiler), edificioAnual: eur(dg.cuotaEdificioAnual), ibiAnual: eur(dg.ibiAnual), basuraAnual: 0,
     seguroHogarAnual: 0, seguroVidaAnual: 0,
     mantenimientoMensual: eur(dg.mantenimientoMensual),
   };
