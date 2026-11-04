@@ -57,3 +57,9 @@ Se añade una norma: **registrar el 100 % de las sesiones** en Hevy.
 - 27-oct: no hay máquina de pájaro → deltoides posterior con Face Pull en polea (o la contractora usada al revés).
 - 28-oct: cambio, pierna el miércoles y pecho/hombro/tríceps el jueves 29 (está recuperado de piernas y cargado de la espalda).
 - 29-oct: descanso (llegó tarde del trabajo). Pecho/hombro/tríceps pasa al viernes 30 o sábado 31 (no hay partido el fin de semana).
+
+## 2026-11-04 — Semana 45 (2 al 8 de nov)
+- Lunes 2 (festivo): ruta de montaña Pico de la Miel, ~15 km, 4 h 30 min, ~550 m de desnivel.
+- Martes 3: sin entrenar (falta de tiempo).
+- Miércoles 4: vuelta al gimnasio con pecho, hombro y tríceps (último empuje: 22-oct).
+- Pendiente de confirmar si hubo sesión el 30–31 oct y si hay partido el domingo 8.
