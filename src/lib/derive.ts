@@ -315,6 +315,7 @@ export function mesPrevision(d: AppData, key?: string): Mes {
   if (fam && d.familiar.importe && tocaFam) gastos.push({ ...l('Cuota préstamo familiar', fam), vinculo: 'familiar' });
   if (r.edificioAnual) gastos.push(l('Cuota edificio (prorrateo)', Math.round(r.edificioAnual / 12)));
   if (r.ibiAnual) gastos.push(l('IBI (prorrateo)', Math.round(r.ibiAnual / 12)));
+  if (r.basuraAnual) gastos.push(l('Basura (prorrateo)', Math.round(r.basuraAnual / 12)));
   if (r.seguroHogarAnual) gastos.push(l('Seguro de hogar (prorrateo)', Math.round(r.seguroHogarAnual / 12)));
   if (r.seguroVidaAnual) gastos.push(l('Seguro de vida (prorrateo)', Math.round(r.seguroVidaAnual / 12)));
   // Un seguro con recibo anual no se prorratea: el recibo entero va solo en su mes de pago
@@ -330,7 +331,7 @@ export function mesPrevision(d: AppData, key?: string): Mes {
   // Los prorrateos se redondean por separado: el último absorbe la diferencia para que sumen lo mismo que el total
   const prorrateos = gastos.filter((g) => g.concepto.endsWith('(prorrateo)'));
   if (prorrateos.length) {
-    const total = Math.round((r.edificioAnual + r.ibiAnual + segurosAnuales(d) - anuales) / 12);
+    const total = Math.round((r.edificioAnual + r.ibiAnual + r.basuraAnual + segurosAnuales(d) - anuales) / 12);
     prorrateos[prorrateos.length - 1].importe += total - prorrateos.reduce((a, g) => a + g.importe, 0);
   }
   if (r.mantenimientoMensual) gastos.push(l('Mantenimiento', r.mantenimientoMensual));
@@ -732,7 +733,7 @@ export function rentabilidad(d: AppData): Rentabilidad {
 
   const r = d.recurrentes;
   const alquilerAnual = r.alquiler * 12;
-  const gastosRecurrentesAnuales = r.ibiAnual + segurosAnuales(d) + r.edificioAnual + r.mantenimientoMensual * 12;
+  const gastosRecurrentesAnuales = r.ibiAnual + r.basuraAnual + segurosAnuales(d) + r.edificioAnual + r.mantenimientoMensual * 12;
   const inversionActivo = g.total;
   const pct = (num: number, den: number) => (den > 0 ? (num / den) * 100 : null);
 
@@ -802,7 +803,7 @@ export interface Fase {
 /** Gastos fijos del piso prorrateados al mes (IBI, edificio, seguros) + mantenimiento. */
 export function fijosMensuales(d: AppData): number {
   const r = d.recurrentes;
-  return Math.round((r.edificioAnual + r.ibiAnual + segurosAnuales(d)) / 12) + r.mantenimientoMensual;
+  return Math.round((r.edificioAnual + r.ibiAnual + r.basuraAnual + segurosAnuales(d)) / 12) + r.mantenimientoMensual;
 }
 
 /** Mes de la primera cuota de la hipoteca: el siguiente a la escritura. null = sin escritura. */
@@ -1183,6 +1184,7 @@ export function irpfAlquiler(d: AppData) {
   const gastos: LineaIrpf[] = [
     { concepto: 'Intereses de la hipoteca', importe: interesesDeducibles, nota: intereses > ingresos ? `${fmtEur(intereses - ingresos)} pasan a los 4 años siguientes` : `año ${Math.floor(desde / 12) + 1} de la hipoteca` },
     { concepto: 'IBI', importe: r.ibiAnual },
+    ...(r.basuraAnual ? [{ concepto: 'Tasa de basura', importe: r.basuraAnual }] : []),
     { concepto: 'Comunidad', importe: r.edificioAnual },
     { concepto: 'Seguro de hogar', importe: hogar, nota: 'el de vida no se deduce' },
     ...(r.mantenimientoMensual ? [{ concepto: 'Mantenimiento y reparaciones', importe: r.mantenimientoMensual * 12 }] : []),

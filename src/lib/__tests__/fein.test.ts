@@ -91,6 +91,15 @@ describe('seguros en los gastos fijos', () => {
     const m = mesPrevision(conFein(), '2027-03');
     expect(m.gastos.map((l) => l.concepto)).toEqual(expect.arrayContaining(['Mi Hogar Esencial (prorrateo)', 'Protección Familiar Plus (prorrateo)']));
   });
+  it('la tasa de basura entra prorrateada en los meses y en los gastos fijos', () => {
+    const d = conFein();
+    const antes = fijosMensuales(d);
+    d.recurrentes.basuraAnual = 17241;
+    // El total se redondea una sola vez: puede diferir en un céntimo de sumar la parte de la basura aparte
+    expect(Math.abs(fijosMensuales(d) - antes - Math.round(17241 / 12))).toBeLessThanOrEqual(1);
+    const linea = mesPrevision(d, '2027-03').gastos.find((l) => l.concepto === 'Basura (prorrateo)');
+    expect(linea?.importe).toBe(Math.round(17241 / 12));
+  });
   it('un seguro con recibo anual solo sale entero en su mes de pago', () => {
     const d = conFein();
     const hogar = d.seguros.find((x) => x.nombre === 'Mi Hogar Esencial')!;

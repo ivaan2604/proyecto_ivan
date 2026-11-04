@@ -20,7 +20,7 @@ export function demoData(): AppData {
     fein: { taePct: 3.6, vinculaciones: 'Nómina domiciliada', fechaEmision: '2025-02-12', firmadaFecha: '2025-02-14', validaHasta: '2025-03-14', comisionAmortPct: 0 },
   };
   d.familiar = { importe: 1000000, cuota: 30000, tinPct: 0, notas: 'Préstamo familiar de ejemplo, sin interés.', recibido: true, primeraCuota: '2025-04-01', paraReforma: 0 };
-  d.recurrentes = { ...d.recurrentes, inicioAlquiler: '2025-06-01', alquiler: 80000, edificioAnual: 36000, ibiAnual: 32000 };
+  d.recurrentes = { ...d.recurrentes, inicioAlquiler: '2025-06-01', alquiler: 80000, edificioAnual: 36000, ibiAnual: 32000, basuraAnual: 9000 };
   d.ahorros = { firma: 1500000 };
   d.irpf = { ...d.irpf, valorCatastral: 4500000, tipoMarginalPct: 30 };
   d.seguros = [

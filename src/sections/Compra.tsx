@@ -304,6 +304,9 @@ export function Compra() {
             <Field label="IBI anual" hint={`${fmtEur(Math.round(r.ibiAnual / 12))}/mes`}>
               <MoneyInput value={r.ibiAnual} onChange={set('recurrentes', 'ibiAnual')} />
             </Field>
+            <Field label="Tasa de basura anual" hint={`${fmtEur(Math.round(r.basuraAnual / 12))}/mes`}>
+              <MoneyInput value={r.basuraAnual} onChange={set('recurrentes', 'basuraAnual')} />
+            </Field>
             {d.seguros.map((x) => (
               <div className="field seguro-row" key={x.id}>
                 <span className="seguro-head">
