@@ -317,11 +317,20 @@ export function mesPrevision(d: AppData, key?: string): Mes {
   if (r.ibiAnual) gastos.push(l('IBI (prorrateo)', Math.round(r.ibiAnual / 12)));
   if (r.seguroHogarAnual) gastos.push(l('Seguro de hogar (prorrateo)', Math.round(r.seguroHogarAnual / 12)));
   if (r.seguroVidaAnual) gastos.push(l('Seguro de vida (prorrateo)', Math.round(r.seguroVidaAnual / 12)));
-  for (const x of segurosElegidos(d)) if (x.primaAnual) gastos.push(l(`${x.nombre || 'Seguro'} (prorrateo)`, Math.round(x.primaAnual / 12)));
+  // Un seguro con recibo anual no se prorratea: el recibo entero va solo en su mes de pago
+  const mesNum = key ? Number(key.slice(5, 7)) : 0;
+  let anuales = 0;
+  for (const x of segurosElegidos(d)) {
+    if (!x.primaAnual) continue;
+    if (x.mesPago) {
+      anuales += x.primaAnual;
+      if (x.mesPago === mesNum) gastos.push(l(`${x.nombre || 'Seguro'} (recibo anual)`, x.primaAnual));
+    } else gastos.push(l(`${x.nombre || 'Seguro'} (prorrateo)`, Math.round(x.primaAnual / 12)));
+  }
   // Los prorrateos se redondean por separado: el último absorbe la diferencia para que sumen lo mismo que el total
   const prorrateos = gastos.filter((g) => g.concepto.endsWith('(prorrateo)'));
   if (prorrateos.length) {
-    const total = Math.round((r.edificioAnual + r.ibiAnual + segurosAnuales(d)) / 12);
+    const total = Math.round((r.edificioAnual + r.ibiAnual + segurosAnuales(d) - anuales) / 12);
     prorrateos[prorrateos.length - 1].importe += total - prorrateos.reduce((a, g) => a + g.importe, 0);
   }
   if (r.mantenimientoMensual) gastos.push(l('Mantenimiento', r.mantenimientoMensual));

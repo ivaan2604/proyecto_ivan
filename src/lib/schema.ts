@@ -53,6 +53,7 @@ export const appDataSchema = z.object({
     z.object({
       id: z.string(), tipo: z.enum(['hogar', 'vida', 'proteccion', 'otro']), nombre: z.string(), aseguradora: z.string(),
       primaAnual: cents.min(0), bonifPct: z.number().min(0), elegido: z.boolean(), contratado: z.boolean(), nota: z.string(),
+      mesPago: z.number().int().min(0).max(12).optional(),
     }),
   ),
   gastosBase: z.object(
