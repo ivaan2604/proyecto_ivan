@@ -1,5 +1,6 @@
 import { openDB, type IDBPDatabase } from 'idb';
 import type { AppData } from '../lib/model';
+import { DEMO } from '../demo';
 
 /** Estado persistido en el dispositivo. Es la copia de trabajo: la app siempre lee/escribe aquí primero. */
 export interface LocalState {
@@ -18,7 +19,8 @@ export interface Snapshot {
   data: AppData;
 }
 
-const DB_NAME = 'piso-castellon';
+// La demo guarda en otra base de datos: aunque se abra en el mismo navegador, no se mezcla con la app real
+const DB_NAME = DEMO ? 'piso-demo' : 'piso-castellon';
 const MAX_SNAPSHOTS = 40;
 let dbp: Promise<IDBPDatabase> | null = null;
 

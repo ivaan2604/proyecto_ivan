@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { DEMO } from '../demo';
 import { buildBackup, downloadJson } from '../lib/backup';
 import { mesesOrdenados, totalesGastos } from '../lib/derive';
 import { fmtDateTime, fmtEur } from '../lib/format';
@@ -96,6 +97,14 @@ function resumen(d: AppData) {
 /** Franja fija mientras se está probando un supuesto. */
 export function SandboxBar() {
   const s = useEngine();
+  if (DEMO && !s.sandbox)
+    return (
+      <div className="sandbox-bar" role="status">
+        <span>
+          <b>Versión de demostración.</b> Todos los datos son ficticios: toca y cambia lo que quieras, solo se guarda en este navegador.
+        </span>
+      </div>
+    );
   if (!s.sandbox) return null;
   return (
     <div className="sandbox-bar" role="status">

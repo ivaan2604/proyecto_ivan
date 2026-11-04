@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { DEMO, demoData } from '../demo';
 import { backupFileName, buildBackup, downloadJson, parseBackup } from '../lib/backup';
 import { BACKUP_DIAS } from '../lib/derive';
 import { daysBetween, fmtDateTime, todayISO } from '../lib/format';
@@ -156,7 +157,7 @@ export function Copia({ theme, setTheme }: { theme: Theme; setTheme: (t: Theme) 
       typeToConfirm: 'BORRAR',
     });
     if (!paso2) return;
-    await engine.replaceAll(emptyData(), 'Restablecer todo');
+    await engine.replaceAll(DEMO ? demoData() : emptyData(), 'Restablecer todo');
     toast('Datos restablecidos.');
   };
 
