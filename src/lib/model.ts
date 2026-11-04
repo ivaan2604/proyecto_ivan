@@ -120,6 +120,8 @@ export interface Seguro {
   elegido: boolean;
   contratado: boolean;
   nota: string;
+  /** Mes (1–12) en que se cobra el recibo anual entero; 0 = se reparte cada mes (prorrateo) */
+  mesPago?: number;
 }
 
 export interface Nota {

@@ -10,6 +10,8 @@ import { DateInput, Field, MoneyInput, NumberInput, Segmented, TextArea, TextInp
 import { go } from '../router';
 import { PageHead } from '../ui/layout';
 
+const MESES_PAGO = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
 type Sec = keyof Pick<AppData, 'piso' | 'hitos' | 'gastos' | 'hipoteca' | 'familiar' | 'recurrentes' | 'ahorros'>;
 
 /** Setter tipado para un campo de una subsección */
@@ -27,7 +29,7 @@ export function Compra() {
   const costeHip = costesPrestamos(d)[0];
   const firma = diaFirma(d);
   const reformaTotal = d.reforma.partidas.length ? totalesReforma(d).previsto : d.gastos.reforma;
-  const setSeguro = (id: string, patch: { nombre?: string; primaAnual?: number }) =>
+  const setSeguro = (id: string, patch: { nombre?: string; primaAnual?: number; mesPago?: number }) =>
     update((x) => void Object.assign(x.seguros.find((s) => s.id === id)!, patch));
   const quitarSeguro = (id: string) => update((x) => void (x.seguros = x.seguros.filter((s) => s.id !== id)));
   const addSeguro = () =>
@@ -311,7 +313,22 @@ export function Compra() {
                   </button>
                 </span>
                 <MoneyInput value={x.primaAnual} onChange={(v) => setSeguro(x.id, { primaAnual: v })} ariaLabel={`${x.nombre}: coste anual`} />
-                <small className="hint">{fmtEur(Math.round(x.primaAnual / 12))}/mes</small>
+                <select
+                  className="select input"
+                  value={x.mesPago ?? 0}
+                  onChange={(e) => setSeguro(x.id, { mesPago: Number(e.target.value) })}
+                  aria-label={`${x.nombre}: cómo se paga`}
+                >
+                  <option value={0}>Cada mes (prorrateado)</option>
+                  {MESES_PAGO.map((m, i) => (
+                    <option key={m} value={i + 1}>Recibo anual en {m}</option>
+                  ))}
+                </select>
+                <small className="hint">
+                  {x.mesPago
+                    ? `${fmtEur(x.primaAnual)} de una vez en ${MESES_PAGO[x.mesPago - 1]}; no sale cada mes`
+                    : `${fmtEur(Math.round(x.primaAnual / 12))}/mes`}
+                </small>
               </div>
             ))}
             <div className="field">

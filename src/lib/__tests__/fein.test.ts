@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  segurosAnuales,
   aportacion, avisos, bolsilloReal, bonificacionHipoteca, calendarioDe, costesPrestamos, cuotaFamiliarMes, cuotaHipotecaMes,
   diaFirma, fasesResultado, fijosMensuales, interesesHipotecaAnio, irpfAlquiler, mesPrevision, patrimonio, previsionMensual,
   recuperacionPrevista, simularAmortizacion, sinReforma, totalesGastos,
@@ -89,6 +90,20 @@ describe('seguros en los gastos fijos', () => {
   it('el mes nuevo lleva una línea de prorrateo por seguro elegido', () => {
     const m = mesPrevision(conFein(), '2027-03');
     expect(m.gastos.map((l) => l.concepto)).toEqual(expect.arrayContaining(['Mi Hogar Esencial (prorrateo)', 'Protección Familiar Plus (prorrateo)']));
+  });
+  it('un seguro con recibo anual solo sale entero en su mes de pago', () => {
+    const d = conFein();
+    const hogar = d.seguros.find((x) => x.nombre === 'Mi Hogar Esencial')!;
+    hogar.mesPago = 11;
+    const conceptos = (k: string) => mesPrevision(d, k).gastos.map((l) => l.concepto);
+    expect(conceptos('2027-03')).not.toContain('Mi Hogar Esencial (prorrateo)');
+    expect(conceptos('2027-03')).not.toContain('Mi Hogar Esencial (recibo anual)');
+    const nov = mesPrevision(d, '2027-11').gastos.find((l) => l.concepto === 'Mi Hogar Esencial (recibo anual)');
+    expect(nov?.importe).toBe(hogar.primaAnual);
+    // Los demás prorrateos siguen sumando lo mismo, sin la parte del seguro anual
+    const r = d.recurrentes;
+    const prorr = mesPrevision(d, '2027-03').gastos.filter((l) => l.concepto.endsWith('(prorrateo)'));
+    expect(prorr.reduce((a, l) => a + l.importe, 0)).toBe(Math.round((r.edificioAnual + r.ibiAnual + segurosAnuales(d) - hogar.primaAnual) / 12));
   });
 });
 
