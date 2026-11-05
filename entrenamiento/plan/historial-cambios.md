@@ -64,3 +64,4 @@ Se añade una norma: **registrar el 100 % de las sesiones** en Hevy.
 - Miércoles 4: vuelta al gimnasio con pecho, hombro y tríceps (último empuje: 22-oct).
 - Pendiente de confirmar si hubo sesión el 30–31 oct y si hay partido el domingo 8.
 - Partido: sábado 7-nov a las 17:30. Plan: jueves 5 pierna (moderada, RPE 7–8, sin subir el rumano), viernes 6 espalda y bíceps, domingo descanso.
+- 05-nov: el viernes no podrá entrenar → jueves 5 sesión combinada pierna moderada + espalda (~60 min). Partido sábado 17:30.
