@@ -24,7 +24,8 @@
 
 ## Otras actividades y recuperación
 - Fútbol: liga local, partido los domingos por la tarde, ~60 min de defensa. Sin entrenamientos de equipo. **La liga empieza el domingo 18-oct-2026** (el 11-oct no hay partido).
-- Sueño: ~7 h entre semana. Estrés bajo por ahora.
+- Sueño: ~7 h entre semana. Estrés bajo al inicio (oct-2026).
+- 05-nov-2026: semana con poca motivación. Lo atribuye a pasar casi todo el día sentado (teletrabajo de 8 a 15–17 h + estudio de oposiciones por la tarde). Pautas: pausas activas, paseo diario al aire libre y sesiones flexibles.
 - Pasos diarios: ~7.000 los días de oficina; **~3.000 los días de teletrabajo** (3 días/semana). Objetivo: 7.000+ también en casa.
 
 ## Lesiones y limitaciones
