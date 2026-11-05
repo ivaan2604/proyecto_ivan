@@ -33,7 +33,8 @@
 - **Síndrome de dolor femoropatelar en la rodilla derecha** (confirmado por resonancia). Le pautaron ejercicio. Le molesta un poco después de los partidos.
 - No sabe qué ejercicios le molestan → vigilar en cada sesión de pierna. Semáforo de dolor 0–3 / 4–5 / >5.
 - Evolución: 07-oct pierna 0–3/10 (se pasó enseguida). 17-oct partido completo de fútbol 7 **sin dolor después** 🟢.
-- Sin otras lesiones.
+- Sin otras lesiones al inicio.
+- **05-nov-2026: dolor de espalda** en la zona media (columna dorsal, centro) que baja hacia la lumbar. Lo relaciona con estar muchas horas sentado. Duele incluso tumbado en la cama; se le cargó la lumbar subiendo cuestas en la ruta del 2-nov. Recomendado valoración por fisio/médico. Mientras tanto: sin rumano ni ejercicios que provoquen dolor; remos con apoyo de pecho; movilidad suave y pausas activas.
 
 ## Equipamiento
 - Gimnasio completo: rack, poleas y máquinas de todo tipo. Medio lleno a las 16:30, pero se entrena bien.
