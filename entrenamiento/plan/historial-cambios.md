@@ -65,3 +65,6 @@ Se añade una norma: **registrar el 100 % de las sesiones** en Hevy.
 - Pendiente de confirmar si hubo sesión el 30–31 oct y si hay partido el domingo 8.
 - Partido: sábado 7-nov a las 17:30. Plan: jueves 5 pierna (moderada, RPE 7–8, sin subir el rumano), viernes 6 espalda y bíceps, domingo descanso.
 - 05-nov: el viernes no podrá entrenar → jueves 5 sesión combinada pierna moderada + espalda (~60 min). Partido sábado 17:30.
+
+## 2026-11-08 — Semana 46 (9 al 15 de nov)
+- Plan: lunes 9 espalda y bíceps (remos con apoyo de pecho, face pull por el dolor dorsal), miércoles 11 pierna, jueves 12 pecho/hombro/tríceps. Sábado 14 recoge las llaves del piso. Pendiente: si hay partido el fin de semana.
