@@ -35,6 +35,7 @@
 - Evolución: 07-oct pierna 0–3/10 (se pasó enseguida). 17-oct partido completo de fútbol 7 **sin dolor después** 🟢.
 - Sin otras lesiones al inicio.
 - **05-nov-2026: dolor de espalda** en la zona media (columna dorsal, centro) que baja hacia la lumbar. Lo relaciona con estar muchas horas sentado. Duele incluso tumbado en la cama; se le cargó la lumbar subiendo cuestas en la ruta del 2-nov. Detalle (05-nov): empezó hacia el 28-oct; dolor 4–5/10, sobre todo al final de la jornada de trabajo; ahora solo en la zona dorsal media (la lumbar ya no duele). Sin dolor irradiado a piernas, sin hormigueos, sin problemas de esfínteres ni dolor torácico. Plan: pausas activas, movilidad dorsal diaria, remos con apoyo de pecho; rumano solo si no hay dolor lumbar. Fisio si no mejora en 2–3 semanas o empeora.
+- 09-nov: sigue doliendo al estar sentado (~2 semanas). En el entreno de espalda del 09-nov no lo mencionó como problema. Recomendado pedir cita con fisio ya.
 
 ## Equipamiento
 - Gimnasio completo: rack, poleas y máquinas de todo tipo. Medio lleno a las 16:30, pero se entrena bien.
