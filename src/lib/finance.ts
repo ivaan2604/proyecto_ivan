@@ -55,7 +55,7 @@ export interface TramoInicial {
  * anticipada resta directamente del capital pendiente (se acorta el plazo). Al llegar
  * el capital a 0, las cuotas siguientes quedan a 0.
  */
-export function calendario(principal: number, tinPct: number, cuotaPactada: number, cuotas: Cuota[], tramo?: TramoInicial): Calendario {
+export function calendario(principal: number, tinPct: number, cuotaPactada: number, cuotas: Cuota[], tramo?: TramoInicial, carencia = 0): Calendario {
   let pend = Math.max(0, principal);
   const filas: FilaCuota[] = [];
   let totalIntereses = 0;
@@ -64,20 +64,24 @@ export function calendario(principal: number, tinPct: number, cuotaPactada: numb
   let totalPagado = 0;
 
   let cuotaB = cuotaPactada;
-  cuotas.forEach((c, i) => {
-    const enA = !!tramo && i < tramo.meses;
+  // Con recibo de carencia, el primero es solo de intereses y las cuotas con capital empiezan en el segundo
+  const off = carencia > 0 ? 1 : 0;
+  cuotas.forEach((c, idx) => {
+    const enCarencia = idx < off;
+    const i = idx - off;
+    const enA = !!tramo && (enCarencia || i < tramo.meses);
     // Al empezar el segundo tramo, la cuota se recalcula con lo que quede (refleja las amortizaciones)
     if (tramo && i === tramo.meses) cuotaB = pmtMeses(pend, tinPct, tramo.plazoMeses - tramo.meses);
     const r = (enA ? tramo!.tinPct : tinPct) / 100 / 12;
-    const pactada = enA ? tramo!.cuota : cuotaB;
+    const pactada = enCarencia ? carencia : enA ? tramo!.cuota : cuotaB;
     if (pend <= 0) {
       filas.push({
-        n: i + 1, id: c.id, fecha: c.fecha, cuota: 0, interes: 0, capital: 0, anticipada: 0,
+        n: idx + 1, id: c.id, fecha: c.fecha, cuota: 0, interes: 0, capital: 0, anticipada: 0,
         pendiente: 0, cuotaAuto: 0, interesAuto: 0, liquidado: true,
       });
       return;
     }
-    const interesAuto = Math.round(pend * r);
+    const interesAuto = enCarencia ? carencia : Math.round(pend * r);
     const interes = Math.max(0, c.interes ?? interesAuto);
     const cuotaAuto = Math.min(pactada, pend + interes);
     const cuota = Math.max(0, c.cuota ?? cuotaAuto);
@@ -91,7 +95,7 @@ export function calendario(principal: number, tinPct: number, cuotaPactada: numb
     totalAnticipado += anticipada;
     totalPagado += cuota + anticipada;
     filas.push({
-      n: i + 1, id: c.id, fecha: c.fecha, cuota, interes, capital, anticipada, pendiente: pend,
+      n: idx + 1, id: c.id, fecha: c.fecha, cuota, interes, capital, anticipada, pendiente: pend,
       cuotaAuto, interesAuto, liquidado: false,
     });
   });

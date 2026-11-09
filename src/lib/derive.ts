@@ -222,6 +222,23 @@ export interface TramosHipoteca {
   tinB: number;
   cuotaB: number;
   bonif: number;
+  /**
+   * Primer recibo solo de intereses (céntimos): si la escritura no se firma un día 1, el banco cobra el
+   * mes siguiente los intereses de los días que quedan del mes de la firma y las cuotas empiezan después.
+   * 0 = sin ese recibo. `mesesA` y `n` cuentan solo las cuotas con capital.
+   */
+  carencia: number;
+  /** Días de intereses del primer recibo (0 sin carencia) */
+  diasCarencia: number;
+}
+
+/** Días de intereses del recibo de carencia: del día de la firma al fin de ese mes (0 si se firma un día 1). */
+export function diasCarenciaHipoteca(d: AppData): number {
+  const f = d.hitos.escrituraFecha;
+  if (!f) return 0;
+  const [y, m, dia] = f.split('-').map(Number);
+  if (!dia || dia <= 1) return 0;
+  return new Date(Date.UTC(y, m, 0)).getUTCDate() - dia;
 }
 
 /**
@@ -232,15 +249,20 @@ export interface TramosHipoteca {
 export function tramosHipoteca(d: AppData, bonif = bonificacionHipoteca(d).total): TramosHipoteca {
   const h = d.hipoteca;
   const n = Math.round(h.plazoAnios * 12);
-  const mesesA = Math.max(0, Math.min(n, Math.round(h.tramoAMeses)));
+  const diasCarencia = diasCarenciaHipoteca(d);
+  // El tramo inicial se cuenta desde el primer recibo: si ese es solo de intereses, gasta uno de sus meses
+  const mesesTramo = Math.max(0, Math.round(h.tramoAMeses));
+  const mesesA = Math.max(0, Math.min(n, mesesTramo - (diasCarencia && mesesTramo ? 1 : 0)));
   const tinB = Math.max(0, h.tinPct - bonif);
-  if (mesesA === 0) {
+  const tinPrimero = mesesTramo > 0 ? h.tramoATinPct : tinB;
+  const carencia = diasCarencia ? Math.round((h.importe * tinPrimero * diasCarencia) / 36500) : 0;
+  if (mesesTramo === 0) {
     const c = pmtMeses(h.importe, tinB, n);
-    return { n, mesesA, tinA: tinB, cuotaA: c, tinB, cuotaB: c, bonif };
+    return { n, mesesA: 0, tinA: tinB, cuotaA: c, tinB, cuotaB: c, bonif, carencia, diasCarencia };
   }
   const cuotaA = pmtMeses(h.importe, h.tramoATinPct, n);
   const saldo = saldoTras(h.importe, h.tramoATinPct, cuotaA, mesesA);
-  return { n, mesesA, tinA: h.tramoATinPct, cuotaA, tinB, cuotaB: pmtMeses(saldo, tinB, n - mesesA), bonif };
+  return { n, mesesA, tinA: h.tramoATinPct, cuotaA, tinB, cuotaB: pmtMeses(saldo, tinB, n - mesesA), bonif, carencia, diasCarencia };
 }
 
 /** Cuota principal de la hipoteca (la del tramo largo). */
@@ -253,7 +275,8 @@ export function cuotaHipotecaMes(d: AppData, key: string): number {
   const ini = inicioHipotecaMes(d);
   if (!ini || key < ini) return 0;
   const t = tramosHipoteca(d);
-  const i = mesesEntre(ini, key);
+  if (t.carencia && key === ini) return t.carencia;
+  const i = mesesEntre(inicioCuotasHipotecaMes(d)!, key);
   if (i >= t.n) return 0;
   return i < t.mesesA ? t.cuotaA : t.cuotaB;
 }
@@ -262,8 +285,9 @@ export function cuotaHipotecaMes(d: AppData, key: string): number {
 function tramoMes(d: AppData, key: string): 'A' | 'B' | null {
   const ini = inicioHipotecaMes(d);
   const t = tramosHipoteca(d);
-  if (!ini || key < ini || t.mesesA === 0) return null;
-  return mesesEntre(ini, key) < t.mesesA ? 'A' : 'B';
+  if (!ini || key < ini || d.hipoteca.tramoAMeses <= 0) return null;
+  if (t.carencia && key === ini) return 'A';
+  return mesesEntre(inicioCuotasHipotecaMes(d)!, key) < t.mesesA ? 'A' : 'B';
 }
 
 /** Cuota al préstamo familiar prevista en un mes: la pactada y, la última, solo lo que quede. */
@@ -354,7 +378,7 @@ export function calendarioDe(d: AppData, kind: LoanKind): Calendario {
   if (kind === 'hipoteca') {
     const t = tramosHipoteca(d);
     const tramo = t.mesesA > 0 ? { meses: t.mesesA, tinPct: t.tinA, cuota: t.cuotaA, plazoMeses: t.n } : undefined;
-    return calendario(d.hipoteca.importe, t.tinB, t.cuotaB, d.cuotas.hipoteca, tramo);
+    return calendario(d.hipoteca.importe, t.tinB, t.cuotaB, d.cuotas.hipoteca, tramo, t.carencia);
   }
   return calendario(d.familiar.importe, d.familiar.tinPct, d.familiar.cuota, d.cuotas.familiar);
 }
@@ -657,7 +681,7 @@ function costePrestamo(d: AppData, kind: LoanKind): CostePrestamo {
   } else if (kind === 'hipoteca') {
     const t = tramosHipoteca(d);
     meses = cuota > 0 ? t.n : null;
-    intereses = meses === null ? null : Math.max(0, t.cuotaA * t.mesesA + t.cuotaB * (t.n - t.mesesA) - p.importe);
+    intereses = meses === null ? null : Math.max(0, t.carencia + t.cuotaA * t.mesesA + t.cuotaB * (t.n - t.mesesA) - p.importe);
   } else {
     const sim = simular(p.importe, p.tinPct, cuota);
     meses = sim?.meses ?? null;
@@ -806,9 +830,15 @@ export function fijosMensuales(d: AppData): number {
   return Math.round((r.edificioAnual + r.ibiAnual + r.basuraAnual + segurosAnuales(d)) / 12) + r.mantenimientoMensual;
 }
 
-/** Mes de la primera cuota de la hipoteca: el siguiente a la escritura. null = sin escritura. */
+/** Mes del primer recibo de la hipoteca: el siguiente a la escritura. null = sin escritura. */
 export function inicioHipotecaMes(d: AppData): string | null {
   return d.hitos.escrituraFecha ? addMonths(d.hitos.escrituraFecha.slice(0, 7), 1) : null;
+}
+
+/** Mes de la primera cuota con capital: el del primer recibo o, si ese es solo de intereses, el siguiente. */
+export function inicioCuotasHipotecaMes(d: AppData): string | null {
+  const ini = inicioHipotecaMes(d);
+  return ini && diasCarenciaHipoteca(d) ? addMonths(ini, 1) : ini;
 }
 
 /** Mes de la primera cuota al préstamo familiar: la fecha indicada o, si no, el siguiente a la escritura. */
@@ -1066,8 +1096,10 @@ export function bolsilloReal(d: AppData) {
 /** Capital de la cuota de la hipoteca en un mes (YYYY-MM) del cuadro previsto, sin amortizaciones. */
 export function capitalHipotecaMes(d: AppData, key: string | null): number {
   const t = tramosHipoteca(d);
-  const iniHip = inicioHipotecaMes(d);
+  const iniHip = inicioCuotasHipotecaMes(d);
   if (!t.cuotaB) return 0;
+  // El recibo de carencia es solo de intereses: no devuelve capital
+  if (t.carencia && key && key === inicioHipotecaMes(d)) return 0;
   const k = key && iniHip && key > iniHip ? mesesEntre(iniHip, key) : 0;
   const enA = k < t.mesesA;
   const saldoA = saldoTras(d.hipoteca.importe, t.tinA, t.cuotaA, Math.min(k, t.mesesA));
@@ -1101,11 +1133,18 @@ export function saldoFamiliarTras(d: AppData, k: number): number {
   return saldoTras(f.importe, f.tinPct, f.cuota, k);
 }
 
-/** Intereses de la hipoteca en 12 cuotas seguidas a partir de la cuota nº `desde + 1`. */
+/** Intereses de la hipoteca en 12 recibos seguidos a partir del nº `desde + 1` (el de carencia cuenta como el primero). */
 export function interesesHipotecaAnio(d: AppData, desde: number): number {
   const t = tramosHipoteca(d);
+  const off = t.carencia ? 1 : 0;
   let total = 0;
-  for (let i = desde; i < desde + 12 && i < t.n; i++) {
+  for (let j = desde; j < desde + 12; j++) {
+    if (j < off) {
+      total += t.carencia;
+      continue;
+    }
+    const i = j - off;
+    if (i >= t.n) break;
     const tin = i < t.mesesA ? t.tinA : t.tinB;
     total += Math.round(saldoHipotecaTras(d, i) * (tin / 100 / 12));
   }
@@ -1127,7 +1166,7 @@ export interface PuntoPatrimonio {
 export function patrimonio(d: AppData) {
   const valor = d.piso.valor || d.piso.precio;
   const t = tramosHipoteca(d);
-  const ini = inicioHipotecaMes(d);
+  const ini = inicioCuotasHipotecaMes(d);
   const famMeses = d.familiar.importe > 0 && d.familiar.cuota > 0 ? mesesRestantes(d.familiar.importe, d.familiar.tinPct, d.familiar.cuota) : null;
   const punto = (titulo: string, k: number): PuntoPatrimonio => {
     const deuda = saldoHipotecaTras(d, k) + saldoFamiliarTras(d, k);
@@ -1235,7 +1274,7 @@ export function simularAmortizacion(d: AppData, o: OpcionesAmortizacion): Result
   let saldo = d.hipoteca.importe;
   let cuota = t.cuotaA;
   let plazo = t.n;
-  let intereses = 0;
+  let intereses = t.carencia;
   let amortizado = 0;
   let i = 0;
   for (; saldo > 0 && i < 600; i++) {
@@ -1260,7 +1299,7 @@ export function simularAmortizacion(d: AppData, o: OpcionesAmortizacion): Result
       }
     }
   }
-  const ini = inicioHipotecaMes(d);
+  const ini = inicioCuotasHipotecaMes(d);
   return {
     meses: i, intereses, amortizado, comision: Math.round((amortizado * comisionPct) / 100), cuotaFinal: cuota,
     fin: ini ? addMonths(ini, i - 1) : null,

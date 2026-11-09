@@ -71,9 +71,14 @@ export function Prestamo({ kind }: { kind: LoanKind }) {
         badge={kind === 'hipoteca' && d.hipoteca.provisional ? 'Provisional · pendiente de FEIN' : undefined}
         subtitle={
           <>
+            {kind === 'hipoteca' && t.carencia > 0 && (
+              <>
+                Primer recibo de <b className="num">{fmtEur(t.carencia)}</b>, solo intereses de {t.diasCarencia} días;{' '}
+              </>
+            )}
             {kind === 'hipoteca' && t.mesesA > 0 ? (
               <>
-                {t.mesesA} primeras cuotas de <b className="num">{fmtEur(t.cuotaA)}</b> al {pctTxt(t.tinA)}; después{' '}
+                {t.mesesA} {t.carencia > 0 ? 'cuotas' : 'primeras cuotas'} de <b className="num">{fmtEur(t.cuotaA)}</b> al {pctTxt(t.tinA)}; después{' '}
                 <b className="num">{fmtEur(pactada)}</b> al {pctTxt(t.tinB)}
                 {t.bonif > 0 ? ` (con −${pctTxt(t.bonif)} de rebaja)` : ''}
               </>

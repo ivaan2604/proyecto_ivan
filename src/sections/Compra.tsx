@@ -154,9 +154,15 @@ export function Compra() {
                 <NumberInput value={d.hipoteca.tinPct} onChange={set('hipoteca', 'tinPct')} suffix="%" />
               </Field>
               {recibido(d.hipoteca.recibida, set('hipoteca', 'recibida'), 'el banco lo entregue en la escritura')}
+              {t.carencia > 0 && (
+                <div className="field">
+                  <span>Primer recibo, solo intereses</span>
+                  <div className="computed"><span>{t.diasCarencia} días tras la firma</span><b>{fmtEur(t.carencia)}</b></div>
+                </div>
+              )}
               {t.mesesA > 0 && (
                 <div className="field">
-                  <span>Cuota los {t.mesesA} primeros meses</span>
+                  <span>{t.carencia > 0 ? `Cuota las ${t.mesesA} siguientes` : `Cuota los ${t.mesesA} primeros meses`}</span>
                   <div className="computed"><span>al {pct(t.tinA)}</span><b>{fmtEur(t.cuotaA)}</b></div>
                 </div>
               )}
