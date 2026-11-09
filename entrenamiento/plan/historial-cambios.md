@@ -68,3 +68,4 @@ Se añade una norma: **registrar el 100 % de las sesiones** en Hevy.
 
 ## 2026-11-08 — Semana 46 (9 al 15 de nov)
 - Plan: lunes 9 espalda y bíceps (remos con apoyo de pecho, face pull por el dolor dorsal), miércoles 11 pierna, jueves 12 pecho/hombro/tríceps. Sábado 14 recoge las llaves del piso. Pendiente: si hay partido el fin de semana.
+- Partido domingo 15-nov a las 19:30. Dolor dorsal solo tras rato sentado; no en el gimnasio. Semana 46: miércoles 11 pierna, jueves 12 empuje, viernes 13 opcional.
