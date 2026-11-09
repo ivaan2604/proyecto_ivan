@@ -47,7 +47,7 @@ describe('cifras de control (mantenimiento a 0 €)', () => {
   it('fin del préstamo familiar: 30 meses después de la escritura', () => {
     const d = real();
     expect(finPrestamoFamiliar(d)).toBeNull(); // sin fecha de escritura
-    d.hitos.escrituraFecha = '2026-11-20';
+    d.hitos.escrituraFecha = '2026-11-01';
     expect(finPrestamoFamiliar(d)).toBe('2029-05');
     expect(fasesResultado(d)[2].desde).toBe('2029-06');
   });
@@ -104,7 +104,7 @@ describe('comisión por amortización anticipada', () => {
 /** Con fechas de ejemplo: escritura el 20/11/2026 y alquiler desde el 01/03/2027. */
 function conFechas() {
   const d = real();
-  d.hitos.escrituraFecha = '2026-11-20';
+  d.hitos.escrituraFecha = '2026-11-01';
   d.recurrentes.inicioAlquiler = '2027-03-01';
   return d;
 }

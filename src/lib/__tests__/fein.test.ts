@@ -18,7 +18,7 @@ function conFein() {
   return validateAppData({
     schemaVersion: 1,
     piso: { itpPct: 9, precio: 7500000, tipoVivienda: 'Vivienda de 1965', comunidadAutonoma: 'Comunidad Valenciana' },
-    hitos: { arras: 450000, senal: 300000, arrasFecha: '2026-09-25', senalFecha: '2026-09-08', contratoFecha: '2026-09-14', actaFecha: '', escrituraFecha: '2026-11-20' },
+    hitos: { arras: 450000, senal: 300000, arrasFecha: '2026-09-25', senalFecha: '2026-09-08', contratoFecha: '2026-09-14', actaFecha: '', escrituraFecha: '2026-11-01' },
     gastos: { notaria: 150045, reforma: 1000000, comision: 400000, gestoria: 42955, registro: 140090, tasacion: 27225, tasacionFecha: '2026-09-28' },
     familiar: { cuota: 80000, notas: '', tinPct: 0, importe: 1487900, recibido: false, primeraCuota: '', paraReforma: 0 },
     hipoteca: {
@@ -74,6 +74,45 @@ describe('hipoteca de la FEIN: 6 meses al 3,29 % y luego 4,29 % − rebaja', () 
     expect(cuotaHipotecaMes(d, '2026-12')).toBe(26331);
     expect(cuotaHipotecaMes(d, '2027-05')).toBe(26331);
     expect(cuotaHipotecaMes(d, '2027-06')).toBe(27752);
+  });
+});
+
+describe('firma el 3 de noviembre: el primer recibo es solo de intereses', () => {
+  const conFirma3 = () => {
+    const d = conFein();
+    d.hitos.escrituraFecha = '2026-11-03';
+    return d;
+  };
+  it('diciembre: 130,93 € de intereses de 27 días; enero a mayo 263,31 €', () => {
+    const d = conFirma3();
+    const t = tramosHipoteca(d);
+    expect(t.diasCarencia).toBe(27);
+    expect(t.carencia).toBe(13093);
+    expect(t.cuotaA).toBe(26331);
+    expect(t.mesesA).toBe(5);
+    expect(cuotaHipotecaMes(d, '2026-11')).toBe(0);
+    expect(cuotaHipotecaMes(d, '2026-12')).toBe(13093);
+    expect(cuotaHipotecaMes(d, '2027-01')).toBe(26331);
+    expect(cuotaHipotecaMes(d, '2027-05')).toBe(26331);
+    expect(cuotaHipotecaMes(d, '2027-06')).toBe(t.cuotaB);
+    // 300 cuotas con capital: la última en diciembre de 2051
+    expect(cuotaHipotecaMes(d, '2051-12')).toBe(t.cuotaB);
+    expect(cuotaHipotecaMes(d, '2052-01')).toBe(0);
+  });
+  it('en el cuadro, la primera fila es solo intereses y la segunda reparte 115,81 € de capital', () => {
+    const d = conFirma3();
+    d.cuotas.hipoteca = Array.from({ length: 3 }, (_, i) => ({ id: String(i), fecha: '', cuota: null, interes: null, anticipada: 0 }));
+    const f = calendarioDe(d, 'hipoteca').filas;
+    expect([f[0].cuota, f[0].interes, f[0].capital, f[0].pendiente]).toEqual([13093, 13093, 0, 5379900]);
+    expect([f[1].cuota, f[1].interes, f[1].capital]).toEqual([26331, 14750, 11581]);
+  });
+  it('el mes de diciembre propone la cuota de 130,93 €', () => {
+    const linea = mesPrevision(conFirma3(), '2026-12').gastos.find((l) => l.vinculo === 'hipoteca');
+    expect(linea?.importe).toBe(13093);
+  });
+  it('firmando un día 1 no hay recibo de solo intereses', () => {
+    const t = tramosHipoteca(conFein());
+    expect([t.carencia, t.diasCarencia, t.mesesA]).toEqual([0, 0, 6]);
   });
 });
 
@@ -165,7 +204,9 @@ describe('etapas y recuperación (sin reforma)', () => {
 
 describe('avisos de la FEIN', () => {
   it('la FEIN caduca antes de la firma prevista', () => {
-    expect(avisos(conFein()).some((a) => a.id === 'fein-caduca')).toBe(true);
+    const d = conFein();
+    d.hitos.escrituraFecha = '2026-11-20';
+    expect(avisos(d).some((a) => a.id === 'fein-caduca')).toBe(true);
   });
   it('no se puede firmar dentro de los 10 días de reflexión', () => {
     const d = conFein();
