@@ -48,12 +48,12 @@ export default {
     boton: "Empezar",
 
     // La "contraseña": solo es un juego, no es seguridad real.
-    pregunta: "Para entrar: ¿qué día empezó todo?",
+    pregunta: "Para entrar: ¿qué día empezó lo nuestro?",
     // "fecha" muestra un selector de fecha · "texto" muestra un campo libre
     tipo: "fecha",
     // Respuestas válidas. Para tipo "fecha" usa el formato AAAA-MM-DD.
     // Para tipo "texto" no importan mayúsculas, tildes ni espacios.
-    respuestas: ["2021-03-12"],
+    respuestas: ["2025-08-11"], // 11 de agosto de 2025: nuestro aniversario
 
     // Se muestran por orden (y luego en bucle) cada vez que falla
     mensajesFallo: [
@@ -63,7 +63,7 @@ export default {
       "Te doy otra oportunidad porque te quiero.",
     ],
     fallosParaPista: 2, // tras estos fallos aparece la pista
-    pista: "Pista: fue un sábado de marzo y llovía muchísimo ☔",
+    pista: "Pista: es nuestro aniversario 💛 Un lunes de agosto, en pleno verano ☀️",
   },
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -143,8 +143,8 @@ export default {
       },
       recompensa: {
         foto: "ejemplo-1.jpg",
-        fecha: "Marzo 2021",
-        frase: "El día que empezó todo (y llovía a mares).",
+        fecha: "11 de agosto de 2025",
+        frase: "El día que empezó todo.",
         pista: "Tu regalo no se puede envolver.",
         letras: "J",
       },
