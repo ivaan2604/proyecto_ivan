@@ -104,11 +104,34 @@ Cada `git push` vuelve a publicar automáticamente.
 
 ## 4. Códigos QR y tarjetas imprimibles
 
+> ⚠️ **Un QR solo funciona si la web a la que apunta existe.** Mientras `urlPublica` sea la de ejemplo, los comandos se niegan a generar nada y te explican qué hacer.
+
+**Para probar en tu móvil antes de publicar** (con `npm run dev` abierto y el móvil en la misma wifi):
+
+```bash
+npm run qr -- --local
+```
+```bash
+npm run tarjetas -- --local
+```
+
+Estos QR apuntan a tu ordenador, así que solo sirven en casa. Las tarjetas de prueba llevan la marca «PRUEBA»: no las imprimas para regalar.
+
+**Ya publicada** (con la dirección real en `urlPublica`):
+
 ```bash
 npm run qr                 # QR en ./qr (PNG y SVG): principal + uno por nivel
 npm run tarjetas           # tarjeta principal «Escanéame 🎁»
 npm run tarjetas -- --niveles   # + una tarjeta por nivel (búsqueda del tesoro)
 ```
+
+**Textos de la tarjeta:** se cambian en `contenido/config.js`, en el apartado `tarjeta`:
+- `encabezado`: la línea de arriba.
+- `titulo`: la letra grande.
+- `texto`: el párrafo bajo el QR; `\n` hace un salto de línea.
+- `pie`: la línea final.
+
+Si dejas alguno vacío (`""`), esa línea no aparece.
 
 - **`npm run qr`** comprueba cada QR con un lector automático a varios tamaños y avisa si alguno no se leyera. La URL sale de `urlPublica`; también puedes pasarla a mano con `npm run qr -- --url https://…`.
 - **`npm run tarjetas`** genera en `./tarjetas/`:

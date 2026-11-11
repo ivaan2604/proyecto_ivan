@@ -1,6 +1,7 @@
 // Genera los códigos QR (SVG + PNG) con la URL publicada.
 //   npm run qr                                   → usa `urlPublica` de contenido/config.js
 //   npm run qr -- --url https://mi-web.vercel.app  → usa otra URL
+//   npm run qr -- --local                          → apunta a tu ordenador (probar con `npm run dev`)
 // Salida en ./qr/: principal.svg/.png y nivel-N.svg/.png (uno por nivel).
 // Cada PNG se vuelve a leer con un lector de QR para comprobar que funciona.
 import sharp from "sharp";
@@ -10,17 +11,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import config from "../contenido/config.js";
 import { svgQR, urlsDelJuego } from "./qr-svg.mjs";
+import { resolverUrl } from "./url-base.mjs";
 
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const salida = path.join(raiz, "qr");
-const i = process.argv.indexOf("--url");
-const base = i > 0 ? process.argv[i + 1] : config.urlPublica;
-
-if (!/^https?:\/\//.test(base || "")) {
-  console.error("✗ Falta la URL. Ponla en `urlPublica` (contenido/config.js) o usa: npm run qr -- --url https://…");
-  process.exit(1);
-}
-if (/ejemplo/.test(base)) console.warn(`⚠ La URL parece de ejemplo (${base}). Cámbiala por la real antes de imprimir.\n`);
+const { base } = resolverUrl(config);
 
 await mkdir(salida, { recursive: true });
 let mal = 0;

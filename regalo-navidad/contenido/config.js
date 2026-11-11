@@ -329,6 +329,18 @@ export default {
   },
 
   // ─────────────────────────────────────────────────────────────────────────
+  // TARJETA IMPRESA (la que va en el sobre con el QR) → `npm run tarjetas`
+  // Puedes dejar cualquier línea vacía ("") para que no aparezca.
+  // Las tarjetas de cada nivel usan el título del nivel y su `textoTarjeta`.
+  // ─────────────────────────────────────────────────────────────────────────
+  tarjeta: {
+    encabezado: "Para Lucía", // línea pequeña de arriba, en mayúsculas doradas
+    titulo: "Escanéame 🎁", // letra grande manuscrita en rojo
+    texto: "Abre la cámara del móvil y apunta aquí.\nTu regalo te está esperando.", // \n = salto de línea
+    pie: "Feliz Navidad · 2026", // línea final en cursiva
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
   // CARTA DE CIERRE
   // ─────────────────────────────────────────────────────────────────────────
   cierre: {

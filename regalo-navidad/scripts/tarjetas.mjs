@@ -2,6 +2,8 @@
 //   npm run tarjetas                        → solo la tarjeta principal
 //   npm run tarjetas -- --niveles           → también una tarjeta por nivel (búsqueda del tesoro)
 //   npm run tarjetas -- --url https://…     → otra URL distinta a `urlPublica`
+//   npm run tarjetas -- --local             → de prueba, apuntando a tu ordenador
+// Los textos de la tarjeta se cambian en contenido/config.js → `tarjeta`.
 // Genera en ./tarjetas/:
 //   tarjetas.html     → ábrelo en el navegador para verlas (o imprimir desde ahí)
 //   tarjetas-a6.pdf   → una tarjeta A6 (10,5 × 14,8 cm) por página
@@ -14,16 +16,27 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import config from "../contenido/config.js";
 import { svgQR, urlsDelJuego } from "./qr-svg.mjs";
+import { resolverUrl } from "./url-base.mjs";
+import sharp from "sharp";
+import jsQR from "jsqr";
 
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const salida = path.join(raiz, "tarjetas");
 const args = process.argv.slice(2);
 const conNiveles = args.includes("--niveles");
-const iUrl = args.indexOf("--url");
-const base = iUrl >= 0 ? args[iUrl + 1] : config.urlPublica;
+const { base, local } = resolverUrl(config, args);
 
 const fuente = (rel) => pathToFileURL(path.join(raiz, "node_modules", rel)).href;
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+/** Texto con saltos de línea (\n → <br>); si está vacío no se pinta la línea */
+const linea = (etiqueta, clase, texto) => (texto ? `<${etiqueta} class="${clase}">${esc(texto).replace(/\n/g, "<br/>")}</${etiqueta}>` : "");
+const t = {
+  encabezado: `Para ${config.ella}`,
+  titulo: "Escanéame 🎁",
+  texto: "Abre la cámara del móvil y apunta aquí.\nTu regalo te está esperando.",
+  pie: `Feliz Navidad · ${new Date().getFullYear()}`,
+  ...(config.tarjeta || {}),
+};
 
 const urls = urlsDelJuego(config, base).filter((u) => conNiveles || u.id === "principal");
 
@@ -32,11 +45,12 @@ function tarjeta(u) {
     return `<section class="tarjeta">
       <div class="marco">
         <p class="estrella">✦</p>
-        <p class="para">Para ${esc(config.ella)}</p>
-        <h1>Escanéame <span>🎁</span></h1>
+        ${linea("p", "para", t.encabezado)}
+        ${linea("h1", "titulo", t.titulo).replace(/(\p{Extended_Pictographic}️?)/gu, '<span class="emoji">$1</span>')}
         <div class="qr">${svgQR(u.url)}</div>
-        <p class="nota">Abre la cámara del móvil y apunta aquí.<br/>Tu regalo te está esperando.</p>
-        <p class="pie">Feliz Navidad · ${new Date().getFullYear()}</p>
+        ${linea("p", "nota", t.texto)}
+        ${linea("p", "pie", t.pie)}
+        ${local ? '<p class="prueba">PRUEBA · solo funciona en casa</p>' : ""}
       </div>
     </section>`;
   }
@@ -49,6 +63,7 @@ function tarjeta(u) {
       <div class="qr">${svgQR(u.url)}</div>
       <p class="nota">${esc(nv.textoTarjeta || "¡Has encontrado una prueba! Escanéala para jugar.")}</p>
       <p class="pie">Pista ${u.indice + 1} de ${config.niveles.length}</p>
+      ${local ? '<p class="prueba">PRUEBA · solo funciona en casa</p>' : ""}
     </div>
   </section>`;
 }
@@ -70,7 +85,8 @@ body { font-family: Figtree, sans-serif; color: #22201c; background: #ddd; }
 .estrella { color: #c8a15a; font-size: 5mm; line-height: 1; }
 .para { font-size: 3.2mm; letter-spacing: .5mm; text-transform: uppercase; color: #9b7634; font-weight: 700; }
 h1 { font-family: Caveat, cursive; font-weight: 500; font-size: 13mm; line-height: 1; color: #a3263b; }
-h1 span { font-size: 9mm; }
+h1 .emoji { font-size: 9mm; }
+.prueba { position: absolute; top: 3mm; right: 3mm; font-size: 2.6mm; font-weight: 700; color: #fff; background: #a3263b; padding: .6mm 2mm; border-radius: 2mm; }
 h2 { font-family: Fraunces, serif; font-weight: 600; font-size: 6.5mm; line-height: 1.1; color: #10291f; }
 .qr { width: 58mm; height: 58mm; padding: 2mm; border-radius: 4mm; background: #f5eee1; box-shadow: 0 0 0 .3mm rgba(200,161,90,.6); }
 .qr svg { width: 100%; height: 100%; display: block; }
@@ -105,7 +121,6 @@ const htmlA4 = path.join(salida, "tarjetas-a4.html");
 await writeFile(htmlA6, docA6);
 await writeFile(htmlA4, docA4);
 console.log(`✓ ${urls.length} tarjeta(s) → tarjetas/tarjetas.html y tarjetas/tarjetas-a4.html`);
-if (/ejemplo/.test(base)) console.warn(`⚠ La URL parece de ejemplo (${base}). Cámbiala por la real antes de imprimir.`);
 
 let chromium;
 try {
@@ -126,4 +141,21 @@ for (const [html, pdf] of [
   await pagina.pdf({ path: path.join(salida, pdf), preferCSSPageSize: true, printBackground: true });
   console.log(`✓ tarjetas/${pdf}`);
 }
+
+// Comprobación final: leer el QR de cada tarjeta tal y como queda impresa
+await pagina.setViewportSize({ width: 600, height: 900 });
+await pagina.goto(pathToFileURL(htmlA6).href);
+await pagina.evaluate(() => document.fonts.ready);
+const qrs = await pagina.$$(".qr");
+let mal = 0;
+for (const [k, el] of qrs.entries()) {
+  const { data, info } = await sharp(await el.screenshot()).flatten({ background: "#ffffff" }).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const ok = jsQR(new Uint8ClampedArray(data), info.width, info.height)?.data === urls[k].url;
+  if (!ok) mal++;
+  console.log(`${ok ? "✓" : "✗ NO SE LEE"} QR de la tarjeta "${urls[k].id}" → ${urls[k].url}`);
+}
 await navegador.close();
+if (mal) {
+  console.error(`✗ ${mal} tarjeta(s) con QR ilegible. No las imprimas todavía.`);
+  process.exitCode = 1;
+}
