@@ -1,0 +1,14 @@
+node_modules
+dist
+# Tus fotos ORIGINALES nunca se suben (pesan mucho y llevan GPS)
+fotos/*
+!fotos/.gitkeep
+# Salidas generadas por los scripts
+qr/
+tarjetas/
+# ⚠ Mientras esto viva en el repo "proyecto_ivan" las fotos optimizadas reales
+# tampoco se suben; solo las de ejemplo. Cuando lo muevas a tu repo privado,
+# BORRA estas dos líneas para que Vercel/Netlify reciban tus fotos.
+public/fotos/**/*.webp
+!public/fotos/**/ejemplo-*.webp
+.tmp

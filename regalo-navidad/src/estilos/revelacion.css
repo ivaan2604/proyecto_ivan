@@ -1,0 +1,558 @@
+/* ══ La revelación: caja 3D y sobre lacrado ════════════════════════════ */
+.revelacion {
+  gap: 14px;
+  justify-content: flex-start;
+}
+.zona-escena {
+  display: grid;
+  place-items: center;
+  min-height: 420px;
+  padding-top: 90px;
+}
+.instruccion {
+  transition: opacity 0.4s;
+  animation: aparecer 0.6s var(--ease) both 0.8s;
+}
+.instruccion.oculta {
+  opacity: 0;
+}
+.despues {
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: stretch;
+}
+.subtitulo-regalo {
+  font-size: 1.1rem;
+  color: var(--oro-claro);
+}
+
+/* Rayos de luz detrás (comunes a caja y sobre) */
+.rayos {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 560px;
+  height: 560px;
+  margin: -320px 0 0 -280px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, rgba(229, 203, 143, 0.4) 0 7deg, transparent 7deg 20deg);
+  -webkit-mask: radial-gradient(circle, #000 0, transparent 62%);
+  mask: radial-gradient(circle, #000 0, transparent 62%);
+  opacity: 0;
+  scale: 0.3;
+  pointer-events: none;
+  transition:
+    opacity 0.8s,
+    scale 1.2s var(--ease);
+}
+.abriendo .rayos,
+.abierto .rayos {
+  opacity: 1;
+  scale: 1;
+  animation: girar 24s linear infinite;
+}
+@keyframes girar {
+  to {
+    rotate: 360deg;
+  }
+}
+
+/* ── CAJA ─────────────────────────────────────────────────────────────── */
+.escena-caja {
+  --w: 170px;
+  --alto: 136px;
+  --d: 170px;
+  --tw: 184px;
+  --th: 34px;
+  --td: 184px;
+  --rojo: #a3263b;
+  --cinta: 30px;
+  position: relative;
+  width: var(--w);
+  height: var(--alto);
+  margin-top: 70px;
+  perspective: 1100px;
+}
+.caja {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: rotateX(-24deg) rotateY(-36deg);
+  animation: flotar 4s ease-in-out infinite;
+}
+@keyframes flotar {
+  50% {
+    translate: 0 -8px;
+  }
+}
+.escena-caja:not(.desatando) .caja {
+  animation:
+    flotar 4s ease-in-out infinite,
+    temblar 3.2s ease-in-out infinite 1.5s;
+}
+@keyframes temblar {
+  0%,
+  84%,
+  100% {
+    rotate: 0deg;
+  }
+  88% {
+    rotate: -3deg;
+  }
+  92% {
+    rotate: 3deg;
+  }
+  96% {
+    rotate: -2deg;
+  }
+}
+.cuerpo,
+.tapa {
+  position: absolute;
+  transform-style: preserve-3d;
+}
+.cuerpo {
+  inset: 0;
+}
+.cara {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Cinta vertical dorada sobre fondo rojo */
+.c-frente,
+.c-detras,
+.c-izq,
+.c-der,
+.t-frente,
+.t-detras,
+.t-izq,
+.t-der {
+  background:
+    linear-gradient(
+      90deg,
+      transparent calc(50% - var(--cinta) / 2),
+      var(--oro) calc(50% - var(--cinta) / 2),
+      var(--oro-claro) 50%,
+      var(--oro) calc(50% + var(--cinta) / 2),
+      transparent calc(50% + var(--cinta) / 2)
+    ),
+    var(--rojo);
+}
+.c-frente,
+.c-detras {
+  width: var(--w);
+  height: var(--alto);
+}
+.c-frente {
+  transform: translateZ(calc(var(--d) / 2));
+}
+.c-detras {
+  transform: rotateY(180deg) translateZ(calc(var(--d) / 2));
+  filter: brightness(0.55);
+}
+.c-izq,
+.c-der {
+  width: var(--d);
+  height: var(--alto);
+  left: calc((var(--w) - var(--d)) / 2);
+}
+.c-der {
+  transform: rotateY(90deg) translateZ(calc(var(--w) / 2));
+  filter: brightness(0.72);
+}
+.c-izq {
+  transform: rotateY(-90deg) translateZ(calc(var(--w) / 2));
+  filter: brightness(0.6);
+}
+.c-fondo {
+  width: var(--w);
+  height: var(--d);
+  top: calc((var(--alto) - var(--d)) / 2);
+  transform: rotateX(-90deg) translateZ(calc(var(--alto) / 2));
+  background: #5e1220;
+}
+
+/* Tapa */
+.tapa {
+  width: var(--tw);
+  height: var(--th);
+  left: calc((var(--w) - var(--tw)) / 2);
+  top: calc(-1 * var(--th) + 6px);
+  transition:
+    transform 1s cubic-bezier(0.3, 1.1, 0.5, 1),
+    opacity 0.5s 0.55s;
+}
+.t-frente,
+.t-detras {
+  width: var(--tw);
+  height: var(--th);
+  box-shadow: inset 0 -6px 8px -4px rgba(0, 0, 0, 0.35);
+}
+.t-frente {
+  transform: translateZ(calc(var(--td) / 2));
+  filter: brightness(1.08);
+}
+.t-detras {
+  transform: rotateY(180deg) translateZ(calc(var(--td) / 2));
+}
+.t-izq,
+.t-der {
+  width: var(--td);
+  height: var(--th);
+  left: calc((var(--tw) - var(--td)) / 2);
+  box-shadow: inset 0 -6px 8px -4px rgba(0, 0, 0, 0.35);
+}
+.t-der {
+  transform: rotateY(90deg) translateZ(calc(var(--tw) / 2));
+  filter: brightness(0.8);
+}
+.t-izq {
+  transform: rotateY(-90deg) translateZ(calc(var(--tw) / 2));
+  filter: brightness(0.7);
+}
+.t-arriba {
+  width: var(--tw);
+  height: var(--td);
+  top: calc((var(--th) - var(--td)) / 2);
+  transform: rotateX(90deg) translateZ(calc(var(--th) / 2));
+  background:
+    linear-gradient(
+      90deg,
+      transparent calc(50% - var(--cinta) / 2),
+      var(--oro) calc(50% - var(--cinta) / 2),
+      var(--oro-claro) 50%,
+      var(--oro) calc(50% + var(--cinta) / 2),
+      transparent calc(50% + var(--cinta) / 2)
+    ),
+    linear-gradient(
+      0deg,
+      transparent calc(50% - var(--cinta) / 2),
+      var(--oro) calc(50% - var(--cinta) / 2),
+      var(--oro-claro) 50%,
+      var(--oro) calc(50% + var(--cinta) / 2),
+      transparent calc(50% + var(--cinta) / 2)
+    ),
+    radial-gradient(circle at 30% 30%, #c43a52, var(--rojo) 70%);
+}
+
+/* Lazo (botón) */
+.lazo {
+  position: absolute;
+  left: calc(50% - 60px);
+  top: -60px;
+  width: 120px;
+  height: 72px;
+  padding: 0;
+  border: 0;
+  background: none;
+  transform: rotateY(36deg);
+  transform-origin: 50% 100%;
+  cursor: pointer;
+}
+.escena-caja:not(.desatando) .lazo {
+  animation: invitar 1.6s ease-in-out infinite;
+}
+@keyframes invitar {
+  50% {
+    scale: 1.08;
+  }
+}
+.lazo span {
+  position: absolute;
+  transition:
+    transform 0.6s var(--ease),
+    opacity 0.5s;
+}
+.lazo-bucle {
+  top: 12px;
+  width: 54px;
+  height: 40px;
+  border: 10px solid var(--oro);
+  border-radius: 50% 50% 46% 46% / 60% 60% 40% 40%;
+  box-shadow:
+    inset 0 2px 0 var(--oro-claro),
+    0 3px 6px rgba(0, 0, 0, 0.25);
+}
+.lazo-bucle.izq {
+  left: 6px;
+  transform: rotate(-16deg);
+}
+.lazo-bucle.der {
+  right: 6px;
+  transform: rotate(16deg);
+}
+.lazo-nudo {
+  left: calc(50% - 12px);
+  top: 26px;
+  width: 24px;
+  height: 22px;
+  border-radius: 8px;
+  background: radial-gradient(circle at 40% 35%, var(--oro-claro), var(--oro) 70%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+.lazo-cola {
+  top: 44px;
+  width: 13px;
+  height: 34px;
+  background: linear-gradient(180deg, var(--oro), #a8823f);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+}
+.lazo-cola.izq {
+  left: 44px;
+  transform: rotate(22deg);
+}
+.lazo-cola.der {
+  right: 44px;
+  transform: rotate(-22deg);
+}
+.desatando .lazo-bucle.izq {
+  transform: translate(-50px, 30px) rotate(-120deg) scale(0.3);
+  opacity: 0;
+}
+.desatando .lazo-bucle.der {
+  transform: translate(50px, 30px) rotate(120deg) scale(0.3);
+  opacity: 0;
+}
+.desatando .lazo-nudo {
+  transform: scale(0);
+  opacity: 0;
+}
+.desatando .lazo-cola {
+  transform: translateY(60px) rotate(90deg);
+  opacity: 0;
+}
+.desatando .lazo {
+  pointer-events: none;
+}
+
+/* Abrir: la tapa salta y sale volando */
+.abriendo .tapa {
+  transform: translate3d(90px, -190px, 60px) rotateZ(28deg) rotateX(-50deg);
+  opacity: 0;
+}
+
+/* Luz que sale del interior */
+.luz-interior {
+  position: absolute;
+  width: var(--w);
+  height: var(--d);
+  left: 0;
+  top: calc(var(--d) / -2);
+  transform: rotateX(90deg);
+  background: radial-gradient(closest-side, rgba(255, 238, 190, 0.95), rgba(255, 238, 190, 0));
+  opacity: 0;
+  transition: opacity 0.8s 0.2s;
+}
+.abriendo .luz-interior {
+  opacity: 1;
+}
+
+/* Tarjeta que sale de la caja */
+.carta-salida {
+  position: absolute;
+  left: calc(50% - 72px);
+  top: 6px;
+  width: 144px;
+  height: 124px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--papel);
+  color: var(--tinta);
+  text-align: center;
+  box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.5);
+  transform: rotateY(36deg);
+  transition: transform 1.3s var(--ease);
+}
+.carta-salida small,
+.carta-sobre small {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tinta-suave);
+}
+.carta-salida strong,
+.carta-sobre strong {
+  font-family: var(--serif);
+  font-size: 1.02rem;
+  line-height: 1.15;
+}
+.carta-emoji {
+  font-size: 1.9rem;
+}
+.saliendo-carta .carta-salida {
+  transform: translateY(-175px) rotateY(36deg) scale(1.2);
+}
+.revelada .carta-salida,
+.revelada .carta-sobre {
+  box-shadow:
+    0 0 0 2px var(--oro-claro),
+    0 0 40px rgba(229, 203, 143, 0.75);
+}
+
+.sombra-caja {
+  position: absolute;
+  left: 50%;
+  bottom: -70px;
+  width: 260px;
+  height: 50px;
+  margin-left: -130px;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.45), transparent);
+  pointer-events: none;
+}
+
+/* ── SOBRE ────────────────────────────────────────────────────────────── */
+.escena-sobre {
+  position: relative;
+  width: min(84vw, 320px);
+  aspect-ratio: 3 / 2;
+  margin-top: 120px;
+}
+.sobre {
+  position: absolute;
+  inset: 0;
+  perspective: 900px;
+  animation: flotar 4s ease-in-out infinite;
+}
+.sobre-fondo,
+.sobre-frente,
+.solapa {
+  position: absolute;
+  left: 0;
+  right: 0;
+  transition:
+    transform 0.8s var(--ease),
+    opacity 0.6s;
+}
+.sobre-fondo {
+  top: 0;
+  bottom: 0;
+  border-radius: 8px;
+  background: #d9c6a2;
+  box-shadow: var(--sombra);
+}
+.sobre-frente {
+  top: 0;
+  bottom: 0;
+  z-index: 3;
+  border-radius: 8px;
+  background:
+    linear-gradient(to top right, transparent calc(50% - 1px), rgba(120, 90, 50, 0.16) 50%, transparent calc(50% + 1px)),
+    linear-gradient(to top left, transparent calc(50% - 1px), rgba(120, 90, 50, 0.16) 50%, transparent calc(50% + 1px)),
+    linear-gradient(165deg, #f6eddc, #e8d9bd);
+  clip-path: polygon(0 0, 50% 56%, 100% 0, 100% 100%, 0 100%);
+}
+.solapa {
+  top: 0;
+  height: 62%;
+  z-index: 4;
+  background: linear-gradient(180deg, #f1e6d0, #e0cda9);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top;
+  transition:
+    transform 0.8s var(--ease),
+    z-index 0s 0.35s;
+}
+.abierto .solapa {
+  transform: rotateX(180deg);
+  z-index: 1;
+}
+.carta-sobre {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 6%;
+  height: 86%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #e6dcc6;
+  background: var(--papel);
+  color: var(--tinta);
+  text-align: center;
+  transition:
+    transform 0.9s var(--ease),
+    box-shadow 0.6s;
+}
+.saliendo-carta .carta-sobre {
+  transform: translateY(-70%);
+}
+.carta-delante .carta-sobre {
+  z-index: 6;
+}
+.revelada .carta-sobre {
+  transform: translateY(-45%) scale(1.12);
+}
+.revelada .sobre-fondo,
+.revelada .sobre-frente {
+  transform: translateY(36px);
+}
+.revelada .solapa {
+  transform: translateY(36px) rotateX(180deg);
+}
+
+/* Sello de lacre */
+.sello {
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  z-index: 5;
+  width: 66px;
+  height: 66px;
+  margin: -33px 0 0 -33px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.escena-sobre:not(.roto) .sello {
+  animation: invitar 1.6s ease-in-out infinite;
+}
+.sello-mitad {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 46% 54% 50% 50% / 52% 48% 52% 48%;
+  background: radial-gradient(circle at 35% 30%, #c8394f, #8a1729 60%, #6d1020);
+  box-shadow:
+    inset 0 0 0 5px rgba(0, 0, 0, 0.12),
+    inset 0 0 0 9px rgba(255, 255, 255, 0.06),
+    0 4px 10px rgba(0, 0, 0, 0.35);
+  font: 700 1.8rem var(--serif);
+  color: rgba(255, 214, 196, 0.8);
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.45);
+  transition:
+    transform 0.6s cubic-bezier(0.5, 0, 0.75, 0),
+    opacity 0.6s;
+}
+.sello-mitad.izq {
+  clip-path: polygon(0 0, 54% 0, 44% 30%, 58% 55%, 45% 100%, 0 100%);
+}
+.sello-mitad.der {
+  clip-path: polygon(54% 0, 100% 0, 100% 100%, 45% 100%, 58% 55%, 44% 30%);
+}
+.roto .sello {
+  pointer-events: none;
+}
+.roto .sello-mitad.izq {
+  transform: translate(-40px, 70px) rotate(-50deg);
+  opacity: 0;
+}
+.roto .sello-mitad.der {
+  transform: translate(40px, 80px) rotate(45deg);
+  opacity: 0;
+}

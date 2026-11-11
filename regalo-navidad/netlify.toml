@@ -1,0 +1,9 @@
+# Solo si publicas en Netlify (en Vercel no hace falta nada).
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
