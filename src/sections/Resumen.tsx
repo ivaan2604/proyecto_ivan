@@ -46,7 +46,9 @@ export function Resumen() {
   const bol = useMemo(() => bolsilloReal(d), [d]);
   const pat = useMemo(() => patrimonio(d), [d]);
   const fein = d.hipoteca.fein;
-  const diasFein = fein.validaHasta ? daysBetween(todayISO(), fein.validaHasta) : null;
+  // Con la escritura firmada (o la hipoteca ya recibida) la oferta de la FEIN ya no importa: se deja de mostrar
+  const hipotecaFirmada = d.hipoteca.recibida || (!!d.hitos.escrituraFecha && d.hitos.escrituraFecha <= todayISO());
+  const diasFein = fein.validaHasta && !hipotecaFirmada ? daysBetween(todayISO(), fein.validaHasta) : null;
 
   // Cifra principal: cuenta hasta el valor y se parte en euros y céntimos
   const propioAnim = Math.round(useCountUp(bol.aportado, 1100, 'propio'));
