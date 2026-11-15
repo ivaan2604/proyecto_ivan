@@ -2531,3 +2531,46 @@ td.seg-combo {
     grid-column: 1 / -1;
   }
 }
+
+/* Desglose de lo aportado de tu bolsillo */
+.bolsillo-desglose {
+  position: relative;
+  margin-top: 12px;
+  font-size: 13.5px;
+  color: color-mix(in srgb, var(--hero-ink) 88%, transparent);
+}
+.bolsillo-desglose summary {
+  cursor: pointer;
+  width: fit-content;
+  font-weight: 600;
+  color: var(--hero-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--hero-ink) 40%, transparent);
+}
+.bolsillo-desglose ul {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+}
+.bolsillo-desglose li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--hero-ink) 14%, transparent);
+}
+.bolsillo-desglose li small {
+  display: block;
+  font-size: 12px;
+  opacity: 0.7;
+}
+.bolsillo-desglose li b {
+  white-space: nowrap;
+}
+.bolsillo-desglose li.total {
+  border-bottom: 0;
+  font-weight: 700;
+  color: var(--hero-ink);
+}
