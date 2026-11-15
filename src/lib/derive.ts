@@ -1091,6 +1091,45 @@ export function bolsilloReal(d: AppData) {
   return { compra: propio, mesesNegativos, aportado, devuelto, falta: Math.max(0, aportado - devuelto), ganancia: Math.max(0, devuelto - aportado) };
 }
 
+export interface LineaBolsillo {
+  concepto: string;
+  /** Céntimos: positivo suma a lo que pones tú, negativo lo resta */
+  importe: number;
+  detalle?: string;
+}
+
+/**
+ * Desglose de «Aportado de tu bolsillo»: lo pagado de la compra (por tipo), menos lo que pagaron los
+ * préstamos, más cada mes que salió en negativo. La suma de las líneas es `bolsilloReal(d).aportado`.
+ */
+export function desgloseBolsillo(d: AppData): { lineas: LineaBolsillo[]; total: number } {
+  const pagadas = filasGastos(d).filter((f) => f.estado === 'pagado' && f.importe);
+  const precioKeys = new Set(['senal', 'arras', 'restoPrecio']);
+  const suma = (fs: FilaGasto[]) => fs.reduce((a, f) => a + f.importe, 0);
+  const precio = pagadas.filter((f) => precioKeys.has(f.key));
+  const reforma = pagadas.filter((f) => f.reforma || f.key === 'reforma');
+  const gastos = pagadas.filter((f) => !precioKeys.has(f.key) && !(f.reforma || f.key === 'reforma'));
+  const lineas: LineaBolsillo[] = [];
+  if (precio.length) lineas.push({ concepto: 'Precio del piso pagado', importe: suma(precio), detalle: precio.map((f) => f.concepto).join(', ') });
+  if (gastos.length) lineas.push({ concepto: 'Impuestos y gastos de compra', importe: suma(gastos), detalle: gastos.map((f) => f.concepto).join(', ') });
+  if (reforma.length) lineas.push({ concepto: 'Reforma pagada', importe: suma(reforma), detalle: `${reforma.length} ${reforma.length === 1 ? 'pago' : 'pagos'}` });
+  // Los préstamos solo descuentan hasta lo pagado (lo que sobre aún no ha salido de ningún sitio)
+  let porCubrir = suma(pagadas);
+  const hip = d.hipoteca.recibida ? Math.min(d.hipoteca.importe, porCubrir) : 0;
+  porCubrir -= hip;
+  const fam = d.familiar.recibido ? Math.min(d.familiar.importe, porCubrir) : 0;
+  if (hip) lineas.push({ concepto: `Pagado con la hipoteca${d.hipoteca.banco ? ` (${d.hipoteca.banco})` : ''}`, importe: -hip });
+  if (fam) {
+    const ref = Math.min(d.familiar.paraReforma, fam);
+    lineas.push({ concepto: 'Pagado con el préstamo familiar', importe: -fam, detalle: ref ? `${fmtEur(fam - ref)} para la compra + ${fmtEur(ref)} para la reforma` : undefined });
+  }
+  for (const k of mesesOrdenados(d)) {
+    const b = totalesMes(d.meses[k]).beneficio;
+    if (b < 0) lineas.push({ concepto: `Mes de ${fmtMonthKey(k)} en negativo`, importe: -b });
+  }
+  return { lineas, total: lineas.reduce((a, l) => a + l.importe, 0) };
+}
+
 /* ───────────── Resultado económico: el capital devuelto es ahorro ───────────── */
 
 /** Capital de la cuota de la hipoteca en un mes (YYYY-MM) del cuadro previsto, sin amortizaciones. */

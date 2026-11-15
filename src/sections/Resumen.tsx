@@ -1,6 +1,6 @@
 import { useMemo, useState, type CSSProperties } from 'react';
 import {
-  aportacion, avisos, bolsilloReal, dineroPropio, fasesResultado, lineaTiempo, patrimonio, recuperacionPrevista, sinReforma, totalesGastos,
+  aportacion, avisos, bolsilloReal, desgloseBolsillo, dineroPropio, fasesResultado, lineaTiempo, patrimonio, recuperacionPrevista, sinReforma, totalesGastos,
 } from '../lib/derive';
 import { daysBetween, fmtDate, fmtEur, fmtInt, fmtMonthKey, todayISO } from '../lib/format';
 import { useData } from '../store';
@@ -44,6 +44,7 @@ export function Resumen() {
   const fases = useMemo(() => fasesResultado(d), [d]);
   const recPrev = useMemo(() => recuperacionPrevista(d), [d]);
   const bol = useMemo(() => bolsilloReal(d), [d]);
+  const desglose = useMemo(() => desgloseBolsillo(d), [d]);
   const pat = useMemo(() => patrimonio(d), [d]);
   const fein = d.hipoteca.fein;
   // Con la escritura firmada (o la hipoteca ya recibida) la oferta de la FEIN ya no importa: se deja de mostrar
@@ -101,6 +102,26 @@ export function Resumen() {
                 ? `Pagado ${fmtEur(g.pagado)} − ${fmtEur(recibido)} con dinero prestado`
                 : 'Lo pagado de la compra con tu dinero. Cada mes en negativo se sumará aquí.'}
           </div>
+          {desglose.lineas.length > 0 && (
+            <details className="bolsillo-desglose">
+              <summary>Ver desglose</summary>
+              <ul>
+                {desglose.lineas.map((l) => (
+                  <li key={l.concepto}>
+                    <span>
+                      {l.concepto}
+                      {l.detalle && <small>{l.detalle}</small>}
+                    </span>
+                    <b className="num">{l.importe < 0 ? `− ${fmtEur(-l.importe)}` : fmtEur(l.importe)}</b>
+                  </li>
+                ))}
+                <li className="total">
+                  <span>De tu bolsillo</span>
+                  <b className="num">{fmtEur(desglose.total)}</b>
+                </li>
+              </ul>
+            </details>
+          )}
           <div className="meter tejas" role="progressbar" aria-label="Recuperado" aria-valuenow={Math.round(pctDevuelto * 100)} aria-valuemin={0} aria-valuemax={100}>
             <span style={{ '--p': pctDevuelto } as CSSProperties} />
           </div>

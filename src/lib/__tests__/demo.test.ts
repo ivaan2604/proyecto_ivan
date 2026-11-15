@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { demoData } from '../../demo';
-import { bolsilloReal, fasesResultado, mesesOrdenados, totalesGastos } from '../derive';
+import { bolsilloReal, desgloseBolsillo, fasesResultado, mesesOrdenados, totalesGastos } from '../derive';
 import { validateAppData } from '../schema';
 
 describe('datos de la demo', () => {
@@ -18,5 +18,11 @@ describe('datos de la demo', () => {
     expect(d.meses['2025-06'].ingresos.map((l) => l.concepto)).toContain('Alquiler');
     expect(fasesResultado(d).length).toBeGreaterThan(0);
     expect(bolsilloReal(d).aportado).toBeGreaterThan(0);
+  });
+  it('el desglose de tu bolsillo suma lo mismo que la cifra principal', () => {
+    const d = demoData();
+    const { lineas, total } = desgloseBolsillo(d);
+    expect(total).toBe(bolsilloReal(d).aportado);
+    expect(lineas.map((l) => l.concepto)).toEqual(expect.arrayContaining(['Precio del piso pagado', 'Impuestos y gastos de compra']));
   });
 });
