@@ -71,7 +71,8 @@ export function calendario(principal: number, tinPct: number, cuotaPactada: numb
     const i = idx - off;
     const enA = !!tramo && (enCarencia || i < tramo.meses);
     // Al empezar el segundo tramo, la cuota se recalcula con lo que quede (refleja las amortizaciones)
-    if (tramo && i === tramo.meses) cuotaB = pmtMeses(pend, tinPct, tramo.plazoMeses - tramo.meses);
+    // (si ya se ha amortizado por adelantado se mantiene la cuota pactada: la amortización reduce el plazo, no la cuota)
+    if (tramo && i === tramo.meses && totalAnticipado === 0) cuotaB = pmtMeses(pend, tinPct, tramo.plazoMeses - tramo.meses);
     const r = (enA ? tramo!.tinPct : tinPct) / 100 / 12;
     const pactada = enCarencia ? carencia : enA ? tramo!.cuota : cuotaB;
     if (pend <= 0) {

@@ -1,6 +1,6 @@
 import { useMemo, type CSSProperties } from 'react';
 import { eurRow, LineChart } from '../charts/charts';
-import { calendarioDe, cuotaPactada, tramosHipoteca } from '../lib/derive';
+import { calendarioDe, cuotaPactada, proyeccionHipoteca, tramosHipoteca } from '../lib/derive';
 import { addMonths, mesesRestantes } from '../lib/finance';
 import { fmtDate, fmtEur } from '../lib/format';
 import { uid, type Cuota, type LoanKind } from '../lib/model';
@@ -24,13 +24,14 @@ export function Prestamo({ kind }: { kind: LoanKind }) {
   const t = tramosHipoteca(d);
   const tin = kind === 'hipoteca' ? t.tinB : p.tinPct;
   // Hipoteca sin amortizaciones: el plazo pactado menos lo pagado (con tramos, la fórmula de una sola cuota se desvía un mes)
-  const restantes =
-    kind === 'hipoteca' && cal.totalAnticipado === 0
-      ? Math.max(0, t.n - cal.filas.filter((f) => !f.liquidado).length)
-      : mesesRestantes(cal.pendiente, tin, pactada);
-  const plazoOriginal = kind === 'hipoteca' ? Math.round(d.hipoteca.plazoAnios * 12) : pactada ? Math.ceil(p.importe / pactada) : 0;
   const cuotasPagadas = cal.filas.filter((f) => !f.liquidado).length;
-  const ahorroMeses = restantes !== null && plazoOriginal ? plazoOriginal - cuotasPagadas - restantes : 0;
+  // Hipoteca: proyección con tramos y recibo de carencia, con y sin las amortizaciones apuntadas
+  const proy = useMemo(() => (kind === 'hipoteca' ? proyeccionHipoteca(d) : null), [d, kind]);
+  const restantes = proy ? (proy.con ? Math.max(0, proy.con.meses - cuotasPagadas) : null) : mesesRestantes(cal.pendiente, tin, pactada);
+  const plazoOriginal = pactada ? Math.ceil(p.importe / pactada) : 0;
+  const ahorroMeses = proy
+    ? proy.con && proy.sin ? proy.sin.meses - proy.con.meses : 0
+    : restantes !== null && plazoOriginal ? plazoOriginal - cuotasPagadas - restantes : 0;
   const titulo = kind === 'hipoteca' ? 'Hipoteca' : 'Préstamo familiar';
   const sinInteres = tin === 0;
   const pctTxt = (n: number) => `${n.toLocaleString('es-ES', { maximumFractionDigits: 2 })} %`;

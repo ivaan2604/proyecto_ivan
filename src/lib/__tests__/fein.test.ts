@@ -136,6 +136,17 @@ describe('tus amortizaciones anticipadas', () => {
     expect(r.meses).toBeGreaterThanOrEqual(8);
     expect(r.finCon! < r.finSin!).toBe(true);
   });
+  it('5.000 € en el recibo de diciembre: ~7.012 € y 43 cuotas; sin amortizar acaba en diciembre de 2051', () => {
+    const d = conCuotas(1, { 1: 500000 });
+    const r = amortizacionesHipoteca(d);
+    expect(r.finSin).toBe('2051-12');
+    expect(r.finCon).toBe('2048-05');
+    expect(r.meses).toBe(43);
+    expect(Math.abs(r.ahorro - 701236)).toBeLessThan(200);
+    // La misma cifra que en Rentabilidad
+    const c = costesPrestamos(d)[0];
+    expect([c.ahorro, c.mesesAhorro]).toEqual([r.ahorro, r.meses]);
+  });
   it('la amortización temprana ahorra más que la tardía y el total es la suma de cada una', () => {
     const r = amortizacionesHipoteca(conCuotas(40, { 3: 50000, 39: 50000 }));
     expect(r.lista[0].ahorro).toBeGreaterThan(r.lista[1].ahorro);
