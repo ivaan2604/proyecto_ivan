@@ -2574,3 +2574,8 @@ td.seg-combo {
   font-weight: 700;
   color: var(--hero-ink);
 }
+
+/* Préstamo: resumen de las amortizaciones anticipadas */
+.amortizaciones .stats {
+  margin: 4px 0 16px;
+}
