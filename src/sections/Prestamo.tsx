@@ -12,6 +12,7 @@ import { PageHead } from '../ui/layout';
 import { Counter, InView } from '../ui/motion';
 import { go } from '../router';
 import { SimuladorAmortizacion } from './Simulador';
+import { MisAmortizaciones } from './Amortizaciones';
 
 export function Prestamo({ kind }: { kind: LoanKind }) {
   const d = useData();
@@ -143,6 +144,7 @@ export function Prestamo({ kind }: { kind: LoanKind }) {
         </div>
       )}
 
+      {kind === 'hipoteca' && p.importe > 0 && <MisAmortizaciones d={d} />}
       {kind === 'hipoteca' && p.importe > 0 && <SimuladorAmortizacion d={d} />}
 
       {!p.importe ? (

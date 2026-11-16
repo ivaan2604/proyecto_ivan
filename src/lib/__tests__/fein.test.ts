@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  amortizacionesHipoteca,
   segurosAnuales,
   aportacion, avisos, bolsilloReal, bonificacionHipoteca, calendarioDe, costesPrestamos, cuotaFamiliarMes, cuotaHipotecaMes,
   diaFirma, fasesResultado, fijosMensuales, interesesHipotecaAnio, irpfAlquiler, mesPrevision, patrimonio, previsionMensual,
@@ -113,6 +114,33 @@ describe('firma el 3 de noviembre: el primer recibo es solo de intereses', () =>
   it('firmando un día 1 no hay recibo de solo intereses', () => {
     const t = tramosHipoteca(conFein());
     expect([t.carencia, t.diasCarencia, t.mesesA]).toEqual([0, 0, 6]);
+  });
+});
+
+describe('tus amortizaciones anticipadas', () => {
+  const conCuotas = (n: number, amort: Record<number, number>) => {
+    const d = conFein();
+    d.hitos.escrituraFecha = '2026-11-03';
+    d.cuotas.hipoteca = Array.from({ length: n }, (_, i) => ({ id: String(i), fecha: '', cuota: null, interes: null, anticipada: amort[i + 1] ?? 0 }));
+    return d;
+  };
+  it('sin amortizaciones no hay nada que sumar', () => {
+    const r = amortizacionesHipoteca(conCuotas(3, {}));
+    expect([r.lista.length, r.total, r.ahorro, r.meses]).toEqual([0, 0, 0, 0]);
+  });
+  it('1.000 € al año ahorran unos 1.380 € de intereses y 9 cuotas; el fin se adelanta', () => {
+    const r = amortizacionesHipoteca(conCuotas(13, { 13: 100000 }));
+    expect(r.lista).toHaveLength(1);
+    expect(r.total).toBe(100000);
+    expect(Math.abs(r.ahorro - 138000)).toBeLessThan(8000);
+    expect(r.meses).toBeGreaterThanOrEqual(8);
+    expect(r.finCon! < r.finSin!).toBe(true);
+  });
+  it('la amortización temprana ahorra más que la tardía y el total es la suma de cada una', () => {
+    const r = amortizacionesHipoteca(conCuotas(40, { 3: 50000, 39: 50000 }));
+    expect(r.lista[0].ahorro).toBeGreaterThan(r.lista[1].ahorro);
+    expect(r.ahorro).toBe(r.lista[0].ahorro + r.lista[1].ahorro);
+    expect(r.meses).toBe(r.lista[0].meses + r.lista[1].meses);
   });
 });
 

@@ -706,6 +706,74 @@ function costePrestamo(d: AppData, kind: LoanKind): CostePrestamo {
   };
 }
 
+export interface AmortizacionHecha {
+  /** Nº de la cuota en la que se apuntó */
+  n: number;
+  fecha: string;
+  importe: number;
+  /** Intereses que te ahorra esta amortización (ya descontada su comisión) */
+  ahorro: number;
+  /** Cuotas que te quita */
+  meses: number;
+}
+
+export interface ResumenAmortizaciones {
+  lista: AmortizacionHecha[];
+  total: number;
+  ahorro: number;
+  meses: number;
+  comision: number;
+  /** Mes (YYYY-MM) de la última cuota sin las amortizaciones y con ellas */
+  finSin: string | null;
+  finCon: string | null;
+}
+
+/**
+ * Amortizaciones anticipadas apuntadas en la hipoteca y lo que ha supuesto cada una: se proyecta el préstamo
+ * con las amortizaciones hasta la anterior y hasta esta (misma cuota, se acorta el plazo) y se resta.
+ */
+export function amortizacionesHipoteca(d: AppData): ResumenAmortizaciones {
+  const cuotas = d.cuotas.hipoteca;
+  const conAmort = cuotas.map((_, i) => i).filter((i) => cuotas[i].anticipada > 0);
+  const cuota = cuotaPactada(d, 'hipoteca');
+  const tin = tramosHipoteca(d).tinB;
+  const comisionPct = d.hipoteca.fein.comisionAmortPct;
+  const proyectar = (k: number) => {
+    const usadas = new Set(conAmort.slice(0, k));
+    const lista = cuotas.map((c, i) => (usadas.has(i) ? c : { ...c, anticipada: 0 }));
+    const cal = calendarioDe({ ...d, cuotas: { ...d.cuotas, hipoteca: lista } }, 'hipoteca');
+    const fut = simular(cal.pendiente, tin, cuota);
+    if (!fut) return null;
+    return { intereses: cal.totalIntereses + fut.intereses, meses: cal.filas.filter((f) => !f.liquidado).length + fut.meses, cal };
+  };
+  const ini = inicioHipotecaMes(d);
+  const fin = (meses: number) => (ini ? addMonths(ini, meses - 1) : null);
+  const lista: AmortizacionHecha[] = [];
+  let prev = proyectar(0);
+  const sin = prev;
+  for (let k = 1; k <= conAmort.length && prev; k++) {
+    const act = proyectar(k);
+    if (!act) break;
+    const fila = act.cal.filas[conAmort[k - 1]];
+    const comision = Math.round((fila.anticipada * comisionPct) / 100);
+    lista.push({
+      n: fila.n, fecha: fila.fecha, importe: fila.anticipada,
+      ahorro: prev.intereses - act.intereses - comision, meses: prev.meses - act.meses,
+    });
+    prev = act;
+  }
+  const comision = lista.reduce((s, x) => s + Math.round((x.importe * comisionPct) / 100), 0);
+  return {
+    lista,
+    total: lista.reduce((s, x) => s + x.importe, 0),
+    ahorro: lista.reduce((s, x) => s + x.ahorro, 0),
+    meses: lista.reduce((s, x) => s + x.meses, 0),
+    comision,
+    finSin: sin ? fin(sin.meses) : null,
+    finCon: prev ? fin(prev.meses) : null,
+  };
+}
+
 export function costesPrestamos(d: AppData): CostePrestamo[] {
   return [costePrestamo(d, 'hipoteca'), costePrestamo(d, 'familiar')];
 }
