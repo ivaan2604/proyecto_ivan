@@ -1,0 +1,8 @@
+# Lo que NO se sube a Vercel al publicar con `npm run publicar`.
+# (Las fotos optimizadas de public/fotos SÍ se suben: la web las necesita.)
+node_modules
+dist
+fotos
+qr
+tarjetas
+.tmp

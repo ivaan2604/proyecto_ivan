@@ -12,3 +12,4 @@ tarjetas/
 public/fotos/**/*.webp
 !public/fotos/**/ejemplo-*.webp
 .tmp
+.vercel

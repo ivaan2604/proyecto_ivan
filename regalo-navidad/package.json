@@ -10,7 +10,8 @@
     "fotos": "node scripts/optimizar-fotos.mjs",
     "ejemplos": "node scripts/crear-ejemplos.mjs",
     "qr": "node scripts/generar-qr.mjs",
-    "tarjetas": "node scripts/tarjetas.mjs"
+    "tarjetas": "node scripts/tarjetas.mjs",
+    "publicar": "npx vercel@66 --prod"
   },
   "dependencies": {
     "@fontsource-variable/figtree": "^5.3.0",

@@ -65,34 +65,45 @@ Las imágenes `ejemplo-N` son ilustraciones de muestra (`npm run ejemplos` las r
 
 ---
 
-## 3. Publicarlo gratis (repo privado)
+## 3. Publicarlo gratis
 
-> ⚠️ **Antes de nada:** ahora mismo el juego vive dentro del repo `proyecto_ivan`. El `.gitignore` de esta carpeta impide subir tus fotos reales. Para publicarlo, muévelo a **su propio repositorio privado**:
+### Opción recomendada: un comando, sin GitHub
 
-1. Crea un repo **privado** en GitHub, por ejemplo `regalo-navidad`.
-2. Copia **el contenido** de esta carpeta (sin `node_modules`, `dist`, `qr` ni `tarjetas`) a ese repo nuevo.
-3. En el `.gitignore` del repo nuevo, **borra estas dos líneas** para que tus fotos optimizadas sí se suban:
+Así tus fotos van directas de tu ordenador a Vercel y **nunca pasan por ningún repositorio**.
+
+1. Si aún no tienes cuenta, créala gratis en [vercel.com](https://vercel.com). Puedes entrar con GitHub, Google o tu email.
+2. En la carpeta del proyecto (con tus fotos ya en `fotos/`, si las tienes):
+   ```bash
+   npm run fotos
+   ```
+   ```bash
+   npm run publicar
+   ```
+3. La primera vez te hará unas preguntas:
+   - Pide iniciar sesión: se abre el navegador y aceptas.
+   - *Set up and deploy?*: **Y**.
+   - *Which scope?*: tu cuenta.
+   - *Link to existing project?*: **N**.
+   - *Project name?*: el nombre será tu dirección, así que elige algo bonito y poco obvio, como `para-lucia-2026`. Quedará `https://para-lucia-2026.vercel.app`.
+   - *In which directory is your code located?*: pulsa Enter (`./`).
+   - Si pregunta por modificar los ajustes, di **N**: ya están en `vercel.json`.
+4. Al terminar te muestra la dirección publicada (*Production: https://…*). Ábrela en el móvil para comprobarla.
+
+Cada vez que cambies algo (textos, fotos…), vuelve a ejecutar `npm run publicar`. La dirección no cambia, así que **los QR ya impresos siguen funcionando**.
+
+### Alternativa: con un repositorio privado de GitHub
+
+Si prefieres que se publique solo con cada `git push`:
+
+1. Crea un repo **privado** y copia ahí esta carpeta (sin `node_modules`, `dist`, `qr` ni `tarjetas`).
+2. En su `.gitignore`, borra estas dos líneas para que se suban tus fotos optimizadas:
    ```
    public/fotos/**/*.webp
    !public/fotos/**/ejemplo-*.webp
    ```
-   Tus originales de `fotos/` siguen sin subirse.
-4. Ejecuta `npm run fotos`, haz commit y push.
+3. En Vercel: *Add New… › Project*, importa el repo y pulsa **Deploy**.
 
-### Opción A: Vercel (recomendada)
-
-1. Entra en [vercel.com](https://vercel.com) con tu cuenta de GitHub (el plan Hobby es gratis).
-2. Pulsa *Add New… › Project* e importa el repo privado. La primera vez tendrás que dar permiso a Vercel para ver ese repo.
-3. Detecta Vite solo: pulsa **Deploy**.
-4. Te da una URL tipo `https://regalo-navidad-xxxx.vercel.app`. En *Settings › Domains* puedes cambiarla por algo más bonito y difícil de adivinar, como `para-lucia-2026.vercel.app`.
-
-Cada `git push` vuelve a publicar automáticamente.
-
-### Opción B: Netlify
-
-1. Entra en [netlify.com](https://netlify.com) e importa el repo desde *Add new site › Import an existing project*.
-2. Ya hay un `netlify.toml`, así que no tienes que configurar nada. Pulsa **Deploy**.
-3. En *Site configuration › Change site name* eliges la URL (`algo.netlify.app`).
+Netlify también vale: importa el repo; el `netlify.toml` ya está preparado.
 
 ### Después de publicar
 
