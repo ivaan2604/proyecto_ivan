@@ -70,6 +70,25 @@ export interface Cuota {
 
 export type TipoObra = 'mejora' | 'reparacion';
 
+export const ALBUMES_FOTOS = [
+  { id: 'antes', label: 'Antes de la reforma' },
+  { id: 'obra', label: 'Durante la obra' },
+  { id: 'despues', label: 'Después' },
+] as const;
+export type AlbumFoto = (typeof ALBUMES_FOTOS)[number]['id'];
+
+export interface Foto {
+  id: string;
+  album: AlbumFoto;
+  /** Ruta en el almacenamiento de la nube: imagen grande y miniatura */
+  ruta: string;
+  miniatura: string;
+  fecha: string;
+  nota: string;
+  ancho: number;
+  alto: number;
+}
+
 export interface PagoReforma {
   id: string;
   fecha: string;
@@ -232,6 +251,8 @@ export interface AppData {
     familiar: Cuota[];
   };
   notas: Nota[];
+  /** Fotos del piso: aquí solo los datos; las imágenes están en el almacenamiento privado de la nube */
+  fotos: Foto[];
   meta: {
     createdAt: string;
     lastExportAt: string;
@@ -279,6 +300,7 @@ export function emptyData(): AppData {
     meses: {},
     cuotas: { hipoteca: [], familiar: [] },
     notas: [],
+    fotos: [],
     meta: { createdAt: new Date().toISOString(), lastExportAt: '' },
   };
 }

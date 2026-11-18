@@ -12,7 +12,8 @@ export const SECTIONS: { id: SectionId; folio: string; label: string; short: str
   { id: 'familiar', folio: '08', label: 'Préstamo familiar', short: 'Familiar' },
   { id: 'irpf', folio: '09', label: 'Hacienda (IRPF)', short: 'IRPF' },
   { id: 'notas', folio: '10', label: 'Notas', short: 'Notas' },
-  { id: 'copia', folio: '11', label: 'Copia y ajustes', short: 'Ajustes' },
+  { id: 'fotos', folio: '11', label: 'Fotos del piso', short: 'Fotos' },
+  { id: 'copia', folio: '12', label: 'Copia y ajustes', short: 'Ajustes' },
 ];
 
 const ids = new Set(SECTIONS.map((s) => s.id));

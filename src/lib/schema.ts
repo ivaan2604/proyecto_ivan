@@ -79,6 +79,12 @@ export const appDataSchema = z.object({
   ),
   cuotas: z.object({ hipoteca: z.array(cuota), familiar: z.array(cuota) }),
   notas: z.array(z.object({ id: z.string(), fecha, texto: z.string() })),
+  fotos: z.array(
+    z.object({
+      id: z.string(), album: z.enum(['antes', 'obra', 'despues']), ruta: z.string(), miniatura: z.string(), fecha,
+      nota: z.string(), ancho: z.number(), alto: z.number(),
+    }),
+  ),
   meta: z.object({ createdAt: z.string(), lastExportAt: z.string() }),
 });
 

@@ -9,6 +9,7 @@ import { Copia } from './sections/Copia';
 import { Gastos } from './sections/Gastos';
 import { Meses } from './sections/Meses';
 import { Notas } from './sections/Notas';
+import { Fotos } from './sections/Fotos';
 import { Prestamo } from './sections/Prestamo';
 import { Reforma } from './sections/Reforma';
 import { Irpf } from './sections/Irpf';
@@ -71,6 +72,7 @@ function Shell() {
       case 'familiar': return <Prestamo kind="familiar" key="f" />;
       case 'irpf': return <Irpf />;
       case 'notas': return <Notas />;
+      case 'fotos': return <Fotos />;
       case 'copia': return <Copia theme={theme} setTheme={setTheme} />;
     }
   })();
