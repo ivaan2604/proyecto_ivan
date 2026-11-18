@@ -69,6 +69,16 @@ export function validar(c) {
       `Las letras de los niveles ("${limpiar(conseguidas)}") no son las mismas que las de la palabra final ("${limpiar(c.palabraFinal)}"). Deben coincidir (en cualquier orden).`,
     );
 
+  // Textos marcados con ✏️ que aún no se han personalizado
+  const pendientes = [];
+  (function recorrer(v, ruta) {
+    if (typeof v === "string") {
+      if (v.includes("✏️")) pendientes.push(`${ruta}: "${v}"`);
+    } else if (Array.isArray(v)) v.forEach((x, i) => recorrer(x, `${ruta} › ${i + 1}`));
+    else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) recorrer(x, ruta ? `${ruta} › ${k}` : k);
+  })(c, "");
+  pendientes.forEach((p) => e.push(`Falta personalizar (✏️) → ${p}`));
+
   const rg = c.regalo || {};
   req(rg.nombre, "Falta `regalo.nombre`.");
   req(/^\d{8,15}$/.test(rg.whatsapp?.telefono || ""), "`regalo.whatsapp.telefono` debe ser solo dígitos con prefijo (p. ej. 34600111222).");

@@ -117,24 +117,32 @@ export default {
       intro: "Unas preguntas fáciles para ver cuánto me conoces. Fáciles… en teoría.",
       ayuda: { tras: 2, texto: "Te quito un par de opciones para que no sufras." },
       datos: {
+        // ✏️ = cámbialo por lo vuestro. Mientras quede alguno, `npm run dev` te avisa.
         preguntas: [
           {
             pregunta: "¿Dónde fue nuestra primera cita?",
-            opciones: ["En el cine", "En una terraza", "En un bar de tapas", "En el parque"],
+            opciones: ["En el cine", "Paseando sin rumbo", "✏️ el sitio real", "En casa de unos amigos"],
             correcta: 2, // posición de la correcta empezando a contar en 0
             siFalla: "¿Cómo que no te acuerdas? Yo estaba nerviosísimo.",
-            siAcierta: "¡Eso es! Y pediste las bravas más picantes de la carta.",
+            siAcierta: "¡Eso es! Y yo fingiendo que estaba tranquilo.",
           },
           {
-            pregunta: "¿Qué es lo que más me cuesta por las mañanas?",
-            opciones: ["Levantarme", "Elegir ropa", "Hablar antes del café", "Todo lo anterior"],
+            pregunta: "¿Qué pido siempre cuando vamos a ✏️ vuestro sitio de siempre?",
+            opciones: ["Ensalada (ya, claro)", "✏️ lo que pides de verdad", "Lo mismo que tú", "Lo más caro de la carta"],
+            correcta: 1,
+            siFalla: "Llevo pidiendo lo mismo desde el primer día y no te has fijado 😤",
+            siAcierta: "Predecible pero fiel. Como yo.",
+          },
+          {
+            pregunta: "¿Cuál es mi mayor manía?",
+            opciones: ["Llegar tarde", "Hablar con la tele", "Revisar tres veces si he cerrado la puerta", "✏️ tu manía real"],
             correcta: 3,
-            siFalla: "Casi. Pero la respuesta es más… completa.",
-            siAcierta: "Me conoces demasiado bien.",
+            siFalla: "Te lo dejo pasar porque tengo varias.",
+            siAcierta: "No me juzgues.",
           },
           {
             pregunta: "¿Qué canción es “nuestra”?",
-            opciones: ["Canción de ejemplo A", "Canción de ejemplo B", "Canción de ejemplo C"],
+            opciones: ["✏️ vuestra canción", "✏️ otra que os guste", "✏️ otra más", "✏️ y otra"],
             correcta: 0,
             siFalla: "Te la voy a poner en bucle hasta que te la aprendas.",
             siAcierta: "Ya la estás tarareando, lo sé.",
@@ -266,11 +274,26 @@ export default {
       datos: {
         preguntas: [
           {
-            pregunta: "¿Cuál fue la primera película que vimos juntos?",
-            opciones: ["Película A", "Película B", "Película C", "Película D"],
+            pregunta: "¿Qué día de la semana fue nuestra primera cita?",
+            // ✏️ pon el día real en una de las opciones y su posición en `correcta`
+            opciones: ["Viernes", "Sábado", "Domingo", "✏️ el día real"],
+            correcta: 3,
+            siFalla: "Pregunta trampa. Pero yo sí me acuerdo 😌",
+            siAcierta: "Memoria de élite.",
+          },
+          {
+            pregunta: "¿Qué fue lo primero que pensé de ti?",
+            opciones: ["“Qué guapa”", "✏️ lo que pensaste de verdad", "“Qué sonrisa”", "“Me va a costar no mirarla”"],
             correcta: 1,
-            siFalla: "Te dormiste a la mitad, así que tiene un pase.",
-            siAcierta: "Bien. Aunque te dormiste a la mitad.",
+            siFalla: "Casi… pero lo pensé muy en serio.",
+            siAcierta: "Sigo pensándolo.",
+          },
+          {
+            pregunta: "¿Cuántos meses llevamos juntos esta Navidad?",
+            opciones: ["14", "15", "16", "Me da igual, quiero muchos más"],
+            correcta: 2, // de agosto de 2025 a diciembre de 2026
+            siFalla: "Las matemáticas no son lo tuyo, pero el amor sí.",
+            siAcierta: "Y los que quedan.",
           },
           {
             pregunta: "¿Qué es lo que más me gusta de ti?",
