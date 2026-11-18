@@ -73,3 +73,4 @@ Se añade una norma: **registrar el 100 % de las sesiones** en Hevy.
 ## 2026-11-17 — Semana 47 (16 al 22 de nov)
 - Lunes 16 sin entrenar. Partido domingo 22 a las 16:00.
 - Plan: martes 17 pierna, jueves 19 espalda y bíceps, viernes 20 pecho/hombro/tríceps (o sábado mañana).
+- 18-nov: cambio, empuje el miércoles 18; espalda y bíceps el jueves 19 o viernes 20.
