@@ -74,3 +74,8 @@ Se añade una norma: **registrar el 100 % de las sesiones** en Hevy.
 - Lunes 16 sin entrenar. Partido domingo 22 a las 16:00.
 - Plan: martes 17 pierna, jueves 19 espalda y bíceps, viernes 20 pecho/hombro/tríceps (o sábado mañana).
 - 18-nov: cambio, empuje el miércoles 18; espalda y bíceps el jueves 19 o viernes 20.
+
+## 2026-11-24 — Semana 48 (23 al 29 de nov), última del bloque 1
+- Partido del domingo 22: bien (rodilla y espalda sin problemas). Peso 94,85 en ayunas: 7 semanas estancado entre 94 y 95 → se piden medida de cintura, cenas sin extras, 7.000 pasos y pesarse 2–3 veces por semana.
+- Martes 24: espalda y bíceps (jalón el primero). Resto de la semana pendiente de confirmar: pierna y empuje.
+- Descarga del 30-nov al 6-dic.
