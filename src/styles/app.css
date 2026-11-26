@@ -1737,6 +1737,32 @@ table.ledger {
 .partida-presu {
   margin: 0;
 }
+.partida-presu-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.partida-abierta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.partida-abierta input {
+  margin: 0;
+  accent-color: var(--accent, currentColor);
+}
+.partida-suma {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  background: transparent;
+}
 .partida-foot {
   display: flex;
   flex-wrap: wrap;

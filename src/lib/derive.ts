@@ -1,6 +1,6 @@
 import { addMonths, calendario, mesesEntre, mesesRestantes, pmtMeses, saldoTras, type Calendario } from './finance';
 import { currentMonthKey, daysBetween, fmtEur, fmtMonthKey, todayISO } from './format';
-import { BASE_KEYS, uid, type AppData, type BaseKey, type Cuota, type Estado, type Linea, type LoanKind, type Mes, type Seguro } from './model';
+import { BASE_KEYS, uid, type AppData, type BaseKey, type Cuota, type Estado, type Linea, type LoanKind, type Mes, type PartidaReforma, type Seguro } from './model';
 
 /* ───────────── Gastos de compra ───────────── */
 
@@ -99,7 +99,7 @@ function filasReforma(d: AppData): FilaGasto[] {
       key: `ref:${x.id}`, base: false, reforma: true, concepto: nombre, fecha: x.fecha, fechaDerivada: false,
       importe: x.importe, estado: x.estado, nota: [x.factura && `Factura ${x.factura}`, x.nota].filter(Boolean).join(' · '),
     }));
-    const resto = p.presupuesto - sumPagos(p.pagos);
+    const resto = presupuestoPartida(p) - sumPagos(p.pagos);
     if (resto > 0) {
       filas.push({
         key: `ref-resto:${p.id}`, base: false, reforma: true, concepto: `${nombre} (resto del presupuesto)`, fecha: '',
@@ -112,6 +112,11 @@ function filasReforma(d: AppData): FilaGasto[] {
 
 function sumPagos(pagos: { importe: number }[]): number {
   return pagos.reduce((s, x) => s + x.importe, 0);
+}
+
+/** Presupuesto efectivo: el fijado o, si la partida es abierta, lo que suman sus pagos. */
+export function presupuestoPartida(p: PartidaReforma): number {
+  return p.abierta ? sumPagos(p.pagos) : p.presupuesto;
 }
 
 export interface TotalesPartida {
@@ -129,9 +134,10 @@ export function totalesReforma(d: AppData) {
   const partidas = d.reforma.partidas.map((p): TotalesPartida => {
     const comprometido = sumPagos(p.pagos);
     const pagado = sumPagos(p.pagos.filter((x) => x.estado === 'pagado'));
+    const presupuesto = presupuestoPartida(p);
     return {
-      id: p.id, presupuesto: p.presupuesto, comprometido, pagado,
-      previsto: Math.max(p.presupuesto, comprometido), desviacion: Math.max(0, comprometido - p.presupuesto),
+      id: p.id, presupuesto, comprometido, pagado,
+      previsto: Math.max(presupuesto, comprometido), desviacion: Math.max(0, comprometido - presupuesto),
     };
   });
   const sum = (k: keyof Omit<TotalesPartida, 'id'>) => partidas.reduce((s, x) => s + x[k], 0);

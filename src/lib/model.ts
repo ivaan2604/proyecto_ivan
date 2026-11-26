@@ -102,6 +102,8 @@ export interface PartidaReforma {
   id: string;
   concepto: string;
   presupuesto: number;
+  /** Sin presupuesto fijo: el presupuesto es lo que sumen los pagos apuntados */
+  abierta?: boolean;
   /** Fiscalmente: la mejora aumenta el valor del piso (se amortiza); la reparación se deduce */
   tipo: TipoObra;
   pagos: PagoReforma[];

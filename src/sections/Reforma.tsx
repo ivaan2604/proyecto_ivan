@@ -140,10 +140,26 @@ export function Reforma() {
               <div className="partida-head">
                 <TextInput value={p.concepto} onChange={(v) => setPartida(p.id, { concepto: v })} ariaLabel="Partida" />
                 <Segmented value={p.tipo} options={TIPOS} onChange={(v) => setPartida(p.id, { tipo: v })} ariaLabel="Tipo de obra" />
-                <label className="field partida-presu">
-                  <span>Presupuesto</span>
-                  <MoneyInput value={p.presupuesto} onChange={(v) => setPartida(p.id, { presupuesto: v })} ariaLabel="Presupuesto" />
-                </label>
+                <div className="field partida-presu">
+                  <span className="partida-presu-head">
+                    Presupuesto
+                    <label className="partida-abierta" title="Sin límite fijo: el presupuesto es lo que vayas apuntando">
+                      <input
+                        type="checkbox"
+                        checked={!!p.abierta}
+                        onChange={(e) =>
+                          setPartida(p.id, e.target.checked ? { abierta: true } : { abierta: false, presupuesto: tp.comprometido })
+                        }
+                      />
+                      lo que sume
+                    </label>
+                  </span>
+                  {p.abierta ? (
+                    <div className="input num partida-suma" aria-label="Presupuesto (suma de los pagos)">{fmtEur(tp.comprometido)}</div>
+                  ) : (
+                    <MoneyInput value={p.presupuesto} onChange={(v) => setPartida(p.id, { presupuesto: v })} ariaLabel="Presupuesto" />
+                  )}
+                </div>
                 <button className="icon-btn" aria-label={`Eliminar ${p.concepto}`} onClick={() => delPartida(p)}>
                   <IconTrash />
                 </button>
