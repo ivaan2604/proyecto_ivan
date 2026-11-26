@@ -79,3 +79,10 @@ Se añade una norma: **registrar el 100 % de las sesiones** en Hevy.
 - Partido del domingo 22: bien (rodilla y espalda sin problemas). Peso 94,85 en ayunas: 7 semanas estancado entre 94 y 95 → se piden medida de cintura, cenas sin extras, 7.000 pasos y pesarse 2–3 veces por semana.
 - Martes 24: espalda y bíceps (jalón el primero). Resto de la semana pendiente de confirmar: pierna y empuje.
 - Descarga del 30-nov al 6-dic.
+- 25-nov: pierna (prensa 100, rumano 20/lado, curl femoral 65, extensión bilateral 55, rodilla bien).
+- 26-nov: empuje adelantado al jueves. Fin del bloque 1.
+
+## 2026-11-26 — Descarga (30-nov a 6-dic)
+- Mismos ejercicios y split (espalda/bíceps, pierna, pecho/hombro/tríceps); 2–3 sesiones.
+- ~10 % menos de peso, 1 serie menos por ejercicio (2 series), RPE 6–7, sin fallo en ningún ejercicio.
+- Objetivo: disipar fatiga tras 6 semanas con subidas en casi todos los ejercicios. Bloque 2 desde el 7-dic con los objetivos de las últimas sesiones.
