@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { demoData } from '../../demo';
-import { bolsilloReal, desgloseBolsillo, fasesResultado, mesesOrdenados, totalesGastos } from '../derive';
+import { bolsilloReal, desgloseBolsillo, totalesReforma, fasesResultado, mesesOrdenados, totalesGastos } from '../derive';
 import { validateAppData } from '../schema';
 
 describe('datos de la demo', () => {
@@ -24,5 +24,24 @@ describe('datos de la demo', () => {
     const { lineas, total } = desgloseBolsillo(d);
     expect(total).toBe(bolsilloReal(d).aportado);
     expect(lineas.map((l) => l.concepto)).toEqual(expect.arrayContaining(['Precio del piso pagado', 'Impuestos y gastos de compra']));
+  });
+});
+
+describe('partida de reforma abierta', () => {
+  it('su presupuesto es lo que suman los pagos: sin desviación ni resto pendiente', () => {
+    const d = demoData();
+    d.reforma.partidas = [{
+      id: 'm', concepto: 'Materiales', presupuesto: 100, abierta: true, tipo: 'mejora',
+      pagos: [
+        { id: 'a', fecha: '2026-11-26', importe: 26176, estado: 'pagado', factura: '', nota: '' },
+        { id: 'b', fecha: '2026-11-26', importe: 148992, estado: 'pagado', factura: '', nota: '' },
+      ],
+    }];
+    const suma = 175168;
+    const t = totalesReforma(d).partidas[0];
+    expect(t.presupuesto).toBe(suma);
+    expect(t.desviacion).toBe(0);
+    expect(totalesGastos(d).pendiente).toBe(0);
+    expect(validateAppData(d)).toEqual(d);
   });
 });

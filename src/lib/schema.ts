@@ -68,6 +68,7 @@ export const appDataSchema = z.object({
         id: z.string(),
         concepto: z.string(),
         presupuesto: cents.min(0),
+        abierta: z.boolean().optional(),
         tipo: z.enum(['mejora', 'reparacion']),
         pagos: z.array(z.object({ id: z.string(), fecha, importe: cents, estado, factura: z.string(), nota: z.string() })),
       }),
