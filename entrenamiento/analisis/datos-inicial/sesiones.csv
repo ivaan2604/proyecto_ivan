@@ -1,0 +1,64 @@
+sesion_id,inicio,fin,titulo,series_efectivas,ejercicios,duracion_min,dia_semana,hora,tipo
+1,2025-11-20 18:38:00,2025-11-20 20:08:00,Entrenamiento Matutino ☀️,17,5,90.0,Thursday,18:38,torso
+2,2025-11-21 17:50:00,2025-11-21 19:35:00,Entrenamiento Matutino ☀️,18,6,105.0,Friday,17:50,torso
+3,2025-11-22 12:16:00,2025-11-22 13:18:00,Entrenamiento por la tarde 💪,15,4,62.0,Saturday,12:16,torso
+4,2025-11-24 17:34:00,2025-11-24 19:16:00,Entrenamiento nocturno 🏋️,21,9,102.0,Monday,17:34,torso
+5,2025-11-25 17:36:00,2025-11-25 18:57:00,Entrenamiento por la tarde 💪,10,3,81.0,Tuesday,17:36,torso
+6,2025-11-28 17:36:00,2025-11-28 18:27:00,Entrenamiento por la tarde 💪,14,4,51.0,Friday,17:36,torso
+7,2025-11-29 13:02:00,2025-11-29 14:22:00,Entrenamiento por la tarde 💪,21,6,80.0,Saturday,13:02,torso
+8,2025-12-01 17:44:00,2025-12-01 19:04:00,Entrenamiento por la tarde 💪,17,5,80.0,Monday,17:44,torso
+9,2025-12-02 17:26:00,2025-12-02 18:56:00,Entrenamiento por la tarde 💪,11,4,90.0,Tuesday,17:26,torso
+10,2025-12-08 12:22:00,2025-12-08 13:42:00,Entrenamiento nocturno 🏋️,10,3,80.0,Monday,12:22,empuje
+11,2025-12-09 19:06:00,2025-12-09 20:21:00,Entrenamiento por la tarde 💪,14,5,75.0,Tuesday,19:06,torso
+12,2025-12-10 17:12:00,2025-12-10 18:34:00,Entrenamiento por la tarde 💪,14,4,82.0,Wednesday,17:12,traccion
+13,2025-12-16 16:44:00,2025-12-16 17:43:00,Entrenamiento por la tarde 💪,12,4,59.0,Tuesday,16:44,torso
+14,2025-12-22 17:35:00,2025-12-22 18:50:00,Entrenamiento Matutino ☀️,7,2,75.0,Monday,17:35,empuje
+15,2026-01-13 17:43:00,2026-01-13 18:40:00,Entrenamiento por la tarde 💪,17,5,57.0,Tuesday,17:43,pierna
+16,2026-01-14 16:25:00,2026-01-14 18:04:00,Entrenamiento por la tarde 💪,21,7,99.0,Wednesday,16:25,empuje
+17,2026-01-20 17:38:00,2026-01-20 18:48:00,Entrenamiento por la tarde 💪,19,6,70.0,Tuesday,17:38,empuje
+18,2026-01-21 16:22:00,2026-01-21 17:47:00,Entrenamiento por la tarde 💪,21,6,85.0,Wednesday,16:22,pierna
+19,2026-01-22 18:34:00,2026-01-22 19:25:00,Entrenamiento nocturno 🏋️,19,7,51.0,Thursday,18:34,traccion
+20,2026-01-26 18:29:00,2026-01-26 19:44:00,Entrenamiento por la tarde 💪,16,5,75.0,Monday,18:29,traccion
+21,2026-01-29 17:47:00,2026-01-29 18:54:00,Entrenamiento por la tarde 💪,15,5,67.0,Thursday,17:47,empuje
+22,2026-01-30 16:22:00,2026-01-30 17:01:00,Entrenamiento por la tarde 💪,11,4,39.0,Friday,16:22,torso
+23,2026-02-02 18:26:00,2026-02-02 19:51:00,Entrenamiento nocturno 🏋️,19,6,85.0,Monday,18:26,traccion
+24,2026-02-04 18:35:00,2026-02-04 19:06:00,Entrenamiento nocturno 🏋️,9,3,31.0,Wednesday,18:35,pierna
+25,2026-02-05 18:44:00,2026-02-05 20:04:00,Entrenamiento por la tarde 💪,15,5,80.0,Thursday,18:44,empuje
+26,2026-02-09 18:39:00,2026-02-09 19:41:00,Entrenamiento nocturno 🏋️,16,5,62.0,Monday,18:39,traccion
+27,2026-02-13 17:50:00,2026-02-13 19:10:00,Entrenamiento por la tarde 💪,6,2,80.0,Friday,17:50,empuje
+28,2026-02-16 18:55:00,2026-02-16 19:43:00,Entrenamiento nocturno 🏋️,11,3,48.0,Monday,18:55,traccion
+29,2026-02-20 16:21:00,2026-02-20 17:21:00,Entrenamiento por la tarde 💪,16,5,60.0,Friday,16:21,empuje
+30,2026-02-26 20:26:00,2026-02-26 20:58:00,Entrenamiento nocturno 🏋️,10,3,32.0,Thursday,20:26,pierna
+31,2026-02-27 15:52:00,2026-02-27 17:16:00,Entrenamiento por la tarde 💪,19,6,84.0,Friday,15:52,torso
+32,2026-03-03 16:05:00,2026-03-03 17:05:00,Entrenamiento por la tarde 💪,19,7,60.0,Tuesday,16:05,torso
+33,2026-03-04 16:32:00,2026-03-04 17:17:00,Entrenamiento por la tarde 💪,15,5,45.0,Wednesday,16:32,pierna
+34,2026-03-05 19:27:00,2026-03-05 20:36:00,Entrenamiento nocturno 🏋️,12,5,69.0,Thursday,19:27,traccion
+35,2026-03-12 20:04:00,2026-03-12 21:25:00,Entrenamiento por la tarde 💪,21,7,81.0,Thursday,20:04,torso
+36,2026-03-13 16:17:00,2026-03-13 17:27:00,Entrenamiento por la tarde 💪,14,4,70.0,Friday,16:17,pierna
+37,2026-03-16 20:07:00,2026-03-16 21:28:00,Entrenamiento Matutino ☀️,19,6,81.0,Monday,20:07,traccion
+38,2026-03-21 12:57:00,2026-03-21 14:42:00,Entrenamiento por la tarde 💪,17,5,105.0,Saturday,12:57,torso
+39,2026-03-23 19:56:00,2026-03-23 21:16:00,Entrenamiento nocturno 🏋️,21,6,80.0,Monday,19:56,empuje
+40,2026-03-26 19:57:00,2026-03-26 21:17:00,Entrenamiento nocturno 🏋️,18,7,80.0,Thursday,19:57,traccion
+41,2026-03-27 16:14:00,2026-03-27 17:29:00,Entrenamiento nocturno 🏋️,12,4,75.0,Friday,16:14,pierna
+42,2026-03-30 20:02:00,2026-03-30 20:55:00,Entrenamiento nocturno 🏋️,15,6,53.0,Monday,20:02,torso
+43,2026-04-01 19:13:00,2026-04-01 19:57:00,Entrenamiento nocturno 🏋️,18,5,44.0,Wednesday,19:13,pierna
+44,2026-04-16 16:00:00,2026-04-16 17:09:00,Entrenamiento por la tarde 💪,20,7,69.0,Thursday,16:00,empuje
+45,2026-04-17 16:12:00,2026-04-17 17:12:00,Entrenamiento nocturno 🏋️,9,3,60.0,Friday,16:12,traccion
+46,2026-04-20 20:07:00,2026-04-20 21:05:00,Entrenamiento nocturno 🏋️,13,4,58.0,Monday,20:07,traccion
+47,2026-04-28 19:37:00,2026-04-28 20:52:00,Entrenamiento Matutino ☀️,18,6,75.0,Tuesday,19:37,torso
+48,2026-06-01 19:19:00,2026-06-01 20:15:00,Entrenamiento nocturno 🏋️,17,5,56.0,Monday,19:19,empuje
+49,2026-06-08 19:42:00,2026-06-08 20:47:00,Entrenamiento por la tarde 💪,16,5,65.0,Monday,19:42,empuje
+50,2026-06-09 17:53:00,2026-06-09 18:32:00,Entrenamiento por la tarde 💪,12,4,39.0,Tuesday,17:53,mixta/fullbody
+51,2026-06-10 17:02:00,2026-06-10 18:13:00,Entrenamiento por la tarde 💪,20,6,71.0,Wednesday,17:02,traccion
+52,2026-08-25 17:28:00,2026-08-25 18:18:00,Entrenamiento por la tarde 💪,16,5,50.0,Tuesday,17:28,torso
+53,2026-08-26 17:03:00,2026-08-26 17:44:00,Entrenamiento por la tarde 💪,16,5,41.0,Wednesday,17:03,torso
+54,2026-09-02 17:56:00,2026-09-02 18:56:00,Entrenamiento por la tarde 💪,22,7,60.0,Wednesday,17:56,empuje
+55,2026-09-03 17:28:00,2026-09-03 18:19:00,Entrenamiento por la tarde 💪,14,4,51.0,Thursday,17:28,pierna
+56,2026-09-04 16:58:00,2026-09-04 17:54:00,Espalda,19,7,56.0,Friday,16:58,traccion
+57,2026-09-10 17:30:00,2026-09-10 18:22:00,Espalda,13,5,52.0,Thursday,17:30,traccion
+58,2026-09-14 16:39:00,2026-09-14 17:38:00,Entrenamiento por la tarde 💪,18,6,59.0,Monday,16:39,empuje
+59,2026-09-17 18:40:00,2026-09-17 19:55:00,Entrenamiento nocturno 🏋️,15,5,75.0,Thursday,18:40,traccion
+60,2026-09-18 19:47:00,2026-09-18 20:47:00,Entrenamiento nocturno 🏋️,17,5,60.0,Friday,19:47,pierna
+61,2026-09-30 16:33:00,2026-09-30 17:41:00,Entrenamiento por la tarde 💪,18,6,68.0,Wednesday,16:33,empuje
+62,2026-10-05 19:49:00,2026-10-05 20:56:00,Entrenamiento nocturno 🏋️,18,6,67.0,Monday,19:49,empuje
+63,2026-10-06 17:07:00,2026-10-06 18:07:00,Espalda,14,5,60.0,Tuesday,17:07,traccion
